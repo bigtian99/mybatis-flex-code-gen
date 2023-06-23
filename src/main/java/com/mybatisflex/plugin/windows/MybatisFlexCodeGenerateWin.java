@@ -127,7 +127,6 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
      */
     private void init(Project project) {
         // 初始化模块
-
         Modules.initModules(project, list);
         Modules.comBoxGanged(serviceInteCombox, serviceImplComBox);
         initInput();
