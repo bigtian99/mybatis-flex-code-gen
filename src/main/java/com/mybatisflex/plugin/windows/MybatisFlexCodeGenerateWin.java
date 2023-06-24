@@ -11,6 +11,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.FixedSizeButton;
+import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.util.containers.JBIterable;
 import com.mybatisflex.plugin.core.Modules;
@@ -58,6 +59,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private JCheckBox syncCheckBox;
     private JCheckBox swaggerCheckBox;
     private JCheckBox lombokCheckBox;
+    private ActionLink settingLabel;
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
 
@@ -108,7 +110,6 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
 
         syncCheckBox.addActionListener(e -> {
             if (syncCheckBox.isSelected()) {
-                new ShowSettingsUtilImpl().showSettingsDialog(project, MybatisFlexPluginSettings.class);
 
                 Modules.syncModules(list, cotrollerCombox.getSelectedIndex());
             }
@@ -118,6 +119,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
                 Modules.syncModules(list, cotrollerCombox.getSelectedIndex());
             }
         });
+
+        settingLabel.addActionListener(e ->  new ShowSettingsUtilImpl().showSettingsDialog(project, MybatisFlexPluginSettings.class));
     }
 
     /**

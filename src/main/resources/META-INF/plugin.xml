@@ -26,7 +26,7 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <applicationConfigurable groupId="MybatisFlex" displayName="MybatisFlexSettings"
+        <applicationConfigurable groupId="MybatisFlex" displayName="MybatisFlexHelper"
                                  id="MybatisFlexPluginConfigurable"
                                  instance="com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings"/>
 

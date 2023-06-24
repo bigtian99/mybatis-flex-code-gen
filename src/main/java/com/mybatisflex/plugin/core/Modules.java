@@ -3,6 +3,8 @@ package com.mybatisflex.plugin.core;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.mybatisflex.plugin.core.filter.FilterComboBoxModel;
 import com.mybatisflex.plugin.core.render.ModuleComBoxRender;
 
@@ -29,19 +31,23 @@ public class Modules {
      * 获取模块
      *
      * @param project       项目
-     * @param modulesCombox
      * @return {@code List<String>}
      */
     public static void addModulesItem(Project project, List<JComboBox> modulesComboxs) {
         for (JComboBox modulesCombox : modulesComboxs) {
             modulesCombox.setRenderer(new ModuleComBoxRender());
             moduleMap = Arrays.stream(ModuleManager.getInstance(project).getModules())
+                    .filter(el -> {
+                        Module[] dependencies = ModuleRootManager.getInstance(el).getDependencies();
+                        return dependencies.length != 0;
+                    })
                     .collect(Collectors.toMap(Module::getName, module -> module));
             FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().toList());
             modulesCombox.setModel(model);
             modulesCombox.setSelectedIndex(1);
         }
     }
+
 
 
     /**

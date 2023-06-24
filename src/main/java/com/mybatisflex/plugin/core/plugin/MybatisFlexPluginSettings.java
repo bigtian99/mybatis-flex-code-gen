@@ -2,6 +2,9 @@ package com.mybatisflex.plugin.core.plugin;
 
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.mybatisflex.plugin.windows.MybatisFlexSetting;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,13 +13,15 @@ import javax.swing.*;
 public class MybatisFlexPluginSettings implements Configurable {
     private JPanel myPanel;
 
+
     @Nullable
     @Override
     public JComponent createComponent() {
+        Project project = ProjectManager.getInstance().getDefaultProject();
+
         // 创建设置页面的UI组件
-        myPanel = new JPanel();
-        myPanel.add(new JLabel("My Plugin Settings龙艳华大傻狗"));
-        return myPanel;
+        MybatisFlexSetting mybatisFlexSetting = new MybatisFlexSetting(project);
+        return mybatisFlexSetting.getMainPanel();
     }
 
     @Override
