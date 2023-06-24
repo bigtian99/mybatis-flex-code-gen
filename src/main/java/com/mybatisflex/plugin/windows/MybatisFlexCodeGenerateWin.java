@@ -7,8 +7,6 @@ import com.intellij.database.psi.DbTableImpl;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.ui.components.ActionLink;
@@ -33,8 +31,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private JPanel contentPane;
     private JButton generateBtn;
     private JButton cancelBtn;
-    private JTextField classNameInput;
-    private JTextField classPrefix;
+    private JTextField authorInput;
     private JButton configSave;
     private JComboBox IdTypeCombox;
     private JComboBox cotrollerCombox;
@@ -60,6 +57,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private JCheckBox swaggerCheckBox;
     private JCheckBox lombokCheckBox;
     private ActionLink settingLabel;
+    private JTextField sinceInput;
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
 
@@ -69,7 +67,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         setModal(true);
         setTitle("Mybatis Flex Code Generate");
         getRootPane().setDefaultButton(generateBtn);
-        setSize(1000, 1000);
+        setSize(800, 450);
         // 将对话框相对于屏幕居中显示
         setLocationRelativeTo(null);
         Project project = actionEvent.getProject();

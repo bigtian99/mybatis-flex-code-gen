@@ -1,38 +1,112 @@
 package com.mybatisflex.plugin.windows;
 
+import cn.hutool.core.util.ReflectUtil;
+import com.alibaba.fastjson2.JSONObject;
 import com.intellij.lang.java.JavaLanguage;
 
 import com.intellij.lang.xml.XMLLanguage;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.MessageConstants;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.LanguageTextField;
+import com.intellij.util.messages.impl.Message;
+import com.mybatisflex.plugin.core.Template;
+import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
+import com.mybatisflex.plugin.core.functions.SimpleFunction;
+import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.lang.reflect.Field;
 
 public class MybatisFlexSetting {
     private JPanel mainPanel;
-    private JTextField textField1;
-    private JTabbedPane tabbedPane1;
     private JPanel controllerTab;
     private JPanel modelTab;
+    private JTabbedPane tabbedPane1;
+    private JTextField tablePrefix;
     private LanguageTextField controllerTemplate;
-    private JToolBar toolBar1;
     private LanguageTextField modelTemplate;
     private LanguageTextField interfaceTempalate;
     private LanguageTextField implTemplate;
     private LanguageTextField mapperTemplate;
     private LanguageTextField xmlTemplate;
+    private JButton resetBtn;
 
     private Project project;
+    SimpleFunction callback;
 
-    public MybatisFlexSetting(Project project) {
+    public MybatisFlexSetting(Project project, SimpleFunction<Boolean> callback) {
+        this.callback = callback;
+        this.project = project;
+        init();
 
+        resetBtn.addActionListener(e -> {
+            int flag = Messages.showYesNoDialog(project, "确定要重置吗？", "提示", Messages.getQuestionIcon());
+            if (MessageConstants.YES == flag) {
+                MybatisFlexPluginConfigData.clear();
+                init();
+            }
 
+        });
     }
+
+    public void init() {
+        controllerTemplate.setText(Template.getVmCode(MybatisFlexConstant.CONTROLLER_TEMPLATE));
+        modelTemplate.setText(Template.getVmCode(MybatisFlexConstant.MODEL_TEMPLATE));
+        interfaceTempalate.setText(Template.getVmCode(MybatisFlexConstant.INTERFACE_TEMPLATE));
+        implTemplate.setText(Template.getVmCode(MybatisFlexConstant.IMPL_TEMPLATE));
+        mapperTemplate.setText(Template.getVmCode(MybatisFlexConstant.MAPPER_TEMPLATE));
+        xmlTemplate.setText(Template.getVmCode(MybatisFlexConstant.XML_TEMPLATE));
+        tablePrefix.setText(Template.getTablePrefix());
+        setEvent();
+    }
+
+    /**
+     * 为控件添加事件
+     */
+    private void setEvent() {
+        for (Field field : ReflectUtil.getFields(MybatisFlexSetting.class)) {
+            Object fieldValue = ReflectUtil.getFieldValue(this, field.getName());
+            if (fieldValue instanceof LanguageTextField fieldValue1) {
+                fieldValue1.getDocument().addDocumentListener(new DocumentListener() {
+                    @Override
+                    public void documentChanged(@NotNull DocumentEvent event) {
+                        callback.apply(!Template.contains(fieldValue1.getText() + fieldValue1.getName()));
+                    }
+                });
+            }
+        }
+        tablePrefix.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                callback.apply(!Template.contains(tablePrefix.getText() + tablePrefix.getName()));
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                callback.apply(!Template.contains(tablePrefix.getText() + tablePrefix.getName()));
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                callback.apply(!Template.contains(tablePrefix.getText() + tablePrefix.getName()));
+            }
+        });
+    }
+
 
     public JPanel getMainPanel() {
         return mainPanel;
     }
 
+    /**
+     * 创建自定义控件
+     */
     private void createUIComponents() {
         controllerTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
         modelTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
@@ -40,6 +114,19 @@ public class MybatisFlexSetting {
         implTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
         mapperTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
         xmlTemplate = new LanguageTextField(XMLLanguage.INSTANCE, project, "", false);
-
     }
+
+
+    public String getConfigData() {
+        JSONObject data = new JSONObject();
+        data.put(MybatisFlexConstant.CONTROLLER_TEMPLATE, controllerTemplate.getText());
+        data.put(MybatisFlexConstant.MODEL_TEMPLATE, modelTemplate.getText());
+        data.put(MybatisFlexConstant.INTERFACE_TEMPLATE, interfaceTempalate.getText());
+        data.put(MybatisFlexConstant.IMPL_TEMPLATE, implTemplate.getText());
+        data.put(MybatisFlexConstant.MAPPER_TEMPLATE, mapperTemplate.getText());
+        data.put(MybatisFlexConstant.XML_TEMPLATE, xmlTemplate.getText());
+        data.put(MybatisFlexConstant.TABLE_PREFIX, tablePrefix.getText());
+        return data.toJSONString();
+    }
+
 }

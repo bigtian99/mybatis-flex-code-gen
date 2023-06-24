@@ -10,7 +10,7 @@
       <grid id="3a073" layout-manager="BorderLayout" hgap="0" vgap="0">
         <constraints border-constraint="North"/>
         <properties/>
-        <border type="etched" title="基本配置"/>
+        <border type="none" title="基本配置"/>
         <children>
           <component id="53bbb" class="javax.swing.JLabel">
             <constraints border-constraint="West"/>
@@ -18,24 +18,27 @@
               <text value="移除表前缀："/>
             </properties>
           </component>
-          <component id="3e6a2" class="javax.swing.JTextField" binding="textField1" default-binding="true">
+          <component id="3e6a2" class="javax.swing.JTextField" binding="tablePrefix">
             <constraints border-constraint="Center"/>
             <properties>
               <font/>
+              <maximumSize width="50" height="30"/>
+              <name value="tablePrefix"/>
             </properties>
           </component>
-          <toolbar id="34571" binding="toolBar1">
-            <constraints border-constraint="South"/>
-            <properties/>
-            <border type="none"/>
-            <children/>
-          </toolbar>
+          <component id="4f46c" class="javax.swing.JButton" binding="resetBtn">
+            <constraints border-constraint="East"/>
+            <properties>
+              <text value="重置"/>
+              <toolTipText value=""/>
+            </properties>
+          </component>
         </children>
       </grid>
       <tabbedpane id="6f60a" binding="tabbedPane1" default-binding="true">
         <constraints border-constraint="Center"/>
         <properties/>
-        <border type="etched" title="模版配置"/>
+        <border type="etched" title="默认模版配置"/>
         <children>
           <grid id="d70ea" binding="controllerTab" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
@@ -60,6 +63,7 @@
                       <autoscrolls value="true"/>
                       <enabled value="true"/>
                       <font/>
+                      <name value="controller"/>
                       <text value=""/>
                       <viewer value="false"/>
                     </properties>
@@ -78,7 +82,9 @@
             <children>
               <scrollpane id="66fa2">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="500" height="200"/>
+                  </grid>
                 </constraints>
                 <properties/>
                 <border type="none"/>
@@ -105,20 +111,27 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="f7ef4" class="com.intellij.ui.LanguageTextField" binding="interfaceTempalate" custom-create="true">
+              <scrollpane id="c4665">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="50"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="500" height="200"/>
                   </grid>
                 </constraints>
-                <properties>
-                  <autoscrolls value="true"/>
-                  <enabled value="true"/>
-                  <font/>
-                  <text value=""/>
-                  <viewer value="false"/>
-                </properties>
-              </component>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="d18c4" class="com.intellij.ui.LanguageTextField" binding="interfaceTempalate" custom-create="true">
+                    <constraints/>
+                    <properties>
+                      <autoscrolls value="true"/>
+                      <enabled value="true"/>
+                      <font/>
+                      <text value=""/>
+                      <viewer value="false"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
             </children>
           </grid>
           <grid id="8638d" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -129,20 +142,27 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="9e281" class="com.intellij.ui.LanguageTextField" binding="implTemplate" custom-create="true">
+              <scrollpane id="7dfff">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="50"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="500" height="200"/>
                   </grid>
                 </constraints>
-                <properties>
-                  <autoscrolls value="true"/>
-                  <enabled value="true"/>
-                  <font/>
-                  <text value=""/>
-                  <viewer value="false"/>
-                </properties>
-              </component>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="4faff" class="com.intellij.ui.LanguageTextField" binding="implTemplate" custom-create="true">
+                    <constraints/>
+                    <properties>
+                      <autoscrolls value="true"/>
+                      <enabled value="true"/>
+                      <font/>
+                      <text value=""/>
+                      <viewer value="false"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
             </children>
           </grid>
           <grid id="188e2" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -153,20 +173,27 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="aaf94" class="com.intellij.ui.LanguageTextField" binding="mapperTemplate" custom-create="true">
+              <scrollpane id="3de57">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="50"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="500" height="200"/>
                   </grid>
                 </constraints>
-                <properties>
-                  <autoscrolls value="true"/>
-                  <enabled value="true"/>
-                  <font/>
-                  <text value=""/>
-                  <viewer value="false"/>
-                </properties>
-              </component>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="29ae9" class="com.intellij.ui.LanguageTextField" binding="mapperTemplate" custom-create="true">
+                    <constraints/>
+                    <properties>
+                      <autoscrolls value="true"/>
+                      <enabled value="true"/>
+                      <font/>
+                      <text value=""/>
+                      <viewer value="false"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
             </children>
           </grid>
           <grid id="f9c18" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -177,20 +204,27 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="fe4dd" class="com.intellij.ui.LanguageTextField" binding="xmlTemplate" custom-create="true">
+              <scrollpane id="7c64b">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="50"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <preferred-size width="500" height="200"/>
                   </grid>
                 </constraints>
-                <properties>
-                  <autoscrolls value="false"/>
-                  <enabled value="true"/>
-                  <font/>
-                  <text value=""/>
-                  <viewer value="false"/>
-                </properties>
-              </component>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="b5f7c" class="com.intellij.ui.LanguageTextField" binding="xmlTemplate" custom-create="true">
+                    <constraints/>
+                    <properties>
+                      <autoscrolls value="false"/>
+                      <enabled value="true"/>
+                      <font/>
+                      <text value=""/>
+                      <viewer value="false"/>
+                    </properties>
+                  </component>
+                </children>
+              </scrollpane>
             </children>
           </grid>
         </children>
