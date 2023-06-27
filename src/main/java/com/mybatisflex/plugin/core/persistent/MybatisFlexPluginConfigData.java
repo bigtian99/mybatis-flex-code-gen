@@ -1,6 +1,8 @@
 package com.mybatisflex.plugin.core.persistent;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
+import com.alibaba.fastjson2.JSONObject;
 import com.intellij.openapi.components.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +29,7 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
     public static void clear() {
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
-        state.mybatisFlexConfig= "{}";
+        state.mybatisFlexConfig = "{}";
         instance.loadState(state);
     }
 
@@ -52,8 +54,23 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         State state = instance.getState();
         Field field = ReflectUtil.getField(state.getClass(), key);
         if (field != null) {
-            ReflectUtil.setFieldValue(state, key, value);
+            String oldVal = ObjectUtil.defaultIfNull(ReflectUtil.getFieldValue(state, key), "{}").toString();
+            JSONObject parse = JSONObject.parse(oldVal);
+            parse.putAll(JSONObject.parse(value));
+            ReflectUtil.setFieldValue(state, key, parse.toJSONString());
         }
+    }
+
+    public static JSONObject getConfigData(String key) {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        Field field = ReflectUtil.getField(state.getClass(), key);
+        if (field != null) {
+            String oldVal = ObjectUtil.defaultIfNull(ReflectUtil.getFieldValue(state, key), "{}").toString();
+            return JSONObject.parse(oldVal);
+
+        }
+        return new JSONObject();
     }
 
 }

@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageConstants;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.LanguageTextField;
-import com.intellij.util.messages.impl.Message;
 import com.mybatisflex.plugin.core.Template;
 import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
 import com.mybatisflex.plugin.core.functions.SimpleFunction;
@@ -19,8 +18,6 @@ import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 
 public class MybatisFlexSetting {
@@ -36,6 +33,13 @@ public class MybatisFlexSetting {
     private LanguageTextField mapperTemplate;
     private LanguageTextField xmlTemplate;
     private JButton resetBtn;
+    private JTextField author;
+    private JTextField since;
+    private JCheckBox builderCheckBox;
+    private JCheckBox dataCheckBox;
+    private JCheckBox allArgsConstructorCheckBox;
+    private JCheckBox noArgsConstructorCheckBox;
+    private JCheckBox swaggerCheckBox;
 
     private Project project;
     SimpleFunction callback;
@@ -63,6 +67,13 @@ public class MybatisFlexSetting {
         mapperTemplate.setText(Template.getVmCode(MybatisFlexConstant.MAPPER_TEMPLATE));
         xmlTemplate.setText(Template.getVmCode(MybatisFlexConstant.XML_TEMPLATE));
         tablePrefix.setText(Template.getTablePrefix());
+        author.setText(Template.getAuthor());
+        since.setText(Template.getSince());
+        builderCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_BUILDER));
+        dataCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_DATA));
+        allArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ALL_ARGS_CONSTRUCTOR));
+        noArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_NO_ARGS_CONSTRUCTOR));
+        swaggerCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER));
         setEvent();
     }
 
@@ -79,24 +90,30 @@ public class MybatisFlexSetting {
                         callback.apply(!Template.contains(fieldValue1.getText() + fieldValue1.getName()));
                     }
                 });
+            } else if (fieldValue instanceof JTextField fieldValue1) {
+                fieldValue1.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+                    @Override
+                    public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                        callback.apply(!Template.contains(fieldValue1.getText() + fieldValue1.getName()));
+                    }
+
+                    @Override
+                    public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                        callback.apply(!Template.contains(fieldValue1.getText() + fieldValue1.getName()));
+                    }
+
+                    @Override
+                    public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                        callback.apply(!Template.contains(fieldValue1.getText() + fieldValue1.getName()));
+                    }
+                });
+            } else if (fieldValue instanceof JCheckBox fieldValue1) {
+                fieldValue1.addActionListener(e -> {
+                    callback.apply(!Template.contains(fieldValue1.isSelected() + fieldValue1.getName()));
+                });
             }
         }
-        tablePrefix.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                callback.apply(!Template.contains(tablePrefix.getText() + tablePrefix.getName()));
-            }
 
-            @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                callback.apply(!Template.contains(tablePrefix.getText() + tablePrefix.getName()));
-            }
-
-            @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                callback.apply(!Template.contains(tablePrefix.getText() + tablePrefix.getName()));
-            }
-        });
     }
 
 
@@ -126,6 +143,13 @@ public class MybatisFlexSetting {
         data.put(MybatisFlexConstant.MAPPER_TEMPLATE, mapperTemplate.getText());
         data.put(MybatisFlexConstant.XML_TEMPLATE, xmlTemplate.getText());
         data.put(MybatisFlexConstant.TABLE_PREFIX, tablePrefix.getText());
+        data.put(MybatisFlexConstant.AUTHOR, author.getText());
+        data.put(MybatisFlexConstant.SINCE, since.getText());
+        data.put(MybatisFlexConstant.LOMBOK_BUILDER, builderCheckBox.isSelected());
+        data.put(MybatisFlexConstant.LOMBOK_DATA, dataCheckBox.isSelected());
+        data.put(MybatisFlexConstant.LOMBOK_ALL_ARGS_CONSTRUCTOR, allArgsConstructorCheckBox.isSelected());
+        data.put(MybatisFlexConstant.LOMBOK_NO_ARGS_CONSTRUCTOR, noArgsConstructorCheckBox.isSelected());
+        data.put(MybatisFlexConstant.SWAGGER, swaggerCheckBox.isSelected());
         return data.toJSONString();
     }
 

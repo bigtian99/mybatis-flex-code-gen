@@ -1,5 +1,6 @@
 package com.mybatisflex.plugin.windows;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.intellij.database.model.DasColumn;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
@@ -9,16 +10,20 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.FixedSizeButton;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.util.containers.JBIterable;
 import com.mybatisflex.plugin.core.Modules;
 import com.mybatisflex.plugin.core.Package;
+import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
+import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
 import com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings;
 import com.mybatisflex.plugin.entity.ColumnInfo;
 import com.mybatisflex.plugin.entity.TableInfo;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,8 +36,6 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private JPanel contentPane;
     private JButton generateBtn;
     private JButton cancelBtn;
-    private JTextField authorInput;
-    private JButton configSave;
     private JComboBox IdTypeCombox;
     private JComboBox cotrollerCombox;
     private ExtendableTextField modelPackagePath;
@@ -54,10 +57,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private FixedSizeButton mapperXmlBtn;
     private JComboBox xmlComBox;
     private JCheckBox syncCheckBox;
-    private JCheckBox swaggerCheckBox;
-    private JCheckBox lombokCheckBox;
     private ActionLink settingLabel;
-    private JTextField sinceInput;
+    private JButton saveConfig;
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
 
@@ -95,15 +96,10 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
         List<TableInfo> selectedTableInfo = getSelectedTableInfo(actionEvent);
 
-        // 保存配置
-        configSave.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
-            }
-        });
         init(project);
 
         syncCheckBox.addActionListener(e -> {
@@ -118,7 +114,11 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
             }
         });
 
-        settingLabel.addActionListener(e ->  new ShowSettingsUtilImpl().showSettingsDialog(project, MybatisFlexPluginSettings.class));
+        settingLabel.addActionListener(e -> new ShowSettingsUtilImpl().showSettingsDialog(project, MybatisFlexPluginSettings.class));
+        saveConfig.addActionListener(e -> {
+            MybatisFlexPluginConfigData.setData(MybatisFlexConstant.MYBATIS_FLEX_CONFIG, getConfigData());
+            Messages.showMessageDialog(project, "保存成功", "提示", Messages.getInformationIcon());
+        });
     }
 
     /**
@@ -131,6 +131,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         Modules.initModules(project, list);
         Modules.comBoxGanged(serviceInteCombox, serviceImplComBox);
         initInput();
+        // MybatisFlexPluginConfigData.clear();
+        initConfigData();
     }
 
     private void initInput() {
@@ -200,6 +202,42 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
      */
     private void onCancel() {
         dispose();
+    }
+
+
+    public String getConfigData() {
+        JSONObject data = new JSONObject();
+        data.put(MybatisFlexConstant.MODEL_PACKAGE_PATH, modelPackagePath.getText());
+        data.put(MybatisFlexConstant.SERVICE_INTEFACE_PATH, serviceIntefacePath.getText());
+        data.put(MybatisFlexConstant.SERVICE_IMP_PATH, serviceImpPath.getText());
+        data.put(MybatisFlexConstant.MAPPER_PACKAGE_PATH, mapperPackagePath.getText());
+        data.put(MybatisFlexConstant.MAPPER_XML_PATH, mapperXmlPath.getText());
+        data.put(MybatisFlexConstant.CONTROLLER_PATH, controllerPath.getText());
+        data.put(MybatisFlexConstant.SYNC_CHECK_BOX, syncCheckBox.isSelected());
+        data.put(MybatisFlexConstant.COTROLLER_COMBOX, cotrollerCombox.getSelectedIndex());
+        data.put(MybatisFlexConstant.MODEL_COMBOX, modelCombox.getSelectedIndex());
+        data.put(MybatisFlexConstant.SERVICE_INTE_COMBOX, serviceInteCombox.getSelectedIndex());
+        data.put(MybatisFlexConstant.SERVICE_IMPL_COM_BOX, serviceImplComBox.getSelectedIndex());
+        data.put(MybatisFlexConstant.MAPPER_COM_BOX, mapperComBox.getSelectedIndex());
+        data.put(MybatisFlexConstant.XML_COM_BOX, xmlComBox.getSelectedIndex());
+        return data.toJSONString();
+    }
+
+    public  void initConfigData(){
+        JSONObject configData = MybatisFlexPluginConfigData.getConfigData(MybatisFlexConstant.MYBATIS_FLEX_CONFIG);
+        modelPackagePath.setText(configData.getString(MybatisFlexConstant.MODEL_PACKAGE_PATH));
+        serviceIntefacePath.setText(configData.getString(MybatisFlexConstant.SERVICE_INTEFACE_PATH));
+        serviceImpPath.setText(configData.getString(MybatisFlexConstant.SERVICE_IMP_PATH));
+        mapperPackagePath.setText(configData.getString(MybatisFlexConstant.MAPPER_PACKAGE_PATH));
+        mapperXmlPath.setText(configData.getString(MybatisFlexConstant.MAPPER_XML_PATH));
+        controllerPath.setText(configData.getString(MybatisFlexConstant.CONTROLLER_PATH));
+        syncCheckBox.setSelected(configData.getBooleanValue(MybatisFlexConstant.SYNC_CHECK_BOX,false));
+        cotrollerCombox.setSelectedIndex(configData.getIntValue(MybatisFlexConstant.COTROLLER_COMBOX,1));
+        modelCombox.setSelectedIndex(configData.getIntValue(MybatisFlexConstant.MODEL_COMBOX,1));
+        serviceInteCombox.setSelectedIndex(configData.getIntValue(MybatisFlexConstant.SERVICE_INTE_COMBOX,1));
+        serviceImplComBox.setSelectedIndex(configData.getIntValue(MybatisFlexConstant.SERVICE_IMPL_COM_BOX,1));
+        mapperComBox.setSelectedIndex(configData.getIntValue(MybatisFlexConstant.MAPPER_COM_BOX,1));
+        xmlComBox.setSelectedIndex(configData.getIntValue(MybatisFlexConstant.XML_COM_BOX,1));
     }
 
 

@@ -81,8 +81,23 @@ public class Template {
         return value;
     }
 
+    public static boolean getChecBoxConfig(String property) {
+        JSONObject config = getMybatisFlexConfig();
+        boolean value = ObjectUtil.defaultIfNull(config.getBoolean(property), false);
+        addMd5(value + property);
+        return value;
+    }
+
     public static String getTablePrefix() {
         return getConfigData(MybatisFlexConstant.TABLE_PREFIX);
+    }
+
+    public static String getSince() {
+        return getConfigData(MybatisFlexConstant.SINCE);
+    }
+
+    public static String getAuthor() {
+        return getConfigData(MybatisFlexConstant.AUTHOR);
     }
 
     public static void clear() {

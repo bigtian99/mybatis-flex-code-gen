@@ -16,7 +16,6 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .fastRequest
-.run
 
 ### Eclipse ###
 .apt_generated
@@ -42,3 +41,4 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+/.run/
