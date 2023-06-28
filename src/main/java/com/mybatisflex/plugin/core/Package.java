@@ -1,5 +1,6 @@
 package com.mybatisflex.plugin.core;
 
+import cn.hutool.core.util.StrUtil;
 import com.intellij.ide.util.PackageChooserDialog;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -38,7 +39,8 @@ public class Package {
      */
     public static String selectPackageResources(Module module) {
         Project project = module.getProject();
-        String path = project.getBaseDir().getCanonicalPath() + "/" + module.getName() + "/src/main/resources/";
+        String separator = File.separator;
+        String path = project.getBaseDir().getCanonicalPath() + separator + StrUtil.format("src{}main{}resources{}",separator,separator,separator);
         ArrayList<String> resourcesList = new ArrayList<>();
         getSubDirectory(path, resourcesList);
         PsiManager psiManager = PsiManager.getInstance(project);

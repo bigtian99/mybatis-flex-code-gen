@@ -1,11 +1,15 @@
 package com.mybatisflex.plugin.core;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.TypeReference;
+import com.intellij.codeInspection.reference.RefUtil;
 import com.intellij.ide.fileTemplates.impl.UrlUtil;
 import com.intellij.openapi.util.text.StringUtil;
+import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
 import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
 import org.jetbrains.annotations.NotNull;
@@ -33,10 +37,20 @@ public class Template {
     }
 
     @Nullable
-    public static JSONObject getMybatisFlexConfig() {
+    public static MybatisFlexConfig getMybatisFlexConfig() {
         MybatisFlexPluginConfigData instance = MybatisFlexPluginConfigData.getInstance();
         MybatisFlexPluginConfigData.State state = instance.getState();
-        JSONObject config = JSONObject.parse(ObjectUtil.defaultIfNull(state.mybatisFlexConfig, "{}"));
+        String mybatisFlexConfig = ObjectUtil.defaultIfNull(state.mybatisFlexConfig,"{}");
+        MybatisFlexConfig config = JSONObject.parseObject(mybatisFlexConfig, new TypeReference<>() {
+        });
+        if (StrUtil.isEmpty(config.getControllerTemplate())) {
+            config.setControllerTemplate(getTemplateContent(MybatisFlexConstant.CONTROLLER_TEMPLATE));
+            config.setModelTemplate(getTemplateContent(MybatisFlexConstant.MODEL_TEMPLATE));
+            config.setInterfaceTempalate(getTemplateContent(MybatisFlexConstant.INTERFACE_TEMPLATE));
+            config.setImplTemplate(getTemplateContent(MybatisFlexConstant.IMPL_TEMPLATE));
+            config.setMapperTemplate(getTemplateContent(MybatisFlexConstant.MAPPER_TEMPLATE));
+            config.setXmlTemplate(getTemplateContent(MybatisFlexConstant.XML_TEMPLATE));
+        }
         return config;
     }
 
@@ -64,6 +78,7 @@ public class Template {
         set.add(md5);
     }
 
+
     /**
      * 包含
      *
@@ -75,15 +90,17 @@ public class Template {
     }
 
     public static String getConfigData(String property) {
-        JSONObject config = getMybatisFlexConfig();
-        String value = ObjectUtil.defaultIfNull(config.getString(property), "");
+        MybatisFlexConfig config = getMybatisFlexConfig();
+        Object fieldValue = ReflectUtil.getFieldValue(config, property);
+        String value = ObjectUtil.defaultIfNull(fieldValue, "").toString();
         addMd5(value + property);
         return value;
     }
 
     public static boolean getChecBoxConfig(String property) {
-        JSONObject config = getMybatisFlexConfig();
-        boolean value = ObjectUtil.defaultIfNull(config.getBoolean(property), false);
+        MybatisFlexConfig config = getMybatisFlexConfig();
+        Object fieldValue = ReflectUtil.getFieldValue(config, property);
+        boolean value = (boolean) ObjectUtil.defaultIfNull(fieldValue, false);
         addMd5(value + property);
         return value;
     }

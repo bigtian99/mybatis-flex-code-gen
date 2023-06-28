@@ -1,5 +1,6 @@
-package com.mybatisflex.plugin.core;
+package com.mybatisflex.plugin.core.util;
 
+import com.intellij.ide.util.PackageUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -13,6 +14,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -30,24 +32,27 @@ public class Modules {
     /**
      * 获取模块
      *
-     * @param project       项目
+     * @param project 项目
      * @return {@code List<String>}
      */
     public static void addModulesItem(Project project, List<JComboBox> modulesComboxs) {
+        Module[] modules = ModuleManager.getInstance(project).getModules();
         for (JComboBox modulesCombox : modulesComboxs) {
             modulesCombox.setRenderer(new ModuleComBoxRender());
-            moduleMap = Arrays.stream(ModuleManager.getInstance(project).getModules())
+            moduleMap = Arrays.stream(modules)
                     .filter(el -> {
-                        Module[] dependencies = ModuleRootManager.getInstance(el).getDependencies();
-                        return dependencies.length != 0;
+                        if (modules.length > 1) {
+                            Module[] dependencies = ModuleRootManager.getInstance(el).getDependencies();
+                            return dependencies.length != 0;
+                        }
+                        return true;
                     })
                     .collect(Collectors.toMap(Module::getName, module -> module));
             FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().toList());
             modulesCombox.setModel(model);
-            modulesCombox.setSelectedIndex(1);
+            modulesCombox.setSelectedIndex(0);
         }
     }
-
 
 
     /**
@@ -58,6 +63,23 @@ public class Modules {
      */
     public static Module getModule(String moduleName) {
         return moduleMap.get(moduleName);
+    }
+
+    /**
+     * 获取模块路径
+     *
+     * @param moduleName 模块名称
+     * @return {@code String}
+     */
+    public static String getModulePath(String moduleName) {
+        Module module = moduleMap.get(moduleName);
+        return getModulePath(module);
+    }
+
+    public static String getModulePath(Module module) {
+        Project project = module.getProject();
+        return project.getBasePath() + File.separator;
+
     }
 
 

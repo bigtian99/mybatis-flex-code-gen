@@ -13,6 +13,11 @@ public class ColumnInfo {
     private String name;
 
     /**
+     * 字段名
+     */
+    private String fieldName;
+    private String fieldType;
+    /**
      * 数据类型
      */
     private String type;
@@ -29,6 +34,22 @@ public class ColumnInfo {
      * 是否自动增长
      */
     private boolean isAutoIncrement;
+
+    public String getFieldType() {
+        return fieldType;
+    }
+
+    public void setFieldType(String fieldType) {
+        this.fieldType = fieldType;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
+    }
 
     public String getName() {
         return name;
@@ -69,7 +90,6 @@ public class ColumnInfo {
     public void setAutoIncrement(boolean autoIncrement) {
         isAutoIncrement = autoIncrement;
     }
-
 
 
     @Override

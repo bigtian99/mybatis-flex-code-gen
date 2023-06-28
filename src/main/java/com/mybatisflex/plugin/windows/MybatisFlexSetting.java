@@ -1,6 +1,7 @@
 package com.mybatisflex.plugin.windows;
 
 import cn.hutool.core.util.ReflectUtil;
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.intellij.lang.java.JavaLanguage;
 
@@ -12,6 +13,7 @@ import com.intellij.openapi.ui.MessageConstants;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.LanguageTextField;
 import com.mybatisflex.plugin.core.Template;
+import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
 import com.mybatisflex.plugin.core.functions.SimpleFunction;
 import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
@@ -135,22 +137,22 @@ public class MybatisFlexSetting {
 
 
     public String getConfigData() {
-        JSONObject data = new JSONObject();
-        data.put(MybatisFlexConstant.CONTROLLER_TEMPLATE, controllerTemplate.getText());
-        data.put(MybatisFlexConstant.MODEL_TEMPLATE, modelTemplate.getText());
-        data.put(MybatisFlexConstant.INTERFACE_TEMPLATE, interfaceTempalate.getText());
-        data.put(MybatisFlexConstant.IMPL_TEMPLATE, implTemplate.getText());
-        data.put(MybatisFlexConstant.MAPPER_TEMPLATE, mapperTemplate.getText());
-        data.put(MybatisFlexConstant.XML_TEMPLATE, xmlTemplate.getText());
-        data.put(MybatisFlexConstant.TABLE_PREFIX, tablePrefix.getText());
-        data.put(MybatisFlexConstant.AUTHOR, author.getText());
-        data.put(MybatisFlexConstant.SINCE, since.getText());
-        data.put(MybatisFlexConstant.LOMBOK_BUILDER, builderCheckBox.isSelected());
-        data.put(MybatisFlexConstant.LOMBOK_DATA, dataCheckBox.isSelected());
-        data.put(MybatisFlexConstant.LOMBOK_ALL_ARGS_CONSTRUCTOR, allArgsConstructorCheckBox.isSelected());
-        data.put(MybatisFlexConstant.LOMBOK_NO_ARGS_CONSTRUCTOR, noArgsConstructorCheckBox.isSelected());
-        data.put(MybatisFlexConstant.SWAGGER, swaggerCheckBox.isSelected());
-        return data.toJSONString();
+        MybatisFlexConfig config = new MybatisFlexConfig();
+        config.setControllerTemplate(controllerTemplate.getText());
+        config.setModelTemplate(modelTemplate.getText());
+        config.setInterfaceTempalate(interfaceTempalate.getText());
+        config.setImplTemplate(implTemplate.getText());
+        config.setMapperTemplate(mapperTemplate.getText());
+        config.setXmlTemplate(xmlTemplate.getText());
+        config.setTablePrefix(tablePrefix.getText());
+        config.setAuthor(author.getText());
+        config.setSince(since.getText());
+        config.setBuilder(builderCheckBox.isSelected());
+        config.setData(dataCheckBox.isSelected());
+        config.setAllArgsConstructor(allArgsConstructorCheckBox.isSelected());
+        config.setNoArgsConstructor(noArgsConstructorCheckBox.isSelected());
+        config.setSwagger(swaggerCheckBox.isSelected());
+        return JSON.toJSONString(config);
     }
 
 }

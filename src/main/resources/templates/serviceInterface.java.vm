@@ -1,14 +1,14 @@
-package #(packageConfig.servicePackage);
+package $interfacePackage;
 
-import #(serviceConfig.buildSuperClassImport());
-import #(packageConfig.entityPackage).#(table.buildEntityClassName());
+import ${modelPackage}.${className}Entity;
+import com.mybatisflex.core.service.IService;
 
 /**
- * #(table.getComment()) 服务层。
+ * $tableComment 服务层。
  *
- * @author #(javadocConfig.getAuthor())
- * @since #(javadocConfig.getSince())
+ * @author $author
+ * @since $since
  */
-public interface #(table.buildServiceClassName()) extends #(serviceConfig.buildSuperClassName())<#(table.buildEntityClassName())> {
+public interface I${className}Service extends IService<${className}Entity>{
 
 }

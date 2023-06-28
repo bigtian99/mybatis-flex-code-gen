@@ -1,46 +1,61 @@
-#set(withLombok = entityConfig.isWithLombok())
-package #(packageConfig.entityPackage);
+package $modelPackage;
 
-#for(importClass : table.buildImports())
-import #(importClass);
-#end
-#if(withLombok)
+#if($config.data)
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 #end
+#if($config.swagger)
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+#end
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
 
 /**
- * #(table.getComment()) 实体类。
+ * $tableComment 实体类。
  *
- * @author #(javadocConfig.getAuthor())
- * @since #(javadocConfig.getSince())
+ * @author $author
+ * @since $since
  */
-#if(withLombok)
+#if($config.data)
 @Data
+#end
+#if($config.builder)
 @Builder
+#end
+#if($config.noArgsConstructor)
 @NoArgsConstructor
+#end
+#if($config.allArgsConstructor)
 @AllArgsConstructor
 #end
-#(table.buildTableAnnotation())
-public class #(table.buildEntityClassName())#(table.buildExtends())#(table.buildImplements()) {
-    #for(column : table.columns)
-        
-        #(column.buildComment())
-        #(column.buildAnnotations())private #(column.propertySimpleType) #(column.property);
+@ApiModel(value = "$tableComment", description = "$tableComment")
+@Table("$tableName")
+public class ${className}Entity {
+    #foreach($column in $table.columnList)
+    #if($config.swagger)
+    @ApiModelProperty(value = "$column.comment")
+    #end
+    #if($config.isPrimaryKey)
+    @Id(keyType = KeyType.Auto)
+    #else
+    @Column("$column.name")
+    #end
+    private $column.fieldType  $column.fieldName;
 #end
 
-#if(!withLombok)
-    #for(column: table.columns)
-public #(column.propertySimpleType) #(column.getterMethod())() {
-        return #(column.property);
-        }
-
-public void #(column.setterMethod())(#(column.propertySimpleType) #(column.property)) {
-        this.#(column.property) = #(column.property);
-        }
-
-#end
-#end
+###if($config.data)
+##    #for(column: table.columns)
+##    public #(column.propertySimpleType) #(column.getterMethod())() {
+##        return #(column.property);
+##    }
+##
+##    public void #(column.setterMethod())(#(column.propertySimpleType) #(column.property)) {
+##        this.#(column.property) = #(column.property);
+##    }
+###end
         }

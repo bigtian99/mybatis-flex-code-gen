@@ -1,15 +1,14 @@
-package #(packageConfig.mapperPackage);
+package $mapperPackage;
 
-import #(mapperConfig.buildSuperClassImport());
-import #(packageConfig.entityPackage).#(table.buildEntityClassName());
-
+import ${modelPackage}.${className}Entity;
+import com.mybatisflex.core.BaseMapper;
 /**
- * #(table.getComment()) 映射层。
+ * $tableComment 映射层。
  *
- * @author #(javadocConfig.getAuthor())
- * @since #(javadocConfig.getSince())
+ * @author $author
+ * @since $since
  */
-public interface #(table.buildMapperClassName()) extends #(mapperConfig.buildSuperClassName())<#(table.buildEntityClassName())> {
+public interface ${className}Mapper extends BaseMapper<${className}Entity> {
 
 
 }

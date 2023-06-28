@@ -36,6 +36,7 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiNamedElement;
 import com.intellij.psi.PsiPackage;
+import com.intellij.psi.impl.file.PsiDirectoryFactory;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.JavaReferenceEditorUtil;
 import com.intellij.ui.ScrollPaneFactory;
@@ -66,10 +67,13 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import com.mybatisflex.plugin.core.util.VirtualFileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
+
+@SuppressWarnings("deprecation")
 public class PackageChooserDialogBigtian extends PackageChooser {
     private static final Logger LOG = Logger.getInstance(PackageChooserDialogBigtian.class);
     private Tree myTree;
@@ -347,7 +351,7 @@ public class PackageChooserDialogBigtian extends PackageChooser {
 
         return null;
     }
-
+    @SuppressWarnings("deprecation")
     private void createNewPackage() {
         PsiPackage selectedPackage = this.getTreeSelection();
         if (selectedPackage != null) {
@@ -368,9 +372,8 @@ public class PackageChooserDialogBigtian extends PackageChooser {
                             if (!Comparing.strEqual(newQualifiedName, "")) {
                                 newQualifiedName = newQualifiedName + ".";
                             }
-
                             newQualifiedName = newQualifiedName + newPackageName;
-                            PsiDirectory dir = PackageUtil.findOrCreateDirectoryForPackage(this.myProject, newQualifiedName, null, false);
+                            PsiDirectory dir = PackageUtil.findOrCreateDirectoryForPackage(myModule, newQualifiedName, null, false);
                             if (dir == null) {
                                 return;
                             }
@@ -403,13 +406,10 @@ public class PackageChooserDialogBigtian extends PackageChooser {
 
         public void actionPerformed(@NotNull AnActionEvent e) {
 
-
             PackageChooserDialogBigtian.this.createNewPackage();
         }
 
         public void update(@NotNull AnActionEvent event) {
-
-
             Presentation presentation = event.getPresentation();
             presentation.setEnabled(PackageChooserDialogBigtian.this.getTreeSelection() != null);
         }
