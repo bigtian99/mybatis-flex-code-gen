@@ -3,15 +3,15 @@ package com.mybatisflex.plugin.core.persistent;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.alibaba.fastjson2.JSONObject;
-import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyFileUtil;
+import com.alibaba.fastjson2.TypeReference;
 import com.intellij.openapi.components.*;
 import com.mybatisflex.plugin.core.Template;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 持久化配置
@@ -49,15 +49,15 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
         state.mybatisFlexConfig = JSONObject.toJSONString(config);
-        state.configSince.clear();
+        state.configSince = "{}";
         instance.loadState(state);
 
     }
 
-    public static void clearMap() {
+    public static void clearSince() {
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
-        state.configSince.clear();
+        state.configSince = "{}";
         instance.loadState(state);
     }
 
@@ -69,13 +69,27 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
     public static Map<String, MybatisFlexConfig> getSinceMap() {
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
-        return state.configSince;
+        String configSince = state.configSince;
+        return JSONObject.parseObject(configSince, new TypeReference<Map<String, MybatisFlexConfig>>() {
+        });
     }
 
     public static void removeSinceConfig(String key) {
         Map<String, MybatisFlexConfig> sinceMap = getSinceMap();
         sinceMap.remove(key);
-        configSince(sinceMap);
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        state.configSince = JSONObject.toJSONString(sinceMap);
+        instance.loadState(state);
+    }
+
+    public static void configSince(Map<String, MybatisFlexConfig> sinceMap) {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        Map<String, MybatisFlexConfig> configMap = getSinceMap();
+        configMap.putAll(sinceMap);
+        state.configSince = JSONObject.toJSONString(configMap);
+        instance.loadState(state);
     }
 
     @Override
@@ -91,7 +105,7 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
 
     public static class State {
         public String mybatisFlexConfig = "{}";
-        public Map<String, MybatisFlexConfig> configSince = new HashMap<>();
+        public String configSince = "{}";
 
     }
 
@@ -107,12 +121,6 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         }
     }
 
-    public static void configSince(Map<String, MybatisFlexConfig> config) {
-        MybatisFlexPluginConfigData instance = getInstance();
-        State state = instance.getState();
-        state.configSince.putAll(config);
-        instance.loadState(state);
-    }
 
     public static JSONObject getConfigData(String key) {
         MybatisFlexPluginConfigData instance = getInstance();

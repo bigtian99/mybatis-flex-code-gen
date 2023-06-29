@@ -177,6 +177,7 @@
                   <component id="ed211" class="javax.swing.JCheckBox" binding="cacheCheckBox">
                     <constraints/>
                     <properties>
+                      <name value="cache"/>
                       <text value="缓存方法"/>
                     </properties>
                   </component>

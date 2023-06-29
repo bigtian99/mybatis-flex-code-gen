@@ -19,8 +19,6 @@ import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -81,9 +79,9 @@ public class MybatisFlexSetting {
         clearAll.addActionListener(e -> {
             int flag = Messages.showYesNoDialog(project, "确定要清空吗？", "提示", Messages.getQuestionIcon());
             if (MessageConstants.YES == flag) {
-                MybatisFlexPluginConfigData.clearMap();
+                MybatisFlexPluginConfigData.clearSince();
+                sinceConfigComBox.removeAllItems();
                 sinceConfigComBox.repaint();
-
             }
         });
 
@@ -92,8 +90,8 @@ public class MybatisFlexSetting {
             if (MessageConstants.YES == flag) {
                 String since = sinceConfigComBox.getSelectedItem().toString();
                 MybatisFlexPluginConfigData.removeSinceConfig(since);
-                sinceConfigComBox.removeItem(sinceConfigComBox.getSelectedIndex()-1);
-                sinceConfigComBox.setSelectedIndex(0);
+                sinceConfigComBox.removeItemAt(sinceConfigComBox.getSelectedIndex());
+//                sinceConfigComBox.revalidate();
                 sinceConfigComBox.repaint();
             }
         });
@@ -170,6 +168,12 @@ public class MybatisFlexSetting {
                 fieldValue1.addActionListener(e -> {
                     callback.apply(!Template.contains(fieldValue1.isSelected() + fieldValue1.getName()));
                 });
+            }else if(fieldValue instanceof  JCheckBox fieldValue1){
+                JCheckBox checkBox = (JCheckBox) fieldValue1;
+                fieldValue1.addActionListener(e -> {
+                    callback.apply(!Template.contains(fieldValue1.isSelected() + checkBox.getName()));
+                });
+
             }
         }
 

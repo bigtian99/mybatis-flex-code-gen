@@ -142,17 +142,32 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         });
 
         sinceComBox.addActionListener(e -> {
-            String key = sinceComBox.getSelectedItem().toString();
-            MybatisFlexConfig config = MybatisFlexPluginConfigData.getConfig(key);
-            initConfigData(config);
+            Object selectedItem = sinceComBox.getSelectedItem();
+            if (ObjectUtil.isNotNull(selectedItem)) {
+                String key = selectedItem.toString();
+                MybatisFlexConfig config = MybatisFlexPluginConfigData.getConfig(key);
+                initConfigData(config);
+            }
+        });
+        initSinceComBox();
+
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                super.windowActivated(e);
+                initSinceComBox();
+            }
         });
     }
 
     public void initSinceComBox() {
         Set<String> list = MybatisFlexPluginConfigData.getSinceMap().keySet();
+        sinceComBox.removeAllItems();
         for (String item : list) {
             sinceComBox.addItem(item);
         }
+        sinceComBox.revalidate();
+        sinceComBox.repaint();
     }
 
     /**
@@ -165,9 +180,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         Modules.initModules(project, list);
         Modules.comBoxGanged(serviceInteCombox, serviceImplComBox);
         initInput();
-        // MybatisFlexPluginConfigData.clear();
         initConfigData(null);
-        initSinceComBox();
     }
 
     private void initInput() {
@@ -234,7 +247,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private void onGenerate() {
         List<TableInfo> selectedTableInfo = getSelectedTableInfo(actionEvent);
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
-//        dispose();
+        Messages.showDialog("代码生成成功", "提示", new String[]{"确定"}, -1, Messages.getInformationIcon());
+        dispose();
     }
 
     /**

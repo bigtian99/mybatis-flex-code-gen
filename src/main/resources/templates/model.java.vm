@@ -52,7 +52,7 @@ public class ${modelName} {
     @ApiModelProperty(value = "$column.comment")
     #end
     #if($column.primaryKey)
-    @Id(keyType = KeyType.$column.idType)
+    @Id(keyType = KeyType.$config.idType)
     #else
     @Column("$column.name")
     #end

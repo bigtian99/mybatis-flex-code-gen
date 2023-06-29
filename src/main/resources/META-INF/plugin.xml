@@ -1,26 +1,27 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin>
+<idea-plugin url="https://www.company.com/plugin">
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.mybatisflex.plugin.mybatis-flex-idea-plugin</id>
-
+    <id>com.mybatisflex.bigtian</id>
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Mybatis-flex-idea-plugin</name>
+    <name>MybatisFlex-helpler</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="7990497@qq.com" url="http://www.bigtian.club">时间淡忘一切</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
-    <description><![CDATA[mybatis-flex-idea-plugin]]></description>
+    <description><![CDATA[
+ mybatisFlex code generation is based on the official code generation template, by modifying the template to support mybatisFlex code generation. What is mybatisFlex? MyBatis-Flex is an elegant MyBatis enhancement framework that is very lightweight, with high performance and flexibility. We can easily link any database with Mybaits-Flex, and its built-in QueryWrapper^ highlights help us greatly reduce the work of SQL writing while reducing the possibility of errors. All in all, MyBatis Flex was able to greatly improve our development efficiency and development experience, giving us more time to focus on our own things
+    ]]></description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.java</depends>
-    <!--必须依赖Database Tool插件-->
+
     <depends>com.intellij.database</depends>
 
     <!-- Extension points defined by the plugin.
@@ -29,7 +30,6 @@
         <applicationConfigurable groupId="MybatisFlex" displayName="MybatisFlexHelper"
                                  id="MybatisFlexPluginConfigurable"
                                  instance="com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings"/>
-
     </extensions>
     <actions>
         <action id="MyBatisFlex_TableAction" class="com.mybatisflex.plugin.action.TableAction"
@@ -37,4 +37,5 @@
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
     </actions>
+
 </idea-plugin>
