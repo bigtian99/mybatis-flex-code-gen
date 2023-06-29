@@ -1,14 +1,14 @@
-package $mapperPackage;
+package $config.mapperPackage;
 
-import ${modelPackage}.${className}Entity;
+import ${config.modelPackage}.${modelName};
 import com.mybatisflex.core.BaseMapper;
 /**
- * $tableComment 映射层。
+ * $table.comment 映射层。
  *
  * @author $author
  * @since $since
  */
-public interface ${className}Mapper extends BaseMapper<${className}Entity> {
+public interface ${mapperName} extends BaseMapper<${modelName}> {
 
 
 }

@@ -40,7 +40,7 @@ public class Template {
     public static MybatisFlexConfig getMybatisFlexConfig() {
         MybatisFlexPluginConfigData instance = MybatisFlexPluginConfigData.getInstance();
         MybatisFlexPluginConfigData.State state = instance.getState();
-        String mybatisFlexConfig = ObjectUtil.defaultIfNull(state.mybatisFlexConfig,"{}");
+        String mybatisFlexConfig = ObjectUtil.defaultIfNull(state.mybatisFlexConfig, "{}");
         MybatisFlexConfig config = JSONObject.parseObject(mybatisFlexConfig, new TypeReference<>() {
         });
         if (StrUtil.isEmpty(config.getControllerTemplate())) {
@@ -93,6 +93,13 @@ public class Template {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
         String value = ObjectUtil.defaultIfNull(fieldValue, "").toString();
+        addMd5(value + property);
+        return value;
+    }
+
+    public static String getSuffix(String property,String val) {
+        String fieldValue = getConfigData(property);
+        String value = ObjectUtil.defaultIfBlank(fieldValue, val).toString();
         addMd5(value + property);
         return value;
     }

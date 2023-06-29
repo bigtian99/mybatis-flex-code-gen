@@ -2,7 +2,6 @@ package com.mybatisflex.plugin.windows;
 
 import cn.hutool.core.util.ReflectUtil;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import com.intellij.lang.java.JavaLanguage;
 
 import com.intellij.lang.xml.XMLLanguage;
@@ -20,12 +19,17 @@ import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class MybatisFlexSetting {
     private JPanel mainPanel;
     private JPanel controllerTab;
     private JPanel modelTab;
+    private JPanel panel1;
     private JTabbedPane tabbedPane1;
     private JTextField tablePrefix;
     private LanguageTextField controllerTemplate;
@@ -42,6 +46,21 @@ public class MybatisFlexSetting {
     private JCheckBox allArgsConstructorCheckBox;
     private JCheckBox noArgsConstructorCheckBox;
     private JCheckBox swaggerCheckBox;
+    private JTextField controllerSuffix;
+    private JTextField interfaceSuffix;
+    private JTextField implSuffix;
+    private JTextField modelSuffix;
+    private JTextField mapperSuffix;
+    private JCheckBox cacheCheckBox;
+    private JScrollPane scrollPane1;
+    private JScrollPane scrollPane2;
+    private JScrollPane scrollPane3;
+    private JScrollPane scrollPane4;
+    private JScrollPane scrollPane5;
+    private JScrollPane scrollPane6;
+    private JComboBox sinceConfigComBox;
+    private JButton del;
+    private JButton clearAll;
 
     private Project project;
     SimpleFunction callback;
@@ -59,6 +78,26 @@ public class MybatisFlexSetting {
             }
 
         });
+        clearAll.addActionListener(e -> {
+            int flag = Messages.showYesNoDialog(project, "确定要清空吗？", "提示", Messages.getQuestionIcon());
+            if (MessageConstants.YES == flag) {
+                MybatisFlexPluginConfigData.clearMap();
+                sinceConfigComBox.repaint();
+
+            }
+        });
+
+        del.addActionListener(e -> {
+            int flag = Messages.showYesNoDialog(project, "确定要删除吗？", "提示", Messages.getQuestionIcon());
+            if (MessageConstants.YES == flag) {
+                String since = sinceConfigComBox.getSelectedItem().toString();
+                MybatisFlexPluginConfigData.removeSinceConfig(since);
+                sinceConfigComBox.removeItem(sinceConfigComBox.getSelectedIndex()-1);
+                sinceConfigComBox.setSelectedIndex(0);
+                sinceConfigComBox.repaint();
+            }
+        });
+        initSinceComBox();
     }
 
     public void init() {
@@ -76,13 +115,31 @@ public class MybatisFlexSetting {
         allArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ALL_ARGS_CONSTRUCTOR));
         noArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_NO_ARGS_CONSTRUCTOR));
         swaggerCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER));
+        controllerSuffix.setText(Template.getSuffix("controllerSuffix", controllerSuffix.getText()));
+        interfaceSuffix.setText(Template.getSuffix("interfaceSuffix", interfaceSuffix.getText()));
+        implSuffix.setText(Template.getSuffix("implSuffix", implSuffix.getText()));
+        modelSuffix.setText(Template.getSuffix("modelSuffix", modelSuffix.getText()));
+        mapperSuffix.setText(Template.getSuffix("mapperSuffix", mapperSuffix.getText()));
+        cacheCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.CACHE));
         setEvent();
+    }
+
+    public void initSinceComBox() {
+        Set<String> list = MybatisFlexPluginConfigData.getSinceMap().keySet();
+        for (String item : list) {
+            sinceConfigComBox.addItem(item);
+        }
     }
 
     /**
      * 为控件添加事件
      */
     private void setEvent() {
+        try {
+            TimeUnit.SECONDS.sleep(2);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         for (Field field : ReflectUtil.getFields(MybatisFlexSetting.class)) {
             Object fieldValue = ReflectUtil.getFieldValue(this, field.getName());
             if (fieldValue instanceof LanguageTextField fieldValue1) {
@@ -133,6 +190,18 @@ public class MybatisFlexSetting {
         implTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
         mapperTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
         xmlTemplate = new LanguageTextField(XMLLanguage.INSTANCE, project, "", false);
+        scrollPane1 = new JScrollPane();
+        scrollPane2 = new JScrollPane();
+        scrollPane3 = new JScrollPane();
+        scrollPane4 = new JScrollPane();
+        scrollPane5 = new JScrollPane();
+        scrollPane6 = new JScrollPane();
+        scrollPane1.getVerticalScrollBar().setUnitIncrement(10);
+        scrollPane2.getVerticalScrollBar().setUnitIncrement(10);
+        scrollPane3.getVerticalScrollBar().setUnitIncrement(10);
+        scrollPane4.getVerticalScrollBar().setUnitIncrement(10);
+        scrollPane5.getVerticalScrollBar().setUnitIncrement(10);
+        scrollPane6.getVerticalScrollBar().setUnitIncrement(10);
     }
 
 
@@ -152,6 +221,12 @@ public class MybatisFlexSetting {
         config.setAllArgsConstructor(allArgsConstructorCheckBox.isSelected());
         config.setNoArgsConstructor(noArgsConstructorCheckBox.isSelected());
         config.setSwagger(swaggerCheckBox.isSelected());
+        config.setControllerSuffix(controllerSuffix.getText());
+        config.setInterfaceSuffix(interfaceSuffix.getText());
+        config.setImplSuffix(implSuffix.getText());
+        config.setModelSuffix(modelSuffix.getText());
+        config.setMapperSuffix(mapperSuffix.getText());
+        config.setCache(cacheCheckBox.isSelected());
         return JSON.toJSONString(config);
     }
 

@@ -1,14 +1,14 @@
 package $interfacePackage;
 
-import ${modelPackage}.${className}Entity;
+import ${config.modelPackage}.${className}Entity;
 import com.mybatisflex.core.service.IService;
 
 /**
- * $tableComment 服务层。
+ * $table.comment 服务层。
  *
  * @author $author
  * @since $since
  */
-public interface I${className}Service extends IService<${className}Entity>{
+public interface ${interfaceName} extends IService<${modelName}>{
 
 }

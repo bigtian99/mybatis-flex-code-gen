@@ -1,22 +1,37 @@
 package com.mybatisflex.plugin.utils;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
+
 /**
- *
- *
  * @author daijunxiong
  * @date 2023/06/22
  */
 public class DDLUtils {
+    private static Set<String> importClassList = new HashSet<>();
 
-    private static String mapFieldType(String fieldType) {
+    /**
+     * @return {@code Set<String>}
+     */
+    public static Set<String> getImportClassList() {
+        return importClassList;
+    }
+
+    public static void clear() {
+        importClassList.clear();
+    }
+
+    public static String mapFieldType(String fieldType) {
+
+        fieldType = getFieldType(fieldType);
         fieldType = fieldType.toUpperCase();
         String javaType = null;
         String packagePath = null;
-
         // 自定义字段类型映射
         if (fieldType.equalsIgnoreCase("DECIMAL")) {
             javaType = "BigDecimal";
-            packagePath = "java.math";
+            packagePath = "java.math.BigDecimal";
         } else if (fieldType.equalsIgnoreCase("TINYINT")) {
             javaType = "byte";
         } else if (fieldType.equalsIgnoreCase("SMALLINT")) {
@@ -36,7 +51,7 @@ public class DDLUtils {
                 fieldType.equalsIgnoreCase("TIMESTAMP") ||
                 fieldType.equalsIgnoreCase("YEAR")) {
             javaType = "Date";
-            packagePath = "java.util";
+            packagePath = "java.util.Date";
         } else if (fieldType.equalsIgnoreCase("CHAR") ||
                 fieldType.equalsIgnoreCase("VARCHAR") ||
                 fieldType.equalsIgnoreCase("TINYTEXT") ||
@@ -63,10 +78,21 @@ public class DDLUtils {
             if (packagePath == null) {
                 return javaType;
             }
-            return javaType + ":" + packagePath;
+            importClassList.add(packagePath);
+            return javaType;
         }
 
         // 其他类型保持不变
         return null;
+    }
+
+    @NotNull
+    public static String getFieldType(String fieldType) {
+        if (fieldType.contains("(") || fieldType.contains(" ")) {
+            fieldType = fieldType.replace("(", " ");
+            int idx = fieldType.indexOf(" ");
+            fieldType = fieldType.substring(0, idx);
+        }
+        return fieldType;
     }
 }

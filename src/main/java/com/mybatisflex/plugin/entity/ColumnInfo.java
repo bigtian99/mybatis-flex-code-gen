@@ -28,12 +28,25 @@ public class ColumnInfo {
     /**
      * 是主键
      */
-    private boolean isPrimaryKey;
+    private boolean primaryKey;
 
     /**
      * 是否自动增长
      */
     private boolean isAutoIncrement;
+
+    /**
+     * 方法名称
+     */
+    private String methodName;
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
+    }
 
     public String getFieldType() {
         return fieldType;
@@ -76,11 +89,11 @@ public class ColumnInfo {
     }
 
     public boolean isPrimaryKey() {
-        return isPrimaryKey;
+        return primaryKey;
     }
 
     public void setPrimaryKey(boolean primaryKey) {
-        isPrimaryKey = primaryKey;
+        this.primaryKey = primaryKey;
     }
 
     public boolean isAutoIncrement() {
@@ -98,7 +111,7 @@ public class ColumnInfo {
                 "name='" + name + '\'' +
                 ", type='" + type + '\'' +
                 ", comment='" + comment + '\'' +
-                ", isPrimaryKey=" + isPrimaryKey +
+                ", isPrimaryKey=" + primaryKey +
                 ", isAutoIncrement=" + isAutoIncrement +
                 '}';
     }

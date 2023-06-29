@@ -1,6 +1,9 @@
 package com.mybatisflex.plugin.core.config;
 
 
+import cn.hutool.core.util.ObjectUtil;
+
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -133,6 +136,30 @@ public class MybatisFlexConfig {
 
     private boolean sync;
 
+
+    private String controllerSuffix;
+    private String interfaceSuffix;
+    private String implSuffix;
+    private String modelSuffix;
+    private String mapperSuffix;
+
+    private  String idType;
+
+    private boolean cache;
+
+
+
+    public Map<String, String> getSuffix() {
+        Map<String, String> data = new HashMap<>();
+        data.put("Controller", ObjectUtil.defaultIfBlank(controllerSuffix, "Controller"));
+        data.put("Entity", ObjectUtil.defaultIfBlank(modelSuffix, "Entity"));
+        data.put("Service", ObjectUtil.defaultIfBlank(interfaceSuffix, "Service"));
+        data.put("ServiceImpl", ObjectUtil.defaultIfBlank(implSuffix, "ServiceImpl"));
+        data.put("Mapper", ObjectUtil.defaultIfBlank(mapperSuffix, "Mapper"));
+        data.put("", ObjectUtil.defaultIfBlank(mapperSuffix, "Mapper"));
+        return data;
+    }
+
     public Map<String, String> getTemplates() {
         Map<String, String> data = new HashMap<>();
         data.put("Controller", controllerTemplate);
@@ -143,6 +170,7 @@ public class MybatisFlexConfig {
         data.put("", xmlTemplate);
         return data;
     }
+
     public Map<String, String> getPackages() {
         Map<String, String> data = new HashMap<>();
         data.put("Controller", controllerPackage);
@@ -154,7 +182,61 @@ public class MybatisFlexConfig {
         return data;
     }
 
+    public boolean isCache() {
+        return cache;
+    }
 
+    public void setCache(boolean cache) {
+        this.cache = cache;
+    }
+
+    public String getIdType() {
+        return idType;
+    }
+
+    public void setIdType(String idType) {
+        this.idType = idType;
+    }
+
+    public String getControllerSuffix() {
+        return controllerSuffix;
+    }
+
+    public void setControllerSuffix(String controllerSuffix) {
+        this.controllerSuffix = controllerSuffix;
+    }
+
+    public String getInterfaceSuffix() {
+        return interfaceSuffix;
+    }
+
+    public void setInterfaceSuffix(String interfaceSuffix) {
+        this.interfaceSuffix = interfaceSuffix;
+    }
+
+    public String getImplSuffix() {
+        return implSuffix;
+    }
+
+    public void setImplSuffix(String implSuffix) {
+        this.implSuffix = implSuffix;
+    }
+
+    public String getModelSuffix() {
+        return modelSuffix;
+    }
+
+    public void setModelSuffix(String modelSuffix) {
+        this.modelSuffix = modelSuffix;
+    }
+
+    public String getMapperSuffix() {
+        return mapperSuffix;
+    }
+
+    public void setMapperSuffix(String mapperSuffix) {
+        this.mapperSuffix = mapperSuffix;
+    }
 
     public String getAuthor() {
         return author;
@@ -401,6 +483,14 @@ public class MybatisFlexConfig {
                 ", implModule='" + implModule + '\'' +
                 ", mapperModule='" + mapperModule + '\'' +
                 ", xmlModule='" + xmlModule + '\'' +
+                ", sync=" + sync +
+                ", controllerSuffix='" + controllerSuffix + '\'' +
+                ", interfaceSuffix='" + interfaceSuffix + '\'' +
+                ", implSuffix='" + implSuffix + '\'' +
+                ", modelSuffix='" + modelSuffix + '\'' +
+                ", mapperSuffix='" + mapperSuffix + '\'' +
+                ", idType='" + idType + '\'' +
+                ", cache=" + cache +
                 '}';
     }
 }

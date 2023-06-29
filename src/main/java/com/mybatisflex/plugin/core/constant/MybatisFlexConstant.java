@@ -21,6 +21,7 @@ public class MybatisFlexConstant {
     public static final String SINCE = "since";
 
     public static final String MYBATIS_FLEX_CONFIG = "mybatisFlexConfig";
+    public static final String MYBATIS_FLEX_CONFIGSINCE= "configSince";
     public static final String XML_COM_BOX = "xmlComBox";
     public static final String MAPPER_COM_BOX = "mapperComBox";
     public static final String SERVICE_IMPL_COM_BOX = "serviceImplComBox";
@@ -34,4 +35,5 @@ public class MybatisFlexConstant {
     public static final String SERVICE_IMP_PATH = "serviceImpPath";
     public static final String SERVICE_INTEFACE_PATH = "serviceIntefacePath";
     public static final String MODEL_PACKAGE_PATH = "modelPackagePath";
+    public static final String CACHE = "cache";
 }

@@ -1,10 +1,12 @@
 
-package $implPackage;
+package $config.implPackage;
 
 
 import org.springframework.stereotype.Service;
-import $mapperPackage.${className}Mapper;
-#if($isCacheExample)
+import ${config.interfacePackage}.${interfaceName};
+import ${config.modelPackage}.${modelName};
+import $config.mapperPackage.${mapperName};
+#if($config.cache)
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.cache.annotation.Cacheable;
@@ -17,15 +19,15 @@ import java.util.List;
 #end
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 /**
- * $tableComment 服务层实现。
+ * $table.comment 服务层实现。
  *
  * @author $author
  * @since $since
  */
 @Service
-public class I${className}ServiceImpl extends ServiceImpl<${className}Mapper,${className}Entity> implements I${className}Service {
+public class ${implName} extends ServiceImpl<${mapperName},${modelName}> implements ${interfaceName} {
 
-#if($isCacheExample)
+#if($config.cache)
 	@Override
 	@CacheEvict(allEntries = true)
 	public boolean remove(QueryWrapper query) {

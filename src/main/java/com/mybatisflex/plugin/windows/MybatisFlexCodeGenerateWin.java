@@ -1,5 +1,7 @@
 package com.mybatisflex.plugin.windows;
 
+import cn.hutool.core.lang.Dict;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
@@ -24,14 +26,14 @@ import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
 import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
 import com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings;
+import com.mybatisflex.plugin.core.validator.InputValidatorImpl;
 import com.mybatisflex.plugin.entity.ColumnInfo;
 import com.mybatisflex.plugin.entity.TableInfo;
+import com.mybatisflex.plugin.utils.DDLUtils;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.intellij.database.view.DatabaseView.DATABASE_NODES;
@@ -64,6 +66,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private ActionLink settingLabel;
     private JButton saveConfig;
     private JButton restBtn;
+    private JComboBox sinceComBox;
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
 
@@ -118,18 +121,38 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
 
         settingLabel.addActionListener(e -> new ShowSettingsUtilImpl().showSettingsDialog(project, MybatisFlexPluginSettings.class));
         saveConfig.addActionListener(e -> {
-            MybatisFlexPluginConfigData.setData(MybatisFlexConstant.MYBATIS_FLEX_CONFIG, JSON.toJSONString(getConfigData()));
-            Messages.showMessageDialog(project, "保存成功", "提示", Messages.getInformationIcon());
-        });
-        restBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MybatisFlexPluginConfigData.clear();
-                Messages.showMessageDialog(project, "清除成功", "提示", Messages.getInformationIcon());
-
+            Messages.InputDialog dialog = new Messages.InputDialog("请输入配置名称", "配置名称", Messages.getQuestionIcon(), "", new InputValidatorImpl());
+            dialog.show();
+            String configName = dialog.getInputString();
+            if (StrUtil.isEmpty(configName)) {
+                return;
             }
+            Map<String, MybatisFlexConfig> configMap = new HashMap<>();
+            configMap.put(configName, getConfigData());
+            MybatisFlexPluginConfigData.configSince(configMap);
+            Messages.showMessageDialog(project, "保存成功", "提示", Messages.getInformationIcon());
+            sinceComBox.addItem(configName);
+            sinceComBox.repaint();
+
+        });
+        restBtn.addActionListener(e -> {
+
+            MybatisFlexPluginConfigData.clearCode();
+            Messages.showMessageDialog(project, "清除成功", "提示", Messages.getInformationIcon());
         });
 
+        sinceComBox.addActionListener(e -> {
+            String key = sinceComBox.getSelectedItem().toString();
+            MybatisFlexConfig config = MybatisFlexPluginConfigData.getConfig(key);
+            initConfigData(config);
+        });
+    }
+
+    public void initSinceComBox() {
+        Set<String> list = MybatisFlexPluginConfigData.getSinceMap().keySet();
+        for (String item : list) {
+            sinceComBox.addItem(item);
+        }
     }
 
     /**
@@ -143,7 +166,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         Modules.comBoxGanged(serviceInteCombox, serviceImplComBox);
         initInput();
         // MybatisFlexPluginConfigData.clear();
-        initConfigData();
+        initConfigData(null);
+        initSinceComBox();
     }
 
     private void initInput() {
@@ -189,8 +213,10 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
                 DasColumn dasColumn = (DasColumn) column;
                 columnInfo.setName(dasColumn.getName());
                 columnInfo.setFieldName(StrUtil.toCamelCase(dasColumn.getName()));
+                columnInfo.setFieldType(DDLUtils.mapFieldType(dasColumn.getDataType().typeName));
                 columnInfo.setComment(dasColumn.getComment());
-                columnInfo.setType(dasColumn.getDataType().typeName);
+                columnInfo.setMethodName(StrUtil.upperFirst(columnInfo.getFieldName()));
+                columnInfo.setType(DDLUtils.getFieldType(dasColumn.getDataType().typeName).toUpperCase());
                 columnInfo.setPrimaryKey(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.PRIMARY_KEY));
                 columnInfo.setAutoIncrement(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.AUTO_GENERATED));
                 columnList.add(columnInfo);
@@ -234,11 +260,14 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         config.setImplPackage(serviceImpPath.getText());
         config.setImplModule(serviceImplComBox.getSelectedItem().toString());
         config.setSync(syncCheckBox.isSelected());
+        config.setIdType(IdTypeCombox.getSelectedItem().toString());
         return config;
     }
 
-    public void initConfigData() {
-        MybatisFlexConfig config = Template.getMybatisFlexConfig();
+    public void initConfigData(MybatisFlexConfig config) {
+        if (ObjectUtil.isNull(config)) {
+            config = Template.getMybatisFlexConfig();
+        }
         controllerPath.setText(config.getControllerPackage());
         String controllerModule = config.getControllerModule();
         if (StrUtil.isNotEmpty(controllerModule)) {
@@ -272,9 +301,9 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         syncCheckBox.setSelected(config.isSync());
         for (JComboBox jComboBox : list) {
             Object selectedItem = jComboBox.getSelectedItem();
-            if(ObjectUtil.isNotEmpty(selectedItem)){
-               jComboBox.repaint();
-           }
+            if (ObjectUtil.isNotEmpty(selectedItem)) {
+                jComboBox.repaint();
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-package $modelPackage;
+package $config.modelPackage;
 
 #if($config.data)
 import lombok.AllArgsConstructor;
@@ -14,9 +14,12 @@ import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+#foreach($classImport in $importClassList)
+import $classImport;
+#end
 
 /**
- * $tableComment 实体类。
+ * $table.comment 实体类。
  *
  * @author $author
  * @since $since
@@ -33,29 +36,39 @@ import com.mybatisflex.annotation.Table;
 #if($config.allArgsConstructor)
 @AllArgsConstructor
 #end
-@ApiModel(value = "$tableComment", description = "$tableComment")
-@Table("$tableName")
-public class ${className}Entity {
+#if($config.swagger)
+@ApiModel(value = "$table.comment", description = "$table.comment")
+#end
+@Table("$table.name")
+public class ${modelName} {
+
     #foreach($column in $table.columnList)
-    #if($config.swagger)
+    #if($column.comment)
+    /**
+    * $!column.comment
+    */
+    #end
+    #if($config.swagger && $column.comment)
     @ApiModelProperty(value = "$column.comment")
     #end
-    #if($config.isPrimaryKey)
-    @Id(keyType = KeyType.Auto)
+    #if($column.primaryKey)
+    @Id(keyType = KeyType.$column.idType)
     #else
     @Column("$column.name")
     #end
     private $column.fieldType  $column.fieldName;
+
 #end
 
-###if($config.data)
-##    #for(column: table.columns)
-##    public #(column.propertySimpleType) #(column.getterMethod())() {
-##        return #(column.property);
-##    }
-##
-##    public void #(column.setterMethod())(#(column.propertySimpleType) #(column.property)) {
-##        this.#(column.property) = #(column.property);
-##    }
-###end
+#if($config.data==false)
+    #foreach($column in $table.columnList)
+    public  $column.fieldType  get${column.methodName}() {
+        return ${column.fieldName};
+    }
+
+    public void set${column.methodName}(${column.fieldType} ${column.fieldName}) {
+        this.${column.fieldName} = ${column.fieldName};
+    }
+#end
+#end
         }
