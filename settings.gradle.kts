@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "mybatis-flex-idea-plugin"
+rootProject.name = "MybatisFlex-Hepler"
