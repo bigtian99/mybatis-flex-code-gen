@@ -5,13 +5,13 @@ public class MybatisFlexConstant {
     /**
      * 控制器模板
      */
-    public static final String CONTROLLER_TEMPLATE = "controller.java";
+    public static final String CONTROLLER_TEMPLATE = "controllerTemplate.java";
     public static final String TABLE_PREFIX = "tablePrefix";
-    public static final String MODEL_TEMPLATE = "model.java";
-    public static final String INTERFACE_TEMPLATE = "serviceInterface.java";
-    public static final String IMPL_TEMPLATE = "serviceImpl.java";
-    public static final String MAPPER_TEMPLATE = "mapper.java";
-    public static final String XML_TEMPLATE = "mapperXml.xml";
+    public static final String MODEL_TEMPLATE = "modelTemplate.java";
+    public static final String INTERFACE_TEMPLATE = "interfaceTempalate.java";
+    public static final String IMPL_TEMPLATE = "implTemplate.java";
+    public static final String MAPPER_TEMPLATE = "mapperTemplate.java";
+    public static final String XML_TEMPLATE = "xmlTemplate.xml";
     public static final String LOMBOK_BUILDER = "builder";
     public static final String LOMBOK_DATA = "data";
     public static final String LOMBOK_ALL_ARGS_CONSTRUCTOR = "allArgsConstructor";
@@ -36,4 +36,5 @@ public class MybatisFlexConstant {
     public static final String SERVICE_INTEFACE_PATH = "serviceIntefacePath";
     public static final String MODEL_PACKAGE_PATH = "modelPackagePath";
     public static final String CACHE = "cache";
+    public static final String OVERRIDE = "overrideCheckBox";
 }

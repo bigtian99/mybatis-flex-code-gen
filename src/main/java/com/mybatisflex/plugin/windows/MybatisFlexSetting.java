@@ -59,6 +59,7 @@ public class MybatisFlexSetting {
     private JComboBox sinceConfigComBox;
     private JButton del;
     private JButton clearAll;
+    private JCheckBox overrideCheckBox;
 
     private Project project;
     SimpleFunction callback;
@@ -91,7 +92,6 @@ public class MybatisFlexSetting {
                 String since = sinceConfigComBox.getSelectedItem().toString();
                 MybatisFlexPluginConfigData.removeSinceConfig(since);
                 sinceConfigComBox.removeItemAt(sinceConfigComBox.getSelectedIndex());
-//                sinceConfigComBox.revalidate();
                 sinceConfigComBox.repaint();
             }
         });
@@ -119,6 +119,7 @@ public class MybatisFlexSetting {
         modelSuffix.setText(Template.getSuffix("modelSuffix", modelSuffix.getText()));
         mapperSuffix.setText(Template.getSuffix("mapperSuffix", mapperSuffix.getText()));
         cacheCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.CACHE));
+        overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
         setEvent();
     }
 
@@ -169,9 +170,8 @@ public class MybatisFlexSetting {
                     callback.apply(!Template.contains(fieldValue1.isSelected() + fieldValue1.getName()));
                 });
             }else if(fieldValue instanceof  JCheckBox fieldValue1){
-                JCheckBox checkBox = (JCheckBox) fieldValue1;
                 fieldValue1.addActionListener(e -> {
-                    callback.apply(!Template.contains(fieldValue1.isSelected() + checkBox.getName()));
+                    callback.apply(!Template.contains(fieldValue1.isSelected() + fieldValue1.getName()));
                 });
 
             }
@@ -231,6 +231,7 @@ public class MybatisFlexSetting {
         config.setModelSuffix(modelSuffix.getText());
         config.setMapperSuffix(mapperSuffix.getText());
         config.setCache(cacheCheckBox.isSelected());
+        config.setOverrideCheckBox(overrideCheckBox.isSelected());
         return JSON.toJSONString(config);
     }
 

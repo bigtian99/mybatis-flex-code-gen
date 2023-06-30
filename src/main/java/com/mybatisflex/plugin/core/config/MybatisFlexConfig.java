@@ -147,6 +147,10 @@ public class MybatisFlexConfig {
 
     private boolean cache;
 
+    private boolean overrideCheckBox;
+
+
+
 
 
     public Map<String, String> getSuffix() {
@@ -180,6 +184,14 @@ public class MybatisFlexConfig {
         data.put("Mapper", mapperPackage);
         data.put("", xmlPackage);
         return data;
+    }
+
+    public boolean isOverrideCheckBox() {
+        return overrideCheckBox;
+    }
+
+    public void setOverrideCheckBox(boolean overrideCheckBox) {
+        this.overrideCheckBox = overrideCheckBox;
     }
 
     public boolean isCache() {

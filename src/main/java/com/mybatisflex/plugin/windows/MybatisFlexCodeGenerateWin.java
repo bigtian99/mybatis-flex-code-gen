@@ -1,10 +1,7 @@
 package com.mybatisflex.plugin.windows;
 
-import cn.hutool.core.lang.Dict;
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson2.JSON;
 import com.intellij.database.model.DasColumn;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
@@ -13,8 +10,12 @@ import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComponentValidator;
 import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.util.containers.JBIterable;
@@ -23,15 +24,16 @@ import com.mybatisflex.plugin.core.Package;
 import com.mybatisflex.plugin.core.RenderMybatisFlexTemplate;
 import com.mybatisflex.plugin.core.Template;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
-import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
 import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
 import com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings;
 import com.mybatisflex.plugin.core.validator.InputValidatorImpl;
 import com.mybatisflex.plugin.entity.ColumnInfo;
 import com.mybatisflex.plugin.entity.TableInfo;
 import com.mybatisflex.plugin.utils.DDLUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
 import java.awt.event.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -69,6 +71,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private JComboBox sinceComBox;
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
+    List<JTextField> packageList = Arrays.asList(controllerPath, modelPackagePath, serviceIntefacePath, serviceImpPath, mapperPackagePath, mapperXmlPath);
+    Project project;
 
     public MybatisFlexCodeGenerateWin(AnActionEvent actionEvent) {
         this.actionEvent = actionEvent;
@@ -79,7 +83,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         setSize(800, 450);
         // 将对话框相对于屏幕居中显示
         setLocationRelativeTo(null);
-        Project project = actionEvent.getProject();
+        project = actionEvent.getProject();
         generateBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onGenerate();
@@ -179,11 +183,38 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         // 初始化模块
         Modules.initModules(project, list);
         Modules.comBoxGanged(serviceInteCombox, serviceImplComBox);
-        initInput();
+        initBtn();
         initConfigData(null);
+        initPackageList();
     }
 
-    private void initInput() {
+    public void initPackageList() {
+        packageList.stream().forEach(textField -> {
+            ComponentValidator validator = new ComponentValidator(project);
+            validator.withValidator(() -> {
+                String pt = textField.getText();
+                return StrUtil.isEmpty(pt) ? new ValidationInfo("请选择生成路径", textField) : null;
+            }).installOn(textField);
+
+            textField.getDocument().addDocumentListener(new DocumentAdapter() {
+                @Override
+                protected void textChanged(@NotNull DocumentEvent e) {
+                    ComponentValidator.getInstance(textField).ifPresent(v -> v.revalidate());
+                    enableGenerate();
+                }
+            });
+        });
+    }
+
+
+    public void enableGenerate() {
+        Set<Boolean> booleanSet = packageList.stream()
+                .map(el -> StrUtil.isNotEmpty(el.getText()))
+                .collect(Collectors.toSet());
+        generateBtn.setEnabled(booleanSet.contains(true) && booleanSet.size() == 1);
+    }
+
+    private void initBtn() {
         mapperBtn.addActionListener(e -> mapperPackagePath.setText(Package.selectPackage(Modules.getModule(mapperComBox.getSelectedItem().toString()))));
         modelBtn.addActionListener(e -> modelPackagePath.setText(Package.selectPackage(Modules.getModule(modelCombox.getSelectedItem().toString()))));
         serviceInterfaceBtn.addActionListener(e -> {

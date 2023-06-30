@@ -48,31 +48,31 @@ public class ${implName} extends ServiceImpl<${mapperName},${modelName}> impleme
 
 	@Override
 	@CacheEvict(allEntries = true)
-	public boolean update(#(entityClassName) entity, QueryWrapper query) {
+	public boolean update($modelName entity, QueryWrapper query) {
 		return super.update(entity, query);
 	}
 
 	@Override
 	@CacheEvict(key = "#entity.#(primaryKey)")
-	public boolean updateById(#(entityClassName) entity, boolean ignoreNulls) {
+	public boolean updateById($modelName entity, boolean ignoreNulls) {
 		return super.updateById(entity, ignoreNulls);
 	}
 
 	@Override
 	@CacheEvict(allEntries = true)
-	public boolean updateBatch(Collection<#(entityClassName)> entities, int batchSize) {
+	public boolean updateBatch(Collection<$modelName> entities, int batchSize) {
 		return super.updateBatch(entities, batchSize);
 	}
 
 	@Override
 	@Cacheable(key = "#id")
-	public #(entityClassName) getById(Serializable id) {
+	public $modelName getById(Serializable id) {
 		return super.getById(id);
 	}
 
 	@Override
 	@Cacheable(key = "#root.methodName + ':' + #query.toSQL()")
-	public #(entityClassName) getOne(QueryWrapper query) {
+	public $modelName getOne(QueryWrapper query) {
 		return super.getOne(query);
 	}
 
@@ -84,7 +84,7 @@ public class ${implName} extends ServiceImpl<${mapperName},${modelName}> impleme
 
 	@Override
 	@Cacheable(key = "#root.methodName + ':' + #query.toSQL()")
-	public List<#(entityClassName)> list(QueryWrapper query) {
+	public List<$modelName> list(QueryWrapper query) {
 		return super.list(query);
 	}
 
@@ -99,7 +99,7 @@ public class ${implName} extends ServiceImpl<${mapperName},${modelName}> impleme
 	 */
 	@Override
 	@Deprecated
-	public List<#(entityClassName)> listByIds(Collection<? extends Serializable> ids) {
+	public List<$modelName> listByIds(Collection<? extends Serializable> ids) {
 		return super.listByIds(ids);
 	}
 

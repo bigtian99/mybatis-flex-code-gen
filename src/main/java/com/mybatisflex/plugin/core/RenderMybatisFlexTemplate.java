@@ -48,12 +48,12 @@ public class RenderMybatisFlexTemplate {
             context.put("requestPath", TableCore.getTableName(tableInfo.getName(), config.getTablePrefix()));
             context.put("author", ObjectUtil.defaultIfEmpty(config.getAuthor(), "mybatis-flex-helper automatic generation"));
             context.put("since", ObjectUtil.defaultIfEmpty(config.getSince(), "1.0"));
-            context.put("controllerName", className + config.getControllerSuffix());
-            context.put("modelName", className + config.getModelSuffix());
-            context.put("interfaceName", "I" + className + config.getInterfaceSuffix());
-            context.put("interfaceVariable", StrUtil.toCamelCase(className + config.getInterfaceSuffix()));
-            context.put("implName", className + config.getImplSuffix());
-            context.put("mapperName", className + config.getMapperSuffix());
+            context.put("controllerName", className + ObjectUtil.defaultIfNull(config.getControllerSuffix(), "Controller"));
+            context.put("modelName", className + ObjectUtil.defaultIfNull(config.getModelSuffix(), "Entity"));
+            context.put("interfaceName", "I" + className + ObjectUtil.defaultIfNull(config.getInterfaceSuffix(), "Service"));
+            context.put("interfaceVariable", StrUtil.toCamelCase(className + ObjectUtil.defaultIfNull(config.getInterfaceSuffix(), "Service")));
+            context.put("implName", className + ObjectUtil.defaultIfNull(config.getImplSuffix(), "ServiceImpl"));
+            context.put("mapperName", className + ObjectUtil.defaultIfNull(config.getMapperSuffix(), "Mapper"));
             context.put("config", config);
             context.put("importClassList", DDLUtils.getImportClassList());
             context.put("table", tableInfo);
@@ -63,7 +63,17 @@ public class RenderMybatisFlexTemplate {
             for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
                 List<PsiElement> list = entry.getValue();
                 for (PsiElement psiFile : list) {
-                    entry.getKey().add(psiFile);
+                    PsiDirectory directory = entry.getKey();
+                    // 如果勾选了覆盖，则删除原有文件
+                    if (config.isOverrideCheckBox()) {
+                        PsiFile file = (PsiFile) psiFile;
+                        PsiFile directoryFile = directory.findFile(file.getName());
+                        if (ObjectUtil.isNotNull(directoryFile)) {
+                            directoryFile.delete();
+                        }
+
+                    }
+                    directory.add(psiFile);
                 }
             }
         });

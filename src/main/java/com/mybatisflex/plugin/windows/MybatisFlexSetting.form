@@ -181,6 +181,13 @@
                       <text value="缓存方法"/>
                     </properties>
                   </component>
+                  <component id="fed66" class="javax.swing.JCheckBox" binding="overrideCheckBox">
+                    <constraints/>
+                    <properties>
+                      <name value="overrideCheckBox"/>
+                      <text value="是否覆盖"/>
+                    </properties>
+                  </component>
                   <component id="fd7ca" class="javax.swing.JLabel">
                     <constraints/>
                     <properties>

@@ -29,7 +29,7 @@ public class Template {
      * @return {@code String}
      */
     public static String getVmCode(String template) {
-        String code = getConfigData(template);
+        String code = getConfigData(template.split("\\.")[0]);
         if (StrUtil.isBlank(code)) {
             code = getTemplateContent(template);
         }
@@ -97,7 +97,7 @@ public class Template {
         return value;
     }
 
-    public static String getSuffix(String property,String val) {
+    public static String getSuffix(String property, String val) {
         String fieldValue = getConfigData(property);
         String value = ObjectUtil.defaultIfBlank(fieldValue, val).toString();
         addMd5(value + property);
