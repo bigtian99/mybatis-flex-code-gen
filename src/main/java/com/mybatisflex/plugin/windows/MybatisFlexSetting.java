@@ -1,6 +1,8 @@
 package com.mybatisflex.plugin.windows;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
 import com.intellij.lang.java.JavaLanguage;
 
@@ -10,25 +12,27 @@ import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageConstants;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.LanguageTextField;
+import com.intellij.util.messages.impl.Message;
 import com.mybatisflex.plugin.core.Template;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
 import com.mybatisflex.plugin.core.functions.SimpleFunction;
 import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
+import com.mybatisflex.plugin.core.util.FileChooserUtil;
+import com.mybatisflex.plugin.core.util.NotificationUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class MybatisFlexSetting {
     private JPanel mainPanel;
-    private JPanel controllerTab;
-    private JPanel modelTab;
-    private JPanel panel1;
-    private JTabbedPane tabbedPane1;
     private JTextField tablePrefix;
     private LanguageTextField controllerTemplate;
     private LanguageTextField modelTemplate;
@@ -60,6 +64,13 @@ public class MybatisFlexSetting {
     private JButton del;
     private JButton clearAll;
     private JCheckBox overrideCheckBox;
+    private JButton exportBtn;
+    private JButton importBtn;
+    private JTabbedPane tabbedPane1;
+    private JPanel controllerTab;
+    private JPanel modelTab;
+    private JPanel panel1;
+    private JButton restBtn;
 
     private Project project;
     SimpleFunction callback;
@@ -74,6 +85,8 @@ public class MybatisFlexSetting {
             if (MessageConstants.YES == flag) {
                 MybatisFlexPluginConfigData.clear();
                 init();
+                Messages.showInfoMessage(project, "重置成功", "提示");
+
             }
 
         });
@@ -83,6 +96,8 @@ public class MybatisFlexSetting {
                 MybatisFlexPluginConfigData.clearSince();
                 sinceConfigComBox.removeAllItems();
                 sinceConfigComBox.repaint();
+                Messages.showInfoMessage(project, "清空成功", "提示");
+
             }
         });
 
@@ -93,9 +108,40 @@ public class MybatisFlexSetting {
                 MybatisFlexPluginConfigData.removeSinceConfig(since);
                 sinceConfigComBox.removeItemAt(sinceConfigComBox.getSelectedIndex());
                 sinceConfigComBox.repaint();
+                Messages.showInfoMessage(project, "删除成功", "提示");
             }
         });
         initSinceComBox();
+
+        exportBtn.addActionListener(e -> {
+
+            String exportPath = FileChooserUtil.chooseDirectory(project);
+
+            if (StrUtil.isNotEmpty(exportPath)) {
+                return;
+            }
+            MybatisFlexPluginConfigData.export(exportPath);
+        });
+        importBtn.addActionListener(e -> {
+            VirtualFile virtualFile = FileChooserUtil.chooseFileVirtual(project);
+            if (ObjectUtil.isNull(virtualFile)) {
+                return;
+            }
+            String path = virtualFile.getPath();
+            MybatisFlexPluginConfigData.importConfig(path);
+            init();
+        });
+
+        restBtn.addActionListener(e -> {
+            int flag = Messages.showYesNoDialog(project, "确定要恢复自带模板吗？", "提示", Messages.getQuestionIcon());
+            if (MessageConstants.YES == flag) {
+                MybatisFlexPluginConfigData.clearCode();
+                init();
+                Messages.showInfoMessage(project, "恢复成功", "提示");
+            }
+
+        });
+
     }
 
     public void init() {
@@ -125,9 +171,13 @@ public class MybatisFlexSetting {
 
     public void initSinceComBox() {
         Set<String> list = MybatisFlexPluginConfigData.getSinceMap().keySet();
+        sinceConfigComBox.removeAllItems();
         for (String item : list) {
-            sinceConfigComBox.addItem(item);
+            sinceConfigComBox.insertItemAt(item, 0);
         }
+        sinceConfigComBox.setSelectedIndex(0);
+        sinceConfigComBox.revalidate();
+        sinceConfigComBox.repaint();
     }
 
     /**
@@ -169,7 +219,7 @@ public class MybatisFlexSetting {
                 fieldValue1.addActionListener(e -> {
                     callback.apply(!Template.contains(fieldValue1.isSelected() + fieldValue1.getName()));
                 });
-            }else if(fieldValue instanceof  JCheckBox fieldValue1){
+            } else if (fieldValue instanceof JCheckBox fieldValue1) {
                 fieldValue1.addActionListener(e -> {
                     callback.apply(!Template.contains(fieldValue1.isSelected() + fieldValue1.getName()));
                 });

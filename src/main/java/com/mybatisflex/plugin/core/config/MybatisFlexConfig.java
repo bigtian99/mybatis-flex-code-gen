@@ -2,6 +2,7 @@ package com.mybatisflex.plugin.core.config;
 
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson2.annotation.JSONField;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ public class MybatisFlexConfig {
     /**
      * 作者
      */
+    @JSONField(serialize = false)
     private String author;
     /**
      * 版本
@@ -143,14 +145,11 @@ public class MybatisFlexConfig {
     private String modelSuffix;
     private String mapperSuffix;
 
-    private  String idType;
+    private String idType;
 
     private boolean cache;
 
     private boolean overrideCheckBox;
-
-
-
 
 
     public Map<String, String> getSuffix() {

@@ -6,6 +6,7 @@ import com.intellij.database.model.DasColumn;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
 import com.intellij.database.psi.DbTableImpl;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -26,6 +27,7 @@ import com.mybatisflex.plugin.core.Template;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
 import com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings;
+import com.mybatisflex.plugin.core.util.NotificationUtils;
 import com.mybatisflex.plugin.core.validator.InputValidatorImpl;
 import com.mybatisflex.plugin.entity.ColumnInfo;
 import com.mybatisflex.plugin.entity.TableInfo;
@@ -34,8 +36,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.intellij.database.view.DatabaseView.DATABASE_NODES;
@@ -66,8 +70,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private JComboBox xmlComBox;
     private JCheckBox syncCheckBox;
     private ActionLink settingLabel;
-    private JButton saveConfig;
-    private JButton restBtn;
+
     private JComboBox sinceComBox;
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
@@ -124,33 +127,31 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         });
 
         settingLabel.addActionListener(e -> new ShowSettingsUtilImpl().showSettingsDialog(project, MybatisFlexPluginSettings.class));
-        saveConfig.addActionListener(e -> {
-            Messages.InputDialog dialog = new Messages.InputDialog("请输入配置名称", "配置名称", Messages.getQuestionIcon(), "", new InputValidatorImpl());
-            dialog.show();
-            String configName = dialog.getInputString();
-            if (StrUtil.isEmpty(configName)) {
-                return;
-            }
-            Map<String, MybatisFlexConfig> configMap = new HashMap<>();
-            configMap.put(configName, getConfigData());
-            MybatisFlexPluginConfigData.configSince(configMap);
-            Messages.showMessageDialog(project, "保存成功", "提示", Messages.getInformationIcon());
-            sinceComBox.addItem(configName);
-            sinceComBox.repaint();
-
-        });
-        restBtn.addActionListener(e -> {
-
-            MybatisFlexPluginConfigData.clearCode();
-            Messages.showMessageDialog(project, "清除成功", "提示", Messages.getInformationIcon());
-        });
 
         sinceComBox.addActionListener(e -> {
             Object selectedItem = sinceComBox.getSelectedItem();
-            if (ObjectUtil.isNotNull(selectedItem)) {
+            if (ObjectUtil.isNull(selectedItem)) {
+                return;
+            }
+            boolean flag = selectedItem.toString().equals("添加配置");
+            if (!flag) {
                 String key = selectedItem.toString();
                 MybatisFlexConfig config = MybatisFlexPluginConfigData.getConfig(key);
                 initConfigData(config);
+            } else if (flag) {
+                sinceComBox.hidePopup();
+                Messages.InputDialog dialog = new Messages.InputDialog("请输入配置名称", "配置名称", Messages.getQuestionIcon(), "", new InputValidatorImpl());
+                dialog.show();
+                String configName = dialog.getInputString();
+                if (StrUtil.isEmpty(configName)) {
+                    return;
+                }
+                Map<String, MybatisFlexConfig> configMap = new HashMap<>();
+                configMap.put(configName, getConfigData());
+                MybatisFlexPluginConfigData.configSince(configMap);
+                NotificationUtils.notifySuccess("保存成功", project);
+                initSinceComBox();
+
             }
         });
         initSinceComBox();
@@ -166,10 +167,24 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
 
     public void initSinceComBox() {
         Set<String> list = MybatisFlexPluginConfigData.getSinceMap().keySet();
+        sinceComBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value.toString().equals("添加配置")) {
+                    setIcon(AllIcons.General.Add);
+                } else {
+                    setIcon(null); // 清除图标
+                }
+                setText(value.toString());
+                return this;
+            }
+        });
         sinceComBox.removeAllItems();
         for (String item : list) {
-            sinceComBox.addItem(item);
+            sinceComBox.insertItemAt(item, 0);
         }
+        sinceComBox.addItem("添加配置");
+        sinceComBox.setSelectedIndex(0);
         sinceComBox.revalidate();
         sinceComBox.repaint();
     }
@@ -215,23 +230,23 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     }
 
     private void initBtn() {
-        mapperBtn.addActionListener(e -> mapperPackagePath.setText(Package.selectPackage(Modules.getModule(mapperComBox.getSelectedItem().toString()))));
-        modelBtn.addActionListener(e -> modelPackagePath.setText(Package.selectPackage(Modules.getModule(modelCombox.getSelectedItem().toString()))));
+        mapperBtn.addActionListener(e -> mapperPackagePath.setText(Package.selectPackage(Modules.getModule(mapperComBox.getSelectedItem().toString()), mapperPackagePath.getText())));
+        modelBtn.addActionListener(e -> modelPackagePath.setText(Package.selectPackage(Modules.getModule(modelCombox.getSelectedItem().toString()), modelPackagePath.getText())));
         serviceInterfaceBtn.addActionListener(e -> {
-            String packagePath = Package.selectPackage(Modules.getModule(serviceInteCombox.getSelectedItem().toString()));
+            String packagePath = Package.selectPackage(Modules.getModule(serviceInteCombox.getSelectedItem().toString()), serviceIntefacePath.getText());
             serviceIntefacePath.setText(packagePath);
             serviceImpPath.setText(packagePath + ".impl");
         });
         serviceImplBtn.addActionListener(e -> {
-            String packagePath = Package.selectPackage(Modules.getModule(serviceImplComBox.getSelectedItem().toString()));
+            String packagePath = Package.selectPackage(Modules.getModule(serviceImplComBox.getSelectedItem().toString()), serviceImpPath.getText());
             serviceImpPath.setText(packagePath);
             serviceIntefacePath.setText(packagePath.substring(0, packagePath.lastIndexOf(".")));
         });
         controllerBtn.addActionListener(e -> {
-            controllerPath.setText(Package.selectPackage(Modules.getModule(cotrollerCombox.getSelectedItem().toString())));
+            controllerPath.setText(Package.selectPackage(Modules.getModule(cotrollerCombox.getSelectedItem().toString()), controllerPath.getText()));
         });
         mapperXmlBtn.addActionListener(e -> {
-            mapperXmlPath.setText(Package.selectPackageResources(Modules.getModule(xmlComBox.getSelectedItem().toString())));
+            mapperXmlPath.setText(Package.selectPackageResources(Modules.getModule(xmlComBox.getSelectedItem().toString()), mapperXmlPath.getText()));
         });
     }
 
@@ -278,7 +293,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private void onGenerate() {
         List<TableInfo> selectedTableInfo = getSelectedTableInfo(actionEvent);
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
-        Messages.showDialog("代码生成成功", "提示", new String[]{"确定"}, -1, Messages.getInformationIcon());
+//        Messages.showDialog("代码生成成功", "提示", new String[]{"确定"}, -1, Messages.getInformationIcon());
+        NotificationUtils.notifySuccess("代码生成成功", actionEvent.getProject());
         dispose();
     }
 

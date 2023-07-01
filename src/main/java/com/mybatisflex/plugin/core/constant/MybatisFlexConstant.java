@@ -37,4 +37,5 @@ public class MybatisFlexConstant {
     public static final String MODEL_PACKAGE_PATH = "modelPackagePath";
     public static final String CACHE = "cache";
     public static final String OVERRIDE = "overrideCheckBox";
+    public static final String NOTICE_GROUP_ID = "mybatis-flex";
 }

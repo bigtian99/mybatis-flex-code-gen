@@ -21,6 +21,12 @@ public class VirtualFileUtils {
         return file;
     }
 
+    public static PsiDirectory psiDirectory(Project project, String path) {
+        PsiManager psiManager = PsiManager.getInstance(project);
+        VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+        return psiManager.findDirectory(file);
+    }
+
 
     /**
      * 得到psi目录
@@ -45,11 +51,11 @@ public class VirtualFileUtils {
      */
     public static PsiDirectory getPsiDirectory(Module module, String packageName, String key) {
         String modulePath = Modules.getModulePath(module);
-        String path= "/src/main/java/";
-        if(StrUtil.isEmpty(key)){
-            path="/src/main/resources/";
+        String path = "/src/main/java/";
+        if (StrUtil.isEmpty(key)) {
+            path = "/src/main/resources/";
         }
-        modulePath = modulePath +path+ packageName.replace(".", "/");
+        modulePath = modulePath + path + packageName.replace(".", "/");
         PsiManager psiManager = PsiManager.getInstance(module.getProject());
         VirtualFile virtualFile = transToJavaFile(modulePath);
         PsiDirectory psiDirectory = psiManager.findDirectory(virtualFile);

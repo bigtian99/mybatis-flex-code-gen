@@ -1,15 +1,25 @@
 package com.mybatisflex.plugin.core.persistent;
 
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
 import com.intellij.openapi.components.*;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.mybatisflex.plugin.core.Template;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
+import com.mybatisflex.plugin.core.util.VirtualFileUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,7 +59,6 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
         state.mybatisFlexConfig = JSONObject.toJSONString(config);
-        state.configSince = "{}";
         instance.loadState(state);
 
     }
@@ -70,7 +79,7 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
         String configSince = state.configSince;
-        return JSONObject.parseObject(configSince, new TypeReference<Map<String, MybatisFlexConfig>>() {
+        return JSONObject.parseObject(configSince, new TypeReference<LinkedHashMap<String, MybatisFlexConfig>>() {
         });
     }
 
@@ -91,6 +100,38 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         state.configSince = JSONObject.toJSONString(configMap);
         instance.loadState(state);
     }
+
+    public static void export(String targetPath) {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        String mybatisFlexConfig = state.mybatisFlexConfig;
+        String configSince = state.configSince;
+        JSONObject data = new JSONObject();
+        data.put("mybatisFlexConfig", mybatisFlexConfig);
+        data.put("configSince", configSince);
+        FileUtil.writeString(data.toJSONString(), new File(targetPath + File.separator + "MybatisFlexData.json"), "UTF-8");
+        Messages.showDialog("导出成功，请到选择的目录查看", "提示", new String[]{"确定"}, -1, Messages.getInformationIcon());
+    }
+
+    public static void importConfig(String path) {
+        File file = new File(path);
+        if (!file.exists()) {
+            Messages.showDialog("文件不存在", "提示", new String[]{"确定"}, -1, Messages.getInformationIcon());
+            return;
+        }
+        String content = FileUtil.readString(file, "UTF-8");
+        JSONObject data = JSON.parseObject(content);
+        String mybatisFlexConfig = data.getString("mybatisFlexConfig");
+        String configSince = data.getString("configSince");
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        state.mybatisFlexConfig = mybatisFlexConfig;
+        state.configSince = configSince;
+        instance.loadState(state);
+        Messages.showDialog("导入成功", "提示", new String[]{"确定"}, -1, Messages.getInformationIcon());
+    }
+
+
 
     @Override
     public State getState() {
@@ -120,18 +161,4 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
             ReflectUtil.setFieldValue(state, key, parse.toJSONString());
         }
     }
-
-
-    public static JSONObject getConfigData(String key) {
-        MybatisFlexPluginConfigData instance = getInstance();
-        State state = instance.getState();
-        Field field = ReflectUtil.getField(state.getClass(), key);
-        if (field != null) {
-            String oldVal = ObjectUtil.defaultIfNull(ReflectUtil.getFieldValue(state, key), "{}").toString();
-            return JSONObject.parse(oldVal);
-
-        }
-        return new JSONObject();
-    }
-
 }

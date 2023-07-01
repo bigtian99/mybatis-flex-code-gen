@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.psi.PsiPackage;
 import com.mybatisflex.plugin.windows.MybatisFlexCodeGenerateWin;
 
@@ -23,6 +24,7 @@ public class TableAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+
         MybatisFlexCodeGenerateWin generateWin = new MybatisFlexCodeGenerateWin(e);
         generateWin.show();
     }

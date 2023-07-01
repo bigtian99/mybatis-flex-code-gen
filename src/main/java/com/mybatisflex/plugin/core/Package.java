@@ -23,8 +23,11 @@ public class Package {
      * @param module 模块
      * @return {@code String}
      */
-    public static String selectPackage(Module module) {
+    public static String selectPackage(Module module, String... packagePath) {
         PackageChooserDialog chooser = new PackageChooserDialog("Select Package", module);
+        if (packagePath.length > 0) {
+            chooser.selectPackage(packagePath[0]);
+        }
         // 显示对话框并等待用户选择
         chooser.show();
         PsiPackage selectedPackage = chooser.getSelectedPackage();
@@ -37,10 +40,10 @@ public class Package {
      * @param module 模块
      * @return {@code String}
      */
-    public static String selectPackageResources(Module module) {
+    public static String selectPackageResources(Module module, String... packagePath) {
         Project project = module.getProject();
         String separator = File.separator;
-        String path = project.getBaseDir().getCanonicalPath() + separator + StrUtil.format("src{}main{}resources{}",separator,separator,separator);
+        String path = project.getBaseDir().getCanonicalPath() + separator + StrUtil.format("src{}main{}resources{}", separator, separator, separator);
         ArrayList<String> resourcesList = new ArrayList<>();
         getSubDirectory(path, resourcesList);
         PsiManager psiManager = PsiManager.getInstance(project);
@@ -50,6 +53,9 @@ public class Package {
             PsiDirectory psiDirectory = psiManager.findDirectory(file);
             PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
             chooser.addPackage(aPackage);
+        }
+        if (packagePath.length > 0) {
+            chooser.selectPackage(packagePath[0]);
         }
         // 显示对话框并等待用户选择
         chooser.show();
