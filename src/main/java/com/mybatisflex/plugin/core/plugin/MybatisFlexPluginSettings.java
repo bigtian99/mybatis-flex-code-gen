@@ -11,6 +11,7 @@ import com.mybatisflex.plugin.core.Template;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
 import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
+import com.mybatisflex.plugin.core.util.ProjectUtils;
 import com.mybatisflex.plugin.windows.MybatisFlexSetting;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -27,9 +28,8 @@ public class MybatisFlexPluginSettings implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        Project project = ProjectManager.getInstance().getDefaultProject();
         // 创建设置页面的UI组件
-        mybatisFlexSetting = new MybatisFlexSetting(e -> {
+        mybatisFlexSetting = new MybatisFlexSetting(ProjectUtils.getCurrentProject(), e -> {
             isModified = e;
         });
         return mybatisFlexSetting.getMainPanel();

@@ -28,16 +28,18 @@ mybatisFlex code generation is based on the official code generation template, b
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <applicationConfigurable groupId="MybatisFlex" displayName="MybatisFlexHelper"
-                                 id="MybatisFlexPluginConfigurable"
-                                 instance="com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings"/>
+        <!--        打开项目的时候获取project-->
+        <applicationInitializedListener implementation="com.mybatisflex.plugin.core.util.MyApplicationComponent"/>
+<!--        <applicationConfigurable groupId="MybatisFlex" displayName="MybatisFlexHelper"-->
+<!--                                 id="MybatisFlexPluginConfigurable"-->
+<!--                                 instance="com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings"/>-->
     </extensions>
+
     <actions>
         <action id="MyBatisFlex_TableAction" class="com.mybatisflex.plugin.action.TableAction" icon="/icons/icon.png"
                 text="mybatis flex code generate" description="用于选择database中的table从而进行代码生成">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
+
     </actions>
-
-
 </idea-plugin>

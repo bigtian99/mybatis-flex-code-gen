@@ -1,6 +1,7 @@
 package com.mybatisflex.plugin.action;
 
 import com.intellij.database.model.DasTable;
+import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.ide.util.PackageChooserDialog;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -9,9 +10,16 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiPackage;
+import com.mybatisflex.plugin.core.util.MyApplicationComponent;
+import com.mybatisflex.plugin.core.util.ProjectUtils;
+import com.mybatisflex.plugin.core.util.VirtualFileUtils;
 import com.mybatisflex.plugin.windows.MybatisFlexCodeGenerateWin;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 /**

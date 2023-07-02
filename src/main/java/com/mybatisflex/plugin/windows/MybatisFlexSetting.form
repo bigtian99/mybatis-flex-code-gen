@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.mybatisflex.plugin.windows.MybatisFlexSetting">
   <grid id="27dc6" binding="mainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="1112" height="850"/>
+      <xy x="20" y="20" width="1111" height="825"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -420,7 +420,7 @@
               </grid>
             </children>
           </grid>
-          <grid id="ac74c" layout-manager="GridLayoutManager" row-count="1" column-count="9" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="ac74c" layout-manager="GridLayoutManager" row-count="1" column-count="11" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints border-constraint="North"/>
             <properties/>
@@ -434,16 +434,17 @@
                   <text value="移除表前缀："/>
                 </properties>
               </component>
-              <component id="8ef61" class="javax.swing.JTextField" binding="tablePrefix">
+              <component id="2cad3" class="com.intellij.ui.components.fields.ExpandableTextField" binding="tablePrefix">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
+                    <preferred-size width="115" height="-1"/>
                   </grid>
                 </constraints>
                 <properties>
                   <columns value="0"/>
                   <name value="tablePrefix"/>
                   <text value=""/>
+                  <toolTipText value="多个以;分开"/>
                 </properties>
               </component>
               <component id="40391" class="javax.swing.JLabel">
@@ -454,10 +455,10 @@
                   <text value="作者："/>
                 </properties>
               </component>
-              <component id="4bcae" class="javax.swing.JTextField" binding="author">
+              <component id="d02ca" class="javax.swing.JTextField" binding="author">
                 <constraints>
                   <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="100" height="-1"/>
+                    <preferred-size width="115" height="-1"/>
                   </grid>
                 </constraints>
                 <properties>
@@ -473,27 +474,19 @@
                   <text value="版本："/>
                 </properties>
               </component>
-              <component id="a948e" class="javax.swing.JTextField" binding="since">
+              <component id="d40e7" class="javax.swing.JTextField" binding="since">
                 <constraints>
                   <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="100" height="-1"/>
+                    <preferred-size width="115" height="-1"/>
                   </grid>
                 </constraints>
                 <properties>
                   <name value="since"/>
                 </properties>
               </component>
-              <component id="58356" class="javax.swing.JButton" binding="resetBtn">
-                <constraints>
-                  <grid row="0" column="8" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="重置"/>
-                </properties>
-              </component>
               <component id="b370d" class="javax.swing.JButton" binding="exportBtn">
                 <constraints>
-                  <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="8" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="导出"/>
@@ -501,10 +494,36 @@
               </component>
               <component id="bfa9e" class="javax.swing.JButton" binding="importBtn">
                 <constraints>
-                  <grid row="0" column="7" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="9" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="导入"/>
+                </properties>
+              </component>
+              <component id="58356" class="javax.swing.JButton" binding="resetBtn">
+                <constraints>
+                  <grid row="0" column="10" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="重置"/>
+                </properties>
+              </component>
+              <component id="ae2a6" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="模块配置"/>
+                </properties>
+              </component>
+              <component id="1cdd3" class="javax.swing.JComboBox" binding="projectComBox">
+                <constraints>
+                  <grid row="0" column="7" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <popupVisible value="false"/>
                 </properties>
               </component>
             </children>

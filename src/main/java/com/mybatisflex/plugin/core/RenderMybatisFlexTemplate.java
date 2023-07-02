@@ -6,10 +6,12 @@ import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.util.IncorrectOperationException;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.util.CodeReformat;
 import com.mybatisflex.plugin.core.util.Modules;
@@ -71,9 +73,16 @@ public class RenderMybatisFlexTemplate {
                         if (ObjectUtil.isNotNull(directoryFile)) {
                             directoryFile.delete();
                         }
-
                     }
-                    directory.add(psiFile);
+                    try {
+                        directory.add(psiFile);
+                    } catch (IncorrectOperationException e) {
+                        if (e.getMessage().contains("already exists")) {
+                            PsiFile file = (PsiFile) psiFile;
+                            Messages.showErrorDialog("文件已存在：" + file.getName(), "错误");
+                            throw e;
+                        }
+                    }
                 }
             }
         });

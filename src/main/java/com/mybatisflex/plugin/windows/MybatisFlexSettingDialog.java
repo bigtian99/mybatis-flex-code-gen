@@ -4,15 +4,16 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.lang.java.JavaLanguage;
-
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.MessageConstants;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.LanguageTextField;
+import com.intellij.ui.components.fields.ExpandableTextField;
 import com.mybatisflex.plugin.core.Template;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
@@ -22,12 +23,16 @@ import com.mybatisflex.plugin.core.util.FileChooserUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.Dimension;
 import java.awt.event.*;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
 
-public class MybatisFlexSetting {
+public class MybatisFlexSettingDialog extends JDialog {
+    private JPanel contentPane;
+    private JButton buttonOK;
+    private JButton buttonCancel;
     private JPanel mainPanel;
     private com.intellij.ui.components.fields.ExpandableTextField tablePrefix;
     private LanguageTextField controllerTemplate;
@@ -67,14 +72,42 @@ public class MybatisFlexSetting {
     private JPanel modelTab;
     private JPanel panel1;
     private JButton restBtn;
-    private JComboBox projectComBox;
 
     private Project project;
-    SimpleFunction callback;
 
-    public MybatisFlexSetting(Project project, SimpleFunction<Boolean> callback) {
-        this.callback = callback;
+    public MybatisFlexSettingDialog(Project project) {
         this.project = project;
+        setContentPane(contentPane);
+        setModal(true);
+        setSize(new Dimension(1000, 973));
+        getRootPane().setDefaultButton(buttonOK);
+
+        buttonOK.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onOK();
+            }
+        });
+
+        buttonCancel.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        });
+
+        // call onCancel() when cross is clicked
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                onCancel();
+            }
+        });
+
+        // call onCancel() on ESCAPE
+        contentPane.registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         init();
 
         resetBtn.addActionListener(e -> {
@@ -111,7 +144,6 @@ public class MybatisFlexSetting {
                 Messages.showInfoMessage(project, "删除成功", "提示");
             }
         });
-        initSinceComBox();
 
         exportBtn.addActionListener(e -> {
 
@@ -122,6 +154,7 @@ public class MybatisFlexSetting {
             }
             MybatisFlexPluginConfigData.export(exportPath);
         });
+
         importBtn.addActionListener(e -> {
             VirtualFile virtualFile = FileChooserUtil.chooseFileVirtual(project);
             if (ObjectUtil.isNull(virtualFile)) {
@@ -140,17 +173,7 @@ public class MybatisFlexSetting {
                 Messages.showInfoMessage(project, "恢复成功", "提示");
             }
         });
-        projectComBox.addActionListener(e -> {
-            Object item = projectComBox.getSelectedItem();
-            if (ObjectUtil.isNull(item)) {
-                return;
-            }
-        });
 
-        Map<String, MybatisFlexConfig> configMap = MybatisFlexPluginConfigData.getProjectMybatisFlexConfig();
-        configMap.forEach((k, v) -> {
-            projectComBox.addItem(k);
-        });
     }
 
 
@@ -176,7 +199,7 @@ public class MybatisFlexSetting {
         mapperSuffix.setText(Template.getSuffix("mapperSuffix", mapperSuffix.getText()));
         cacheCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.CACHE));
         overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
-        setEvent();
+        initSinceComBox();
     }
 
     public void initSinceComBox() {
@@ -192,54 +215,7 @@ public class MybatisFlexSetting {
         sinceConfigComBox.repaint();
     }
 
-    /**
-     * 为控件添加事件
-     */
-    private void setEvent() {
-        for (Field field : ReflectUtil.getFields(MybatisFlexSetting.class)) {
-            Object fieldValue = ReflectUtil.getFieldValue(this, field.getName());
-            if (fieldValue instanceof LanguageTextField fieldValue1) {
-                fieldValue1.getDocument().addDocumentListener(new DocumentListener() {
-                    @Override
-                    public void documentChanged(@NotNull DocumentEvent event) {
-                        callback.apply(!Template.contains(fieldValue1.getText() + fieldValue1.getName()));
-                    }
-                });
-            } else if (fieldValue instanceof JTextField fieldValue1) {
-                fieldValue1.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-                    @Override
-                    public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                        callback.apply(!Template.contains(fieldValue1.getText() + fieldValue1.getName()));
-                    }
 
-                    @Override
-                    public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                        callback.apply(!Template.contains(fieldValue1.getText() + fieldValue1.getName()));
-                    }
-
-                    @Override
-                    public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                        callback.apply(!Template.contains(fieldValue1.getText() + fieldValue1.getName()));
-                    }
-                });
-            } else if (fieldValue instanceof JCheckBox fieldValue1) {
-                fieldValue1.addActionListener(e -> {
-                    callback.apply(!Template.contains(fieldValue1.isSelected() + fieldValue1.getName()));
-                });
-            } else if (fieldValue instanceof JCheckBox fieldValue1) {
-                fieldValue1.addActionListener(e -> {
-                    callback.apply(!Template.contains(fieldValue1.isSelected() + fieldValue1.getName()));
-                });
-
-            }
-        }
-
-    }
-
-
-    public JPanel getMainPanel() {
-        return mainPanel;
-    }
 
     /**
      * 创建自定义控件
@@ -292,4 +268,16 @@ public class MybatisFlexSetting {
         return config;
     }
 
+
+    private void onOK() {
+        MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(getConfigData());
+        Project project = ProjectManager.getInstance().getDefaultProject();
+        Messages.showMessageDialog(project, "保存成功", "提示", Messages.getInformationIcon());
+        dispose();
+    }
+
+    private void onCancel() {
+        // add your code here if necessary
+        dispose();
+    }
 }

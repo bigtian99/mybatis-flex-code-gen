@@ -12,7 +12,6 @@ public class MybatisFlexConfig {
     /**
      * 作者
      */
-    @JSONField(serialize = false)
     private String author;
     /**
      * 版本

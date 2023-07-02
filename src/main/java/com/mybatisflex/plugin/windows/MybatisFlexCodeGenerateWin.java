@@ -1,5 +1,6 @@
 package com.mybatisflex.plugin.windows;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.database.model.DasColumn;
@@ -28,6 +29,7 @@ import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
 import com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings;
 import com.mybatisflex.plugin.core.util.NotificationUtils;
+import com.mybatisflex.plugin.core.util.ProjectUtils;
 import com.mybatisflex.plugin.core.validator.InputValidatorImpl;
 import com.mybatisflex.plugin.entity.ColumnInfo;
 import com.mybatisflex.plugin.entity.TableInfo;
@@ -87,6 +89,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         // 将对话框相对于屏幕居中显示
         setLocationRelativeTo(null);
         project = actionEvent.getProject();
+
+        ProjectUtils.setCurrentProject(project);
         generateBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onGenerate();
@@ -124,7 +128,12 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
             }
         });
 
-        settingLabel.addActionListener(e -> new ShowSettingsUtilImpl().showSettingsDialog(project, MybatisFlexPluginSettings.class));
+        settingLabel.addActionListener(e -> {
+//            new ShowSettingsUtilImpl().showSettingsDialog(project, MybatisFlexPluginSettings.class);
+            MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project);
+            dialog.show();
+            initSinceComBox();
+        });
 
         sinceComBox.addActionListener(e -> {
             Object selectedItem = sinceComBox.getSelectedItem();
@@ -144,7 +153,6 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
                 if (StrUtil.isEmpty(configName)) {
                     return;
                 }
-
                 MybatisFlexPluginConfigData.configSince(configName, getConfigData());
                 NotificationUtils.notifySuccess("保存成功", project);
                 initSinceComBox();
@@ -153,13 +161,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         });
         initSinceComBox();
 
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowActivated(WindowEvent e) {
-                super.windowActivated(e);
-//                initSinceComBox();
-            }
-        });
+
     }
 
     public void initSinceComBox() {
@@ -292,7 +294,6 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private void onGenerate() {
         List<TableInfo> selectedTableInfo = getSelectedTableInfo(actionEvent);
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
-//        Messages.showDialog("代码生成成功", "提示", new String[]{"确定"}, -1, Messages.getInformationIcon());
         NotificationUtils.notifySuccess("代码生成成功", actionEvent.getProject());
         dispose();
     }

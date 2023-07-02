@@ -176,9 +176,9 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
     public static MybatisFlexConfig getCurrentProjectMybatisFlexConfig() {
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
-        MybatisFlexConfig config = JSONObject.parseObject(state.mybatisFlexConfig, new TypeReference<MybatisFlexConfig>() {
+        Map<String, MybatisFlexConfig> flexConfigMap = JSONObject.parseObject(state.mybatisFlexConfig, new TypeReference<Map<String, MybatisFlexConfig>>() {
         });
-        return config;
+        return flexConfigMap.getOrDefault(ProjectUtils.getCurrentProjectName(), new MybatisFlexConfig());
     }
 
     /**
