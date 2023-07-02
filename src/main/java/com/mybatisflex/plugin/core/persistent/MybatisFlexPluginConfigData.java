@@ -7,6 +7,7 @@ import cn.hutool.core.util.ReflectUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
+import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -130,7 +131,6 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         instance.loadState(state);
         Messages.showDialog("导入成功", "提示", new String[]{"确定"}, -1, Messages.getInformationIcon());
     }
-
 
 
     @Override

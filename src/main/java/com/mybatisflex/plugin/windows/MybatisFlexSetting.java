@@ -97,14 +97,18 @@ public class MybatisFlexSetting {
                 sinceConfigComBox.removeAllItems();
                 sinceConfigComBox.repaint();
                 Messages.showInfoMessage(project, "清空成功", "提示");
-
             }
         });
 
         del.addActionListener(e -> {
             int flag = Messages.showYesNoDialog(project, "确定要删除吗？", "提示", Messages.getQuestionIcon());
             if (MessageConstants.YES == flag) {
-                String since = sinceConfigComBox.getSelectedItem().toString();
+                Object selectedItem = sinceConfigComBox.getSelectedItem();
+                if (ObjectUtil.isNull(selectedItem)) {
+                    Messages.showErrorDialog("请选择要删除的配置", "提示");
+                    return;
+                }
+                String since = selectedItem.toString();
                 MybatisFlexPluginConfigData.removeSinceConfig(since);
                 sinceConfigComBox.removeItemAt(sinceConfigComBox.getSelectedIndex());
                 sinceConfigComBox.repaint();
@@ -175,7 +179,9 @@ public class MybatisFlexSetting {
         for (String item : list) {
             sinceConfigComBox.insertItemAt(item, 0);
         }
-        sinceConfigComBox.setSelectedIndex(0);
+        if (sinceConfigComBox.getItemCount() > 0) {
+            sinceConfigComBox.setSelectedIndex(0);
+        }
         sinceConfigComBox.revalidate();
         sinceConfigComBox.repaint();
     }

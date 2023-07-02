@@ -24,7 +24,6 @@ public class TableAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-
         MybatisFlexCodeGenerateWin generateWin = new MybatisFlexCodeGenerateWin(e);
         generateWin.show();
     }

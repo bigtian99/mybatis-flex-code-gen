@@ -111,8 +111,6 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
-
         init(project);
 
         syncCheckBox.addActionListener(e -> {
@@ -130,7 +128,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
 
         sinceComBox.addActionListener(e -> {
             Object selectedItem = sinceComBox.getSelectedItem();
-            if (ObjectUtil.isNull(selectedItem)) {
+            if (ObjectUtil.isNull(selectedItem) || selectedItem.toString().equals("---请选择配置---")) {
                 return;
             }
             boolean flag = selectedItem.toString().equals("添加配置");
@@ -180,8 +178,9 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
             }
         });
         sinceComBox.removeAllItems();
+        sinceComBox.addItem("---请选择配置---");
         for (String item : list) {
-            sinceComBox.insertItemAt(item, 0);
+            sinceComBox.insertItemAt(item, 1);
         }
         sinceComBox.addItem("添加配置");
         sinceComBox.setSelectedIndex(0);
