@@ -1,15 +1,19 @@
 package com.mybatisflex.plugin.core.plugin;
 
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.Messages;
 import com.mybatisflex.plugin.core.Template;
+import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
 import com.mybatisflex.plugin.core.persistent.MybatisFlexPluginConfigData;
 import com.mybatisflex.plugin.windows.MybatisFlexSetting;
 import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -25,7 +29,7 @@ public class MybatisFlexPluginSettings implements Configurable {
     public JComponent createComponent() {
         Project project = ProjectManager.getInstance().getDefaultProject();
         // 创建设置页面的UI组件
-        mybatisFlexSetting = new MybatisFlexSetting(project, e -> {
+        mybatisFlexSetting = new MybatisFlexSetting(e -> {
             isModified = e;
         });
         return mybatisFlexSetting.getMainPanel();
@@ -39,10 +43,9 @@ public class MybatisFlexPluginSettings implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-        String configData = mybatisFlexSetting.getConfigData();
-        MybatisFlexPluginConfigData.setData(MybatisFlexConstant.MYBATIS_FLEX_CONFIG, configData);
+        MybatisFlexConfig config = mybatisFlexSetting.getConfigData();
+        MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(config);
         Project project = ProjectManager.getInstance().getDefaultProject();
-
         Messages.showMessageDialog(project, "保存成功", "提示", Messages.getInformationIcon());
         isModified = false;
     }
@@ -73,4 +76,5 @@ public class MybatisFlexPluginSettings implements Configurable {
         // 获取设置页面的帮助主题
         return null;
     }
+
 }

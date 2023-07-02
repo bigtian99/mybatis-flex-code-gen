@@ -39,4 +39,5 @@ mybatisFlex code generation is based on the official code generation template, b
         </action>
     </actions>
 
+
 </idea-plugin>

@@ -4,17 +4,19 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
+import com.intellij.ide.DataManager;
 import com.intellij.lang.java.JavaLanguage;
 
 import com.intellij.lang.xml.XMLLanguage;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.MessageConstants;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.LanguageTextField;
-import com.intellij.util.messages.impl.Message;
 import com.mybatisflex.plugin.core.Template;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
 import com.mybatisflex.plugin.core.constant.MybatisFlexConstant;
@@ -75,7 +77,8 @@ public class MybatisFlexSetting {
     private Project project;
     SimpleFunction callback;
 
-    public MybatisFlexSetting(Project project, SimpleFunction<Boolean> callback) {
+    public MybatisFlexSetting(SimpleFunction<Boolean> callback) {
+        Project project = CommonDataKeys.PROJECT.getData(DataManager.getInstance().getDataContext());
         this.callback = callback;
         this.project = project;
         init();
@@ -86,10 +89,9 @@ public class MybatisFlexSetting {
                 MybatisFlexPluginConfigData.clear();
                 init();
                 Messages.showInfoMessage(project, "重置成功", "提示");
-
             }
-
         });
+
         clearAll.addActionListener(e -> {
             int flag = Messages.showYesNoDialog(project, "确定要清空吗？", "提示", Messages.getQuestionIcon());
             if (MessageConstants.YES == flag) {
@@ -121,7 +123,7 @@ public class MybatisFlexSetting {
 
             String exportPath = FileChooserUtil.chooseDirectory(project);
 
-            if (StrUtil.isNotEmpty(exportPath)) {
+            if (StrUtil.isEmpty(exportPath)) {
                 return;
             }
             MybatisFlexPluginConfigData.export(exportPath);
@@ -265,7 +267,7 @@ public class MybatisFlexSetting {
     }
 
 
-    public String getConfigData() {
+    public MybatisFlexConfig getConfigData() {
         MybatisFlexConfig config = new MybatisFlexConfig();
         config.setControllerTemplate(controllerTemplate.getText());
         config.setModelTemplate(modelTemplate.getText());
@@ -288,7 +290,7 @@ public class MybatisFlexSetting {
         config.setMapperSuffix(mapperSuffix.getText());
         config.setCache(cacheCheckBox.isSelected());
         config.setOverrideCheckBox(overrideCheckBox.isSelected());
-        return JSON.toJSONString(config);
+        return config;
     }
 
 }

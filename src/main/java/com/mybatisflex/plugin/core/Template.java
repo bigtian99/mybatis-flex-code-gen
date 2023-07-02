@@ -4,9 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
-import com.alibaba.fastjson2.JSONObject;
-import com.alibaba.fastjson2.TypeReference;
-import com.intellij.codeInspection.reference.RefUtil;
 import com.intellij.ide.fileTemplates.impl.UrlUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
@@ -38,11 +35,7 @@ public class Template {
 
     @Nullable
     public static MybatisFlexConfig getMybatisFlexConfig() {
-        MybatisFlexPluginConfigData instance = MybatisFlexPluginConfigData.getInstance();
-        MybatisFlexPluginConfigData.State state = instance.getState();
-        String mybatisFlexConfig = ObjectUtil.defaultIfNull(state.mybatisFlexConfig, "{}");
-        MybatisFlexConfig config = JSONObject.parseObject(mybatisFlexConfig, new TypeReference<>() {
-        });
+        MybatisFlexConfig config = MybatisFlexPluginConfigData.getCurrentProjectMybatisFlexConfig();
         if (StrUtil.isEmpty(config.getControllerTemplate())) {
             config.setControllerTemplate(getTemplateContent(MybatisFlexConstant.CONTROLLER_TEMPLATE));
             config.setModelTemplate(getTemplateContent(MybatisFlexConstant.MODEL_TEMPLATE));

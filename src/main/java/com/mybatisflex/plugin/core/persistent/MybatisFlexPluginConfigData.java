@@ -1,28 +1,21 @@
 package com.mybatisflex.plugin.core.persistent;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.lang.Dict;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.ReflectUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
-import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.mybatisflex.plugin.core.Template;
 import com.mybatisflex.plugin.core.config.MybatisFlexConfig;
-import com.mybatisflex.plugin.core.util.VirtualFileUtils;
+import com.mybatisflex.plugin.core.util.ProjectUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 持久化配置
@@ -43,73 +36,47 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
     }
 
     public static void clear() {
-        MybatisFlexPluginConfigData instance = getInstance();
-        State state = instance.getState();
-        state.mybatisFlexConfig = "{}";
-        instance.loadState(state);
+        clearCurrentProjectConfig();
     }
 
     public static void clearCode() {
-        MybatisFlexConfig config = Template.getMybatisFlexConfig();
-        config.setModelTemplate("");
-        config.setControllerTemplate("");
-        config.setImplTemplate("");
-        config.setMapperTemplate("");
-        config.setInterfaceTempalate("");
-        config.setXmlTemplate("");
-        MybatisFlexPluginConfigData instance = getInstance();
-        State state = instance.getState();
-        state.mybatisFlexConfig = JSONObject.toJSONString(config);
-        instance.loadState(state);
-
+        clearCurrentProjectConfigVmCode();
     }
 
     public static void clearSince() {
+        Project project = ProjectUtils.getCurrentProject();
+        Map<String, LinkedHashMap<String, MybatisFlexConfig>> projectMap = getProjectSinceMap();
+        projectMap.remove(project.getName());
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
-        state.configSince = "{}";
+        state.configSince = JSONObject.toJSONString(projectMap);
         instance.loadState(state);
     }
 
     public static MybatisFlexConfig getConfig(String key) {
-        Map<String, MybatisFlexConfig> sinceMap = getSinceMap();
-        return sinceMap.get(key);
+        LinkedHashMap<String, MybatisFlexConfig> currentProjectSinceMap = getCurrentProjectSinceMap();
+        return currentProjectSinceMap.getOrDefault(key, new MybatisFlexConfig());
     }
 
     public static Map<String, MybatisFlexConfig> getSinceMap() {
-        MybatisFlexPluginConfigData instance = getInstance();
-        State state = instance.getState();
-        String configSince = state.configSince;
-        return JSONObject.parseObject(configSince, new TypeReference<LinkedHashMap<String, MybatisFlexConfig>>() {
-        });
+        return getCurrentProjectSinceMap();
     }
+
 
     public static void removeSinceConfig(String key) {
-        Map<String, MybatisFlexConfig> sinceMap = getSinceMap();
+        LinkedHashMap<String, MybatisFlexConfig> sinceMap = getCurrentProjectSinceMap();
         sinceMap.remove(key);
-        MybatisFlexPluginConfigData instance = getInstance();
-        State state = instance.getState();
-        state.configSince = JSONObject.toJSONString(sinceMap);
-        instance.loadState(state);
+        setCurrentProjectSinceMap(sinceMap);
     }
 
-    public static void configSince(Map<String, MybatisFlexConfig> sinceMap) {
-        MybatisFlexPluginConfigData instance = getInstance();
-        State state = instance.getState();
-        Map<String, MybatisFlexConfig> configMap = getSinceMap();
-        configMap.putAll(sinceMap);
-        state.configSince = JSONObject.toJSONString(configMap);
-        instance.loadState(state);
+    public static void configSince(String configName, MybatisFlexConfig config) {
+        setCurrentProjectSinceMap(configName, config);
     }
 
     public static void export(String targetPath) {
-        MybatisFlexPluginConfigData instance = getInstance();
-        State state = instance.getState();
-        String mybatisFlexConfig = state.mybatisFlexConfig;
-        String configSince = state.configSince;
         JSONObject data = new JSONObject();
-        data.put("mybatisFlexConfig", mybatisFlexConfig);
-        data.put("configSince", configSince);
+        data.put("mybatisFlexConfig", getCurrentProjectMybatisFlexConfig());
+        data.put("configSince", getCurrentProjectSinceMap());
         FileUtil.writeString(data.toJSONString(), new File(targetPath + File.separator + "MybatisFlexData.json"), "UTF-8");
         Messages.showDialog("导出成功，请到选择的目录查看", "提示", new String[]{"确定"}, -1, Messages.getInformationIcon());
     }
@@ -122,13 +89,14 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         }
         String content = FileUtil.readString(file, "UTF-8");
         JSONObject data = JSON.parseObject(content);
-        String mybatisFlexConfig = data.getString("mybatisFlexConfig");
-        String configSince = data.getString("configSince");
-        MybatisFlexPluginConfigData instance = getInstance();
-        State state = instance.getState();
-        state.mybatisFlexConfig = mybatisFlexConfig;
-        state.configSince = configSince;
-        instance.loadState(state);
+        MybatisFlexConfig config = JSONObject.parseObject(data.getString("mybatisFlexConfig"), new TypeReference<MybatisFlexConfig>() {
+        });
+        LinkedHashMap<String, MybatisFlexConfig> sinceMap = JSONObject.parseObject(data.getString("configSince"), new TypeReference<LinkedHashMap<String, MybatisFlexConfig>>() {
+        });
+
+        setCurrentMybatisFlexConfig(config);
+        setCurrentProjectSinceMap(sinceMap);
+
         Messages.showDialog("导入成功", "提示", new String[]{"确定"}, -1, Messages.getInformationIcon());
     }
 
@@ -150,15 +118,124 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
 
     }
 
-    public static void setData(String key, String value) {
+    /**
+     * 获取项目配置（全局）
+     *
+     * @return {@code Map<String, LinkedHashMap<String, MybatisFlexConfig>>}
+     *///工具方法
+    @Nullable
+    private static LinkedHashMap<String, LinkedHashMap<String, MybatisFlexConfig>> getProjectSinceMap() {
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
-        Field field = ReflectUtil.getField(state.getClass(), key);
-        if (field != null) {
-            String oldVal = ObjectUtil.defaultIfNull(ReflectUtil.getFieldValue(state, key), "{}").toString();
-            JSONObject parse = JSONObject.parse(oldVal);
-            parse.putAll(JSONObject.parse(value));
-            ReflectUtil.setFieldValue(state, key, parse.toJSONString());
-        }
+        String configSince = state.configSince;
+        LinkedHashMap<String, LinkedHashMap<String, MybatisFlexConfig>> projectMap = JSONObject.parseObject(configSince, new TypeReference<LinkedHashMap<String, LinkedHashMap<String, MybatisFlexConfig>>>() {
+        });
+        return projectMap;
+    }
+
+    /**
+     * 设置项目版本配置
+     *
+     * @param map 地图
+     */
+    private static void setCurrentProjectSinceMap(LinkedHashMap<String, MybatisFlexConfig> map) {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        Map<String, LinkedHashMap<String, MybatisFlexConfig>> projectMap = getProjectSinceMap();
+        projectMap.put(ProjectUtils.getCurrentProjectName(), map);
+        state.configSince = JSONObject.toJSONString(projectMap);
+        instance.loadState(state);
+    }
+
+    private static void setCurrentProjectSinceMap(String key, MybatisFlexConfig config) {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        Map<String, LinkedHashMap<String, MybatisFlexConfig>> projectMap = getProjectSinceMap();
+        projectMap.computeIfAbsent(ProjectUtils.getCurrentProjectName(),k-> new LinkedHashMap<>()).put(key, config);
+        state.configSince = JSONObject.toJSONString(projectMap);
+        instance.loadState(state);
+    }
+
+    /**
+     * 获取当前项目版本配置
+     *
+     * @return {@code LinkedHashMap<String, MybatisFlexConfig>}
+     */
+    @Nullable
+    private static LinkedHashMap<String, MybatisFlexConfig> getCurrentProjectSinceMap() {
+        Project project = ProjectUtils.getCurrentProject();
+        Map<String, LinkedHashMap<String, MybatisFlexConfig>> projectSinceMap = getProjectSinceMap();
+        return projectSinceMap.getOrDefault(project.getName(), new LinkedHashMap<>());
+    }
+
+    /**
+     * 获取当前项目mybatis flex配置
+     *
+     * @return {@code MybatisFlexConfig}
+     */
+    public static MybatisFlexConfig getCurrentProjectMybatisFlexConfig() {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        MybatisFlexConfig config = JSONObject.parseObject(state.mybatisFlexConfig, new TypeReference<MybatisFlexConfig>() {
+        });
+        return config;
+    }
+
+    /**
+     * 得到项目mybatis flex配置
+     *
+     * @return {@code Map<String, MybatisFlexConfig>}
+     */
+    public static Map<String, MybatisFlexConfig> getProjectMybatisFlexConfig() {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        return JSONObject.parseObject(state.mybatisFlexConfig, new TypeReference<Map<String, MybatisFlexConfig>>() {
+        });
+    }
+
+    /**
+     * 清空当前项目配置
+     */
+    public static void clearCurrentProjectConfig() {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        Map<String, MybatisFlexConfig> flexConfigMap = JSONObject.parseObject(state.mybatisFlexConfig, new TypeReference<Map<String, MybatisFlexConfig>>() {
+        });
+        flexConfigMap.remove(ProjectUtils.getCurrentProjectName());
+        state.mybatisFlexConfig = JSONObject.toJSONString(flexConfigMap);
+        instance.loadState(state);
+    }
+
+    /**
+     * 清空当前项目配置vm代码
+     */
+    public static void clearCurrentProjectConfigVmCode() {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        Map<String, MybatisFlexConfig> flexConfigMap = JSONObject.parseObject(state.mybatisFlexConfig, new TypeReference<Map<String, MybatisFlexConfig>>() {
+        });
+        MybatisFlexConfig config = flexConfigMap.get(ProjectUtils.getCurrentProjectName());
+        config.setModelTemplate("");
+        config.setControllerTemplate("");
+        config.setImplTemplate("");
+        config.setMapperTemplate("");
+        config.setInterfaceTempalate("");
+        config.setXmlTemplate("");
+        state.mybatisFlexConfig = JSONObject.toJSONString(flexConfigMap);
+        instance.loadState(state);
+    }
+
+    /**
+     * 设置mybatis flex配置
+     *
+     * @param config 配置
+     */
+    public static void setCurrentMybatisFlexConfig(MybatisFlexConfig config) {
+        Map<String, MybatisFlexConfig> configMap = getProjectMybatisFlexConfig();
+        configMap.put(ProjectUtils.getCurrentProjectName(), config);
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        state.mybatisFlexConfig = JSONObject.toJSONString(configMap);
+        instance.loadState(state);
     }
 }

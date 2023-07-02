@@ -128,7 +128,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
 
         sinceComBox.addActionListener(e -> {
             Object selectedItem = sinceComBox.getSelectedItem();
-            if (ObjectUtil.isNull(selectedItem) || selectedItem.toString().equals("---请选择配置---")) {
+            if (ObjectUtil.isNull(selectedItem)) {
                 return;
             }
             boolean flag = selectedItem.toString().equals("添加配置");
@@ -144,9 +144,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
                 if (StrUtil.isEmpty(configName)) {
                     return;
                 }
-                Map<String, MybatisFlexConfig> configMap = new HashMap<>();
-                configMap.put(configName, getConfigData());
-                MybatisFlexPluginConfigData.configSince(configMap);
+
+                MybatisFlexPluginConfigData.configSince(configName, getConfigData());
                 NotificationUtils.notifySuccess("保存成功", project);
                 initSinceComBox();
 
@@ -158,7 +157,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
             @Override
             public void windowActivated(WindowEvent e) {
                 super.windowActivated(e);
-                initSinceComBox();
+//                initSinceComBox();
             }
         });
     }
@@ -183,7 +182,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
             sinceComBox.insertItemAt(item, 1);
         }
         sinceComBox.addItem("添加配置");
-        sinceComBox.setSelectedIndex(0);
+        sinceComBox.setSelectedIndex(sinceComBox.getItemCount() > 2 ? 1 : 0);
         sinceComBox.revalidate();
         sinceComBox.repaint();
     }
@@ -242,7 +241,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
             serviceIntefacePath.setText(packagePath.substring(0, packagePath.lastIndexOf(".")));
         });
         controllerBtn.addActionListener(e -> {
-            controllerPath.setText(Package.selectPackage(Modules.getModule(cotrollerCombox.getSelectedItem().toString()), controllerPath.getText()));
+            String path = Package.selectPackage(Modules.getModule(cotrollerCombox.getSelectedItem().toString()), controllerPath.getText());
+            controllerPath.setText(path);
         });
         mapperXmlBtn.addActionListener(e -> {
             mapperXmlPath.setText(Package.selectPackageResources(Modules.getModule(xmlComBox.getSelectedItem().toString()), mapperXmlPath.getText()));
