@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin url="https://plugins.jetbrains.com/plugin/22158-mybatisflex-helpler" require-restart="true">
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.mybatisflex.bigtian</id>
+    <id>club.bigtian.mf</id>
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>MybatisFlex-helpler</name>
@@ -29,14 +29,14 @@ mybatisFlex code generation is based on the official code generation template, b
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <!--        打开项目的时候获取project-->
-        <applicationInitializedListener implementation="com.mybatisflex.plugin.core.util.MyApplicationComponent"/>
-<!--        <applicationConfigurable groupId="MybatisFlex" displayName="MybatisFlexHelper"-->
-<!--                                 id="MybatisFlexPluginConfigurable"-->
-<!--                                 instance="com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings"/>-->
+        <applicationInitializedListener implementation="club.bigtian.mf.plugin.core.util.MyApplicationComponent"/>
+        <!--        <applicationConfigurable groupId="MybatisFlex" displayName="MybatisFlexHelper"-->
+        <!--                                 id="MybatisFlexPluginConfigurable"-->
+        <!--                                 instance="com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings"/>-->
     </extensions>
 
     <actions>
-        <action id="MyBatisFlex_TableAction" class="com.mybatisflex.plugin.action.TableAction" icon="/icons/icon.png"
+        <action id="MyBatisFlex_TableAction" class="club.bigtian.mf.plugin.action.TableAction" icon="/icons/icon.png"
                 text="mybatis flex code generate" description="用于选择database中的table从而进行代码生成">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
