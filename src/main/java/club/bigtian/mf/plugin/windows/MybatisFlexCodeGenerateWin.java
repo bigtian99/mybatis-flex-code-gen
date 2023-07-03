@@ -328,10 +328,9 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         for (String tableName : selectedTabeList) {
             selectedTableInfo.add(tableInfoMap.get(tableName));
         }
-        generateBtn.enable(false);
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
         NotificationUtils.notifySuccess("代码生成成功", actionEvent.getProject());
-        generateBtn.enable(true);
+        SqlDialect.clear();
         dispose();
     }
 
@@ -339,6 +338,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
      * 取消按钮事件
      */
     private void onCancel() {
+        SqlDialect.clear();
         dispose();
     }
 

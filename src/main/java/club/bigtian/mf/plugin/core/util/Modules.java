@@ -2,10 +2,11 @@ package club.bigtian.mf.plugin.core.util;
 
 import club.bigtian.mf.plugin.core.filter.FilterComboBoxModel;
 import club.bigtian.mf.plugin.core.render.ModuleComBoxRender;
+import cn.hutool.core.util.ObjectUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.vfs.VirtualFile;
 
 import javax.swing.*;
 import java.io.File;
@@ -30,16 +31,18 @@ public class Modules {
      * @return {@code List<String>}
      */
     public static void addModulesItem(Project project, List<JComboBox> modulesComboxs) {
+        VirtualFile virtualFile = project.getBaseDir().findChild("pom.xml");
+        boolean isManvenProject = ObjectUtil.isNotNull(virtualFile);
         Module[] modules = ModuleManager.getInstance(project).getModules();
         for (JComboBox modulesCombox : modulesComboxs) {
             modulesCombox.setRenderer(new ModuleComBoxRender());
             moduleMap = Arrays.stream(modules)
                     .filter(el -> {
-                        if (modules.length > 1) {
-                            Module[] dependencies = ModuleRootManager.getInstance(el).getDependencies();
-                            return dependencies.length != 0;
+                        if (isManvenProject) {
+                            return true;
                         }
-                        return true;
+                        // 非maven项目只显示main模块,只有main模块才有java目录
+                        return el.getName().contains(".main");
                     })
                     .collect(Collectors.toMap(Module::getName, module -> module));
             FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().toList());

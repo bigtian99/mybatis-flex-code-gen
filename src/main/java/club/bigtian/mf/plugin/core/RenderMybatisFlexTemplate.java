@@ -3,15 +3,14 @@ package club.bigtian.mf.plugin.core;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.util.CodeReformat;
 import club.bigtian.mf.plugin.core.util.Modules;
+import club.bigtian.mf.plugin.core.util.SqlDialect;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
 import club.bigtian.mf.plugin.entity.TableInfo;
-import club.bigtian.mf.plugin.utils.DDLUtils;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
@@ -54,7 +53,7 @@ public class RenderMybatisFlexTemplate {
             context.put("implName", className + ObjectUtil.defaultIfNull(config.getImplSuffix(), "ServiceImpl"));
             context.put("mapperName", className + ObjectUtil.defaultIfNull(config.getMapperSuffix(), "Mapper"));
             context.put("config", config);
-            context.put("importClassList", DDLUtils.getImportClassList());
+            context.put("importClassList", SqlDialect.getImportClassList());
             context.put("table", tableInfo);
             renderTemplate(config, project, templates, context, className, velocityEngine, templateMap, packages, suffixMap);
         }
@@ -62,7 +61,6 @@ public class RenderMybatisFlexTemplate {
                 for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
                     List<PsiElement> list = entry.getValue();
                     PsiDirectory directory = entry.getKey();
-
                     // 如果勾选了覆盖，则删除原有文件
                     if (config.isOverrideCheckBox()) {
                         for (PsiElement psiFile : list) {

@@ -1,14 +1,13 @@
 package club.bigtian.mf.plugin.core;
 
+import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
+import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.crypto.SecureUtil;
 import com.intellij.ide.fileTemplates.impl.UrlUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
-import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,6 +43,7 @@ public class Template {
             config.setMapperTemplate(getTemplateContent(MybatisFlexConstant.MAPPER_TEMPLATE));
             config.setXmlTemplate(getTemplateContent(MybatisFlexConstant.XML_TEMPLATE));
         }
+
         return config;
     }
 
@@ -62,38 +62,38 @@ public class Template {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        addMd5(templateContent + templateName);
+//        addMd5(templateContent + templateName);
         return templateContent;
     }
 
-    private static void addMd5(String templateContent) {
-        String md5 = SecureUtil.md5(templateContent);
-        set.add(md5);
-    }
+//    private static void addMd5(String templateContent) {
+//        String md5 = SecureUtil.md5(templateContent);
+//        set.add(md5);
+//    }
 
 
-    /**
-     * 包含
-     *
-     * @param code md5
-     * @return boolean
-     */
-    public static boolean contains(String code) {
-        return set.contains(SecureUtil.md5(code));
-    }
+//    /**
+//     * 包含
+//     *
+//     * @param code md5
+//     * @return boolean
+//     */
+//    public static boolean contains(String code) {
+//        return set.contains(SecureUtil.md5(code));
+//    }
 
     public static String getConfigData(String property) {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
         String value = ObjectUtil.defaultIfNull(fieldValue, "").toString();
-        addMd5(value + property);
+//        addMd5(value + property);
         return value;
     }
 
     public static String getSuffix(String property, String val) {
         String fieldValue = getConfigData(property);
         String value = ObjectUtil.defaultIfBlank(fieldValue, val).toString();
-        addMd5(value + property);
+//        addMd5(value + property);
         return value;
     }
 
@@ -101,7 +101,7 @@ public class Template {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
         boolean value = (boolean) ObjectUtil.defaultIfNull(fieldValue, false);
-        addMd5(value + property);
+//        addMd5(value + property);
         return value;
     }
 

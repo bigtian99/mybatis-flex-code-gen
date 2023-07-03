@@ -71,8 +71,8 @@ import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 
 @SuppressWarnings("deprecation")
-public class PackageChooserDialogBigtian extends PackageChooser {
-    private static final Logger LOG = Logger.getInstance(PackageChooserDialogBigtian.class);
+public class PackageChooserDialogCustom extends PackageChooser {
+    private static final Logger LOG = Logger.getInstance(PackageChooserDialogCustom.class);
     private Tree myTree;
     private DefaultTreeModel myModel;
     private final Project myProject;
@@ -81,7 +81,7 @@ public class PackageChooserDialogBigtian extends PackageChooser {
     private EditorTextField myPathEditor;
     private final Alarm myAlarm;
 
-    public PackageChooserDialogBigtian(@DialogTitle String title, @NotNull Module module) {
+    public PackageChooserDialogCustom(@DialogTitle String title, @NotNull Module module) {
         super(module.getProject(), true);
         this.myAlarm = new Alarm(this.getDisposable());
         this.setTitle(title);
@@ -91,7 +91,7 @@ public class PackageChooserDialogBigtian extends PackageChooser {
         this.init();
     }
 
-    public PackageChooserDialogBigtian(@DialogTitle String title, Project project) {
+    public PackageChooserDialogCustom(@DialogTitle String title, Project project) {
         super(project, true);
         this.myAlarm = new Alarm(this.getDisposable());
         this.setTitle(title);
@@ -135,23 +135,23 @@ public class PackageChooserDialogBigtian extends PackageChooser {
         });
         this.myTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
-                PsiPackage selection = PackageChooserDialogBigtian.this.getTreeSelection();
+                PsiPackage selection = PackageChooserDialogCustom.this.getTreeSelection();
                 if (selection != null) {
                     String name = selection.getQualifiedName();
-                    String var10001 = PackageChooserDialogBigtian.this.myTitle;
-                    PackageChooserDialogBigtian.this.setTitle(var10001 + " - " + (name.isEmpty() ? IdeBundle.message("node.default.package", new Object[0]) : name));
+                    String var10001 = PackageChooserDialogCustom.this.myTitle;
+                    PackageChooserDialogCustom.this.setTitle(var10001 + " - " + (name.isEmpty() ? IdeBundle.message("node.default.package", new Object[0]) : name));
                 } else {
-                    PackageChooserDialogBigtian.this.setTitle(PackageChooserDialogBigtian.this.myTitle);
+                    PackageChooserDialogCustom.this.setTitle(PackageChooserDialogCustom.this.myTitle);
                 }
 
-                PackageChooserDialogBigtian.this.updatePathFromTree();
+                PackageChooserDialogCustom.this.updatePathFromTree();
             }
         });
         panel.add(scrollPane, "Center");
         DefaultActionGroup group = this.createActionGroup(this.myTree);
         JPanel northPanel = new JPanel(new BorderLayout());
         panel.add(northPanel, "North");
-        ActionToolbar toolBar = ActionManager.getInstance().createActionToolbar(PackageChooserDialogBigtian.class.getSimpleName(), group, true);
+        ActionToolbar toolBar = ActionManager.getInstance().createActionToolbar(PackageChooserDialogCustom.class.getSimpleName(), group, true);
         northPanel.add(toolBar.getComponent(), "West");
         this.setupPathComponent(northPanel);
         return panel;
@@ -160,16 +160,16 @@ public class PackageChooserDialogBigtian extends PackageChooser {
     private void setupPathComponent(final JPanel northPanel) {
         northPanel.add(new TextFieldAction() {
             public void linkSelected(LinkLabel aSource, Object aLinkData) {
-                PackageChooserDialogBigtian.this.toggleShowPathComponent(northPanel, this);
+                PackageChooserDialogCustom.this.toggleShowPathComponent(northPanel, this);
             }
         }, "East");
         this.myPathEditor = new EditorTextField(JavaReferenceEditorUtil.createDocument("", this.myProject, false), this.myProject, JavaFileType.INSTANCE);
         this.myPathEditor.addDocumentListener(new DocumentListener() {
             public void documentChanged(@NotNull DocumentEvent e) {
 
-                PackageChooserDialogBigtian.this.myAlarm.cancelAllRequests();
-                PackageChooserDialogBigtian.this.myAlarm.addRequest(() -> {
-                    PackageChooserDialogBigtian.this.updateTreeFromPath();
+                PackageChooserDialogCustom.this.myAlarm.cancelAllRequests();
+                PackageChooserDialogCustom.this.myAlarm.addRequest(() -> {
+                    PackageChooserDialogCustom.this.updateTreeFromPath();
                 }, 300);
             }
         });
@@ -403,12 +403,12 @@ public class PackageChooserDialogBigtian extends PackageChooser {
 
         public void actionPerformed(@NotNull AnActionEvent e) {
 
-            PackageChooserDialogBigtian.this.createNewPackage();
+            PackageChooserDialogCustom.this.createNewPackage();
         }
 
         public void update(@NotNull AnActionEvent event) {
             Presentation presentation = event.getPresentation();
-            presentation.setEnabled(PackageChooserDialogBigtian.this.getTreeSelection() != null);
+            presentation.setEnabled(PackageChooserDialogCustom.this.getTreeSelection() != null);
         }
 
         public void enableInModalConext() {

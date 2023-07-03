@@ -2,7 +2,6 @@ package club.bigtian.mf.plugin.core.util;
 
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
-import club.bigtian.mf.plugin.utils.DDLUtils;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.database.model.DasColumn;
 import com.intellij.database.model.DasObject;
@@ -74,7 +73,13 @@ public class TableUtils {
         return table.getDataSource().getDatabaseDialect().getDisplayName();
     }
 
+    public static String getDialect(DasTable dasTable) {
+        DbTableImpl table = (DbTableImpl) dasTable;
+        return table.getDataSource().getDatabaseDialect().getDisplayName();
+    }
+
     private static void getTableInfoList(List<DasTable> selectedTableList, List<TableInfo> tableInfoList) {
+        String dialect = getDialect(selectedTableList.get(0));
         for (DasTable table : selectedTableList) {
             TableInfo tableInfo = new TableInfo();
             tableInfo.setName(table.getName());
@@ -86,10 +91,10 @@ public class TableUtils {
                 DasColumn dasColumn = (DasColumn) column;
                 columnInfo.setName(dasColumn.getName());
                 columnInfo.setFieldName(StrUtil.toCamelCase(dasColumn.getName()));
-                columnInfo.setFieldType(DDLUtils.mapFieldType(dasColumn.getDataType().typeName));
+                columnInfo.setFieldType(SqlDialect.getJavaFieldType(dasColumn.getDataType().typeName,dialect));
                 columnInfo.setComment(dasColumn.getComment());
                 columnInfo.setMethodName(StrUtil.upperFirst(columnInfo.getFieldName()));
-                columnInfo.setType(DDLUtils.mapToMyBatisJdbcType(dasColumn.getDataType().typeName).toUpperCase());
+                columnInfo.setType(SqlDialect.getMyBatisJdbcType(dasColumn.getDataType().typeName,dialect).toUpperCase());
                 columnInfo.setPrimaryKey(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.PRIMARY_KEY));
                 columnInfo.setAutoIncrement(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.AUTO_GENERATED));
                 columnList.add(columnInfo);

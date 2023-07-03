@@ -1,14 +1,20 @@
-package club.bigtian.mf.plugin.utils;
+package club.bigtian.mf.plugin.core.util;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
- * @author daijunxiong
+ * 数据库方言
+ *
+ * @author bigtian
  * @date 2023/06/22
  */
-public class DDLUtils {
+public class SqlDialect {
     private static Set<String> importClassList = new HashSet<>();
 
     /**
@@ -18,14 +24,49 @@ public class DDLUtils {
         return importClassList;
     }
 
+    /**
+     * 数据库字段类型与mybatis jdbctype映射
+     */
+    private static Map<String, Function<String, String>> DATABASE_MYBATIS_MAP = new HashMap<>();
+    /**
+     * 数据库java映射
+     */
+    private static Map<String, Function<String, String>> DATABASE_JAVA_MAP = new HashMap<>();
+
+
+    static {
+        DATABASE_MYBATIS_MAP.put("MySQL", SqlDialect::mysqlToMybatisJdbcType);
+        DATABASE_JAVA_MAP.put("MySQL", SqlDialect::mysqlToJavaFieldType);
+    }
+
     public static void clear() {
         importClassList.clear();
     }
 
-    public static String mapFieldType(String fieldType) {
-
+    /**
+     * 得到字段类型
+     *
+     * @param fieldType 字段类型
+     * @return {@code String}
+     */
+    public static String getJavaFieldType(String fieldType, String dialect) {
         fieldType = getFieldType(fieldType);
-        fieldType = fieldType.toUpperCase();
+        Function<String, String> function = DATABASE_JAVA_MAP.get(dialect);
+        if (ObjectUtil.isNull(function)) {
+            Messages.showErrorDialog("不支持的数据库类型", "错误");
+            throw new RuntimeException("不支持的数据库类型");
+        }
+        return function.apply(fieldType);
+    }
+
+    /**
+     * mysql字段类型与java字段类型映射
+     *
+     * @param fieldType 字段类型
+     * @return {@code String}
+     */
+    @Nullable
+    private static String mysqlToJavaFieldType(String fieldType) {
         String javaType = null;
         String packagePath = null;
         // 自定义字段类型映射
@@ -81,10 +122,10 @@ public class DDLUtils {
             importClassList.add(packagePath);
             return javaType;
         }
-
         // 其他类型保持不变
         return null;
     }
+
 
     @NotNull
     public static String getFieldType(String fieldType) {
@@ -96,8 +137,31 @@ public class DDLUtils {
         return fieldType;
     }
 
-    public static String mapToMyBatisJdbcType(String dbDataType) {
-        dbDataType=getFieldType(dbDataType);
+    /**
+     * 获取mybatis jdbcType
+     *
+     * @param dbDataType 数据库字段类型
+     * @param dialect    数据库方言
+     * @return {@code String}
+     */
+    public static String getMyBatisJdbcType(String dbDataType, String dialect) {
+        dbDataType = getFieldType(dbDataType);
+        Function<String, String> function = DATABASE_MYBATIS_MAP.get(dialect);
+        if (ObjectUtil.isNull(function)) {
+            Messages.showErrorDialog("不支持的数据库方言：" + dialect, "错误");
+            throw new RuntimeException("不支持的数据库类型");
+        }
+        return function.apply(dbDataType);
+    }
+
+    /**
+     * mysql数据类型转换为mybatis jdbcType
+     *
+     * @param dbDataType 数据库字段类型
+     * @return
+     */
+    @NotNull
+    private static String mysqlToMybatisJdbcType(String dbDataType) {
         if (dbDataType.equalsIgnoreCase("INTEGER") || dbDataType.equalsIgnoreCase("INT")) {
             return "INTEGER";
         } else if (dbDataType.equalsIgnoreCase("BIGINT")) {

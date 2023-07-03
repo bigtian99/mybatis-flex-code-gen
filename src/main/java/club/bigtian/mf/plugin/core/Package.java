@@ -45,7 +45,7 @@ public class Package {
         ArrayList<String> resourcesList = new ArrayList<>();
         getSubDirectory(path, resourcesList);
         PsiManager psiManager = PsiManager.getInstance(project);
-        PackageChooserDialogBigtian chooser = new PackageChooserDialogBigtian("Select Package", module);
+        PackageChooserDialogCustom chooser = new PackageChooserDialogCustom("Select Package", module);
         for (String path1 : resourcesList) {
             VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path1);
             PsiDirectory psiDirectory = psiManager.findDirectory(file);
