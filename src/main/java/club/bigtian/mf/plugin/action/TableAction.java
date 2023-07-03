@@ -1,10 +1,10 @@
 package club.bigtian.mf.plugin.action;
 
+import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateWin;
 import com.intellij.database.model.DasTable;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateWin;
 
 /**
  * 表动作

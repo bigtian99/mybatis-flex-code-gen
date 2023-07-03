@@ -19,7 +19,7 @@ import java.util.List;
 #end
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 /**
- * $table.comment 服务层实现。
+ * $!table.comment 服务层实现。
  *
  * @author $author
  * @since $since

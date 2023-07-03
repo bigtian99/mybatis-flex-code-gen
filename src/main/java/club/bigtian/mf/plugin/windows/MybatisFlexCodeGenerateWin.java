@@ -1,21 +1,19 @@
 package club.bigtian.mf.plugin.windows;
 
+import club.bigtian.mf.plugin.core.Package;
 import club.bigtian.mf.plugin.core.RenderMybatisFlexTemplate;
+import club.bigtian.mf.plugin.core.Template;
+import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
-import club.bigtian.mf.plugin.core.util.Modules;
-import club.bigtian.mf.plugin.core.util.NotificationUtils;
-import club.bigtian.mf.plugin.core.util.ProjectUtils;
-import club.bigtian.mf.plugin.entity.ColumnInfo;
-import club.bigtian.mf.plugin.utils.DDLUtils;
+import club.bigtian.mf.plugin.core.render.TableListCellRenderer;
+import club.bigtian.mf.plugin.core.util.*;
+import club.bigtian.mf.plugin.core.validator.InputValidatorImpl;
+import club.bigtian.mf.plugin.entity.TableInfo;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.intellij.database.model.DasColumn;
-import com.intellij.database.model.DasObject;
-import com.intellij.database.model.ObjectKind;
-import com.intellij.database.psi.DbTableImpl;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComponentValidator;
 import com.intellij.openapi.ui.FixedSizeButton;
@@ -24,23 +22,16 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.fields.ExtendableTextField;
-import com.intellij.util.containers.JBIterable;
-import club.bigtian.mf.plugin.core.Package;
-import club.bigtian.mf.plugin.core.Template;
-import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
-import club.bigtian.mf.plugin.core.validator.InputValidatorImpl;
-import club.bigtian.mf.plugin.entity.TableInfo;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.intellij.database.view.DatabaseView.DATABASE_NODES;
 
 public class MybatisFlexCodeGenerateWin extends JDialog {
     private JPanel contentPane;
@@ -70,10 +61,17 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private ActionLink settingLabel;
 
     private JComboBox sinceComBox;
+    private JList tableList;
+    private JCheckBox selectAllChexBox;
+    private JTextField tableSearch;
+    private FixedSizeButton sortBtn;
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
     List<JTextField> packageList = Arrays.asList(controllerPath, modelPackagePath, serviceIntefacePath, serviceImpPath, mapperPackagePath, mapperXmlPath);
     Project project;
+    List<String> tableNameList;
+
+    Map<String, TableInfo> tableInfoMap;
 
     public MybatisFlexCodeGenerateWin(AnActionEvent actionEvent) {
         this.actionEvent = actionEvent;
@@ -81,9 +79,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         setModal(true);
         setTitle("Mybatis Flex Code Generate");
         getRootPane().setDefaultButton(generateBtn);
-        setSize(800, 450);
-        // 将对话框相对于屏幕居中显示
-        setLocationRelativeTo(null);
+        setSize(1050, 460);
+        DialogUtil.centerShow(this);
         project = actionEvent.getProject();
 
         ProjectUtils.setCurrentProject(project);
@@ -157,7 +154,77 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         });
         initSinceComBox();
 
+        tableList.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            boolean selected = selectAllChexBox.isSelected();
+            if (selected) {
+                selectAllChexBox.setSelected(false);
+            }
+            int size = tableList.getSelectedValuesList().size();
+            if (size == tableList.getModel().getSize() && size > 0) {
+                selectAllChexBox.setSelected(true);
+            }
+        });
+        tableInfoMap = TableUtils.getAllTables(actionEvent)
+                .stream()
+                .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
 
+        DefaultListModel model = new DefaultListModel();
+        //tableNameSet按照字母降序
+        tableNameList = new ArrayList<>(tableInfoMap.keySet());
+        Collections.sort(tableNameList);
+        model.addAll(tableNameList);
+        tableList.setModel(model);
+        tableList.setCellRenderer(new TableListCellRenderer(tableInfoMap));
+        sortBtn.addActionListener(e -> {
+            if (sortBtn.getToolTipText().equals("升序")) {
+                sortBtn.setToolTipText("降序");
+                Collections.sort(tableNameList, Comparator.reverseOrder());
+            } else {
+                sortBtn.setToolTipText("升序");
+                Collections.sort(tableNameList);
+            }
+            selectAllChexBox.setSelected(false);
+            model.removeAllElements();
+            model.addAll(tableNameList);
+        });
+
+        selectAllChexBox.addActionListener(e -> {
+            if (selectAllChexBox.isSelected()) {
+                tableList.setSelectionInterval(0, tableList.getModel().getSize() - 1);
+            } else {
+                tableList.clearSelection();
+            }
+        });
+
+        tableSearch.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent e) {
+                String tableName = tableSearch.getText();
+                List<String> searchTableList = MybatisFlexCodeGenerateWin.this.tableNameList.stream()
+                        .filter(el -> el.contains(tableName))
+                        .collect(Collectors.toList());
+                model.removeAllElements();
+                model.addAll(searchTableList);
+            }
+        });
+
+        setSelectTalbe(actionEvent);
+    }
+
+    /**
+     * 设置选中的表
+     *
+     * @param event 事件
+     */
+    public void setSelectTalbe(AnActionEvent event) {
+        List<String> selectedTableName = TableUtils.getSelectedTableName(event);
+        for (String tableName : selectedTableName) {
+            int idx = tableNameList.indexOf(tableName);
+            tableList.addSelectionInterval(idx, idx);
+        }
     }
 
     public void initSinceComBox() {
@@ -249,48 +316,22 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
 
 
     /**
-     * 得到选中表信息
-     *
-     * @param actionEvent 行动事件
-     * @return {@code List<TableInfo>}
-     */
-    private List<TableInfo> getSelectedTableInfo(AnActionEvent actionEvent) {
-        List<TableInfo> tableInfoList = new ArrayList<>();
-        List<DasObject> selectedTableList = Arrays.stream(actionEvent.getData(DATABASE_NODES)).map(el -> (DasObject) el).collect(Collectors.toList());
-        for (DasObject dasObject : selectedTableList) {
-            TableInfo tableInfo = new TableInfo();
-            DbTableImpl table = (DbTableImpl) actionEvent.getData(CommonDataKeys.PSI_ELEMENT);
-            tableInfo.setName(dasObject.getName());
-            tableInfo.setComment(dasObject.getComment());
-            List<ColumnInfo> columnList = new ArrayList<>();
-            JBIterable<? extends DasObject> columns = dasObject.getDasChildren(ObjectKind.COLUMN);
-            for (DasObject column : columns) {
-                ColumnInfo columnInfo = new ColumnInfo();
-                DasColumn dasColumn = (DasColumn) column;
-                columnInfo.setName(dasColumn.getName());
-                columnInfo.setFieldName(StrUtil.toCamelCase(dasColumn.getName()));
-                columnInfo.setFieldType(DDLUtils.mapFieldType(dasColumn.getDataType().typeName));
-                columnInfo.setComment(dasColumn.getComment());
-                columnInfo.setMethodName(StrUtil.upperFirst(columnInfo.getFieldName()));
-                columnInfo.setType(DDLUtils.mapToMyBatisJdbcType(dasColumn.getDataType().typeName).toUpperCase());
-                columnInfo.setPrimaryKey(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.PRIMARY_KEY));
-                columnInfo.setAutoIncrement(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.AUTO_GENERATED));
-                columnList.add(columnInfo);
-            }
-            tableInfo.setColumnList(columnList);
-            tableInfoList.add(tableInfo);
-        }
-        return tableInfoList;
-    }
-
-
-    /**
      * 生成按钮事件
      */
     private void onGenerate() {
-        List<TableInfo> selectedTableInfo = getSelectedTableInfo(actionEvent);
+        List<String> selectedTabeList = tableList.getSelectedValuesList();
+        if (CollUtil.isEmpty(selectedTabeList)) {
+            Messages.showWarningDialog("请选择要生成的表", "提示");
+            return;
+        }
+        List<TableInfo> selectedTableInfo = new ArrayList<>();
+        for (String tableName : selectedTabeList) {
+            selectedTableInfo.add(tableInfoMap.get(tableName));
+        }
+        generateBtn.enable(false);
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
         NotificationUtils.notifySuccess("代码生成成功", actionEvent.getProject());
+        generateBtn.enable(true);
         dispose();
     }
 

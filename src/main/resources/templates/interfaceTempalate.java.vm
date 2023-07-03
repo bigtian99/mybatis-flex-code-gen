@@ -4,7 +4,7 @@ import ${config.modelPackage}.${className}Entity;
 import com.mybatisflex.core.service.IService;
 
 /**
- * $table.comment 服务层。
+ * $!table.comment 服务层。
  *
  * @author $author
  * @since $since

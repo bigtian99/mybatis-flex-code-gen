@@ -30,6 +30,7 @@ public class TableCore {
         for (String prefix : tablePrefixArr) {
             if (tableName.startsWith(prefix)) {
                 tableName = tableName.replaceFirst(prefix, "");
+                break;
             }
         }
         return StrUtil.toCamelCase(tableName);

@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.windows;
 import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
+import club.bigtian.mf.plugin.core.util.DialogUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.lang.java.JavaLanguage;
@@ -73,19 +74,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         setModal(true);
         setSize(new Dimension(1000, 973));
         getRootPane().setDefaultButton(buttonOK);
-        // 获取屏幕的宽度和高度
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int screenWidth = screenSize.width;
-        int screenHeight = screenSize.height;
-
-        // 计算对话框的位置
-        int dialogWidth = getWidth();
-        int dialogHeight = getHeight();
-
-        int dialogX = (screenWidth - dialogWidth) / 2;
-        int dialogY = (screenHeight - dialogHeight) / 2;
-        // 设置对话框的位置
-        setLocation(dialogX, dialogY);
+        DialogUtil.centerShow(this);
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onOK();

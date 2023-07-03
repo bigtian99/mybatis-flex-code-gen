@@ -25,7 +25,7 @@ import $classImport;
 #end
 
 /**
- * $table.comment 实体类。
+ * $!table.comment 实体类。
  *
  * @author $author
  * @since $since
@@ -43,7 +43,7 @@ import $classImport;
 @AllArgsConstructor
 #end
 #if($config.swagger)
-@ApiModel(value = "$table.comment", description = "$table.comment")
+@ApiModel(value = "$!table.comment", description = "$!table.comment")
 #end
 @Table("$table.name")
 public class ${modelName} {

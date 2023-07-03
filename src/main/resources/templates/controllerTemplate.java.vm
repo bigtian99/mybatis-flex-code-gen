@@ -19,7 +19,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 #end
 /**
-* $table.comment 控制层。
+* $!table.comment 控制层。
 *
 * @author $author
 * @since  $since
@@ -27,7 +27,7 @@ import io.swagger.annotations.ApiOperation;
 @RestController
 @RequestMapping("/$requestPath")
 #if($config.swagger)
-@Api(tags ="$table.comment" )
+@Api(tags ="$!table.comment" )
 #end
 public class ${controllerName}{
 
@@ -35,83 +35,83 @@ public class ${controllerName}{
     private ${interfaceName} ${interfaceVariable};
 
     /**
-    * 添加 $table.comment
+    * 添加 $!table.comment
     *
-    * @param $requestPath $table.comment
+    * @param $requestPath $!table.comment
     * @return {@code true} 添加成功，{@code false} 添加失败
     */
     @PostMapping("/save")
     #if($config.swagger)
-    @ApiOperation(value = "添加$table.comment", notes = "添加$table.comment")
+    @ApiOperation(value = "添加$!table.comment", notes = "添加$!table.comment")
     #end
     public boolean save(@RequestBody $modelName  $requestPath) {
         return ${interfaceVariable}.save($requestPath);
     }
 
     /**
-    * 根据主键删除$table.comment
+    * 根据主键删除$!table.comment
     *
     * @param id 主键
     * @return {@code true} 删除成功，{@code false} 删除失败
     */
     @DeleteMapping("/remove/{id}")
     #if($config.swagger)
-    @ApiOperation(value = "根据主键删除$table.comment", notes = "根据主键删除$table.comment")
+    @ApiOperation(value = "根据主键删除$!table.comment", notes = "根据主键删除$!table.comment")
     #end
     public boolean remove(@PathVariable Serializable id) {
         return ${interfaceVariable}.removeById(id);
     }
 
     /**
-    * 根据主键更新$table.comment
+    * 根据主键更新$!table.comment
     *
-    * @param $requestPath $table.comment
+    * @param $requestPath $!table.comment
     * @return {@code true} 更新成功，{@code false} 更新失败
     */
     @PutMapping("/update")
     #if($config.swagger)
-    @ApiOperation(value = "根据主键更新$table.comment", notes = "根据主键更新$table.comment")
+    @ApiOperation(value = "根据主键更新$!table.comment", notes = "根据主键更新$!table.comment")
     #end
     public boolean update(@RequestBody $modelName $requestPath ) {
         return ${interfaceVariable}.updateById($requestPath);
     }
 
     /**
-    * 查询所有$table.comment
+    * 查询所有$!table.comment
     *
     * @return 所有数据
     */
     @GetMapping("/list")
     #if($config.swagger)
-    @ApiOperation(value = "查询所有$table.comment", notes = "查询所有$table.comment")
+    @ApiOperation(value = "查询所有$!table.comment", notes = "查询所有$!table.comment")
     #end
     public List<$modelName> list() {
         return ${interfaceVariable}.list();
     }
 
     /**
-    * 根据${table.comment}主键获取详细信息。
+    * 根据$!{table.comment}主键获取详细信息。
     *
     * @param id ${requestPath}主键
-    * @return ${table.comment}详情
+    * @return $!{table.comment}详情
     */
     @GetMapping("/getInfo/{id}")
     #if($config.swagger)
-    @ApiOperation(value = "根据${table.comment}主键获取详细信息", notes = "根据${table.comment}主键获取详细信息")
+    @ApiOperation(value = "根据$!{table.comment}主键获取详细信息", notes = "根据$!{table.comment}主键获取详细信息")
     #end
     public $modelName getInfo(@PathVariable Serializable id) {
         return ${interfaceVariable}.getById(id);
     }
 
     /**
-    * 分页查询${table.comment}
+    * 分页查询$!{table.comment}
     *
     * @param page 分页对象
     * @return 分页对象
     */
     @GetMapping("/page")
     #if($config.swagger)
-    @ApiOperation(value = "分页查询${table.comment}", notes = "分页查询${table.comment}")
+    @ApiOperation(value = "分页查询$!{table.comment}", notes = "分页查询$!{table.comment}")
     #end
     public Page<$modelName> page(Page<$modelName> page) {
         return ${interfaceVariable}.page(page);

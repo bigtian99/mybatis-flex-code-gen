@@ -1,23 +1,21 @@
 package club.bigtian.mf.plugin.core;
 
+import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.util.CodeReformat;
 import club.bigtian.mf.plugin.core.util.Modules;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
+import club.bigtian.mf.plugin.entity.TableInfo;
+import club.bigtian.mf.plugin.utils.DDLUtils;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.*;
 import com.intellij.util.IncorrectOperationException;
-import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
-import club.bigtian.mf.plugin.entity.TableInfo;
-import club.bigtian.mf.plugin.utils.DDLUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.jetbrains.annotations.Nullable;
@@ -39,13 +37,12 @@ public class RenderMybatisFlexTemplate {
     public static void assembleData(List<TableInfo> selectedTableInfo, MybatisFlexConfig config, @Nullable Project project) {
         VelocityEngine velocityEngine = new VelocityEngine();
         VelocityContext context = new VelocityContext();
-        String className = "";
         HashMap<PsiDirectory, List<PsiElement>> templateMap = new HashMap<>();
         Map<String, String> templates = config.getTemplates();
         Map<String, String> suffixMap = config.getSuffix();
         Map<String, String> packages = config.getPackages();
         for (TableInfo tableInfo : selectedTableInfo) {
-            className = TableCore.getClassName(tableInfo.getName(), config.getTablePrefix());
+            String   className = TableCore.getClassName(tableInfo.getName(), config.getTablePrefix());
             context.put("className", className);
             context.put("requestPath", TableCore.getTableName(tableInfo.getName(), config.getTablePrefix()));
             context.put("author", ObjectUtil.defaultIfEmpty(config.getAuthor(), "mybatis-flex-helper automatic generation"));
@@ -62,29 +59,39 @@ public class RenderMybatisFlexTemplate {
             renderTemplate(config, project, templates, context, className, velocityEngine, templateMap, packages, suffixMap);
         }
         WriteCommandAction.runWriteCommandAction(project, () -> {
-            for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
-                List<PsiElement> list = entry.getValue();
-                for (PsiElement psiFile : list) {
+                for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
+                    List<PsiElement> list = entry.getValue();
                     PsiDirectory directory = entry.getKey();
+
                     // 如果勾选了覆盖，则删除原有文件
                     if (config.isOverrideCheckBox()) {
-                        PsiFile file = (PsiFile) psiFile;
-                        PsiFile directoryFile = directory.findFile(file.getName());
-                        if (ObjectUtil.isNotNull(directoryFile)) {
-                            directoryFile.delete();
+                        for (PsiElement psiFile : list) {
+                            if (psiFile instanceof PsiFile) {
+                                PsiFile file = (PsiFile) psiFile;
+                                PsiFile directoryFile = directory.findFile(file.getName());
+                                if (ObjectUtil.isNotNull(directoryFile)) {
+                                    directoryFile.delete();
+                                }
+                            }
                         }
                     }
-                    try {
-                        directory.add(psiFile);
-                    } catch (IncorrectOperationException e) {
-                        if (e.getMessage().contains("already exists")) {
-                            PsiFile file = (PsiFile) psiFile;
-                            Messages.showErrorDialog("文件已存在：" + file.getName(), "错误");
+                    // 提交所有待处理的文档,防止出现索引未更新的情况
+                    PsiDocumentManager.getInstance(project).commitAllDocuments();
+                    for (PsiElement psiFile : list) {
+
+                        try {
+                            directory.add(psiFile);
+                        } catch (IncorrectOperationException e) {
+                            if (e.getMessage().contains("already exists")) {
+                                PsiFile file = (PsiFile) psiFile;
+                                Messages.showErrorDialog("文件已存在：" + file.getName(), "错误");
+                            }
+                            throw e;
+                        } catch (Exception e) {
                             throw e;
                         }
                     }
                 }
-            }
         });
     }
 

@@ -3,7 +3,7 @@ package $config.mapperPackage;
 import ${config.modelPackage}.${modelName};
 import com.mybatisflex.core.BaseMapper;
 /**
- * $table.comment 映射层。
+ * $!table.comment 映射层。
  *
  * @author $author
  * @since $since
