@@ -73,6 +73,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
 
     Map<String, TableInfo> tableInfoMap;
 
+
     public MybatisFlexCodeGenerateWin(AnActionEvent actionEvent) {
         this.actionEvent = actionEvent;
         setContentPane(contentPane);
@@ -177,7 +178,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         Collections.sort(tableNameList);
         model.addAll(tableNameList);
         tableList.setModel(model);
-        tableList.setCellRenderer(new TableListCellRenderer(tableInfoMap));
+        TableListCellRenderer cellRenderer = new TableListCellRenderer(tableInfoMap);
+        tableList.setCellRenderer(cellRenderer);
         sortBtn.addActionListener(e -> {
             if (sortBtn.getToolTipText().equals("升序")) {
                 sortBtn.setToolTipText("降序");
@@ -206,6 +208,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
                 List<String> searchTableList = MybatisFlexCodeGenerateWin.this.tableNameList.stream()
                         .filter(el -> el.contains(tableName))
                         .collect(Collectors.toList());
+                cellRenderer.setSearchTableName(tableName);
                 model.removeAllElements();
                 model.addAll(searchTableList);
             }

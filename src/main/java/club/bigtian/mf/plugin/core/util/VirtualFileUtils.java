@@ -59,11 +59,13 @@ public class VirtualFileUtils {
         if (!modulePath.contains(name)) {
             modulePath = modulePath + separator + name;
         }
-        String path = StrUtil.format("{}src{}main{}java{}",separator,separator,separator,separator);
+
+        String path = StrUtil.format("src{}main{}java{}",separator,separator,separator);
         if (StrUtil.isEmpty(key)) {
-            path = StrUtil.format("{}src{}main{}resources{}",separator,separator,separator,separator);
+            path = StrUtil.format("src{}main{}resources{}",separator,separator,separator);
         }
         modulePath = modulePath + path + packageName.replace(".", separator);
+        modulePath=modulePath.replaceAll("\\\\","/");
         PsiManager psiManager = PsiManager.getInstance(module.getProject());
         VirtualFile virtualFile = transToJavaFile(modulePath);
         PsiDirectory psiDirectory = null;

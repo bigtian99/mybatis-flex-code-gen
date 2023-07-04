@@ -40,6 +40,6 @@ mybatisFlex code generation is based on the official code generation template, b
                 text="mybatis flex code generate" description="用于选择database中的table从而进行代码生成">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
-
     </actions>
+    <idea-version since-build="201.0"/>
 </idea-plugin>
