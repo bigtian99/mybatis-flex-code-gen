@@ -40,6 +40,7 @@ public class RenderMybatisFlexTemplate {
         Map<String, String> templates = config.getTemplates();
         Map<String, String> suffixMap = config.getSuffix();
         Map<String, String> packages = config.getPackages();
+        Map<String, String> modules = config.getModules();
         for (TableInfo tableInfo : selectedTableInfo) {
             String   className = TableCore.getClassName(tableInfo.getName(), config.getTablePrefix());
             context.put("className", className);
@@ -55,7 +56,7 @@ public class RenderMybatisFlexTemplate {
             context.put("config", config);
             context.put("importClassList", SqlDialect.getImportClassList());
             context.put("table", tableInfo);
-            renderTemplate(config, project, templates, context, className, velocityEngine, templateMap, packages, suffixMap);
+            renderTemplate(config, project, templates, context, className, velocityEngine, templateMap, packages, suffixMap,modules);
         }
         WriteCommandAction.runWriteCommandAction(project, () -> {
                 for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
@@ -105,6 +106,7 @@ public class RenderMybatisFlexTemplate {
      * @param templateMap    模板映射
      * @param packages
      * @param suffixMap
+     * @param modules
      */
     private static void renderTemplate(MybatisFlexConfig config,
                                        @Nullable Project project,
@@ -112,12 +114,12 @@ public class RenderMybatisFlexTemplate {
                                        VelocityContext context,
                                        String className,
                                        VelocityEngine velocityEngine,
-                                       HashMap<PsiDirectory, List<PsiElement>> templateMap, Map<String, String> packages, Map<String, String> suffixMap) {
+                                       HashMap<PsiDirectory, List<PsiElement>> templateMap, Map<String, String> packages, Map<String, String> suffixMap, Map<String, String> modules) {
         for (Map.Entry<String, String> entry : templates.entrySet()) {
             StringWriter sw = new StringWriter();
             context.put("className", className);
             velocityEngine.evaluate(context, sw, "mybatis-flex", entry.getValue());
-            Module module = Modules.getModule(config.getControllerModule());
+            Module module = Modules.getModule(modules.get(entry.getKey()));
             PsiDirectory packageDirectory = VirtualFileUtils.getPsiDirectory(module, packages.get(entry.getKey()), entry.getKey());
             String classPrefix = ObjectUtil.equal("Service", entry.getKey()) ? "I" : "";
             String fileName = classPrefix + className + suffixMap.get(entry.getKey()) + (StrUtil.isEmpty(entry.getKey()) ? ".xml" : ".java");

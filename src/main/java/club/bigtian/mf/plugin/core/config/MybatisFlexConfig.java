@@ -2,9 +2,7 @@ package club.bigtian.mf.plugin.core.config;
 
 
 import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson2.annotation.JSONField;
 
-import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -181,6 +179,16 @@ public class MybatisFlexConfig {
         data.put("ServiceImpl", implPackage);
         data.put("Mapper", mapperPackage);
         data.put("", xmlPackage);
+        return data;
+    }
+    public Map<String, String> getModules() {
+        Map<String, String> data = new HashMap<>();
+        data.put("Controller", controllerModule);
+        data.put("Entity", modelModule);
+        data.put("Service", interfaceModule);
+        data.put("ServiceImpl", implModule);
+        data.put("Mapper", mapperModule);
+        data.put("", xmlModule);
         return data;
     }
 

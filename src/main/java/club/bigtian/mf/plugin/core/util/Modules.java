@@ -76,7 +76,6 @@ public class Modules {
     public static String getModulePath(Module module) {
         Project project = module.getProject();
         return project.getBasePath() + File.separator;
-
     }
 
 

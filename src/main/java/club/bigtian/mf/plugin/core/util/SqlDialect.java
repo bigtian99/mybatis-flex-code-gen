@@ -5,7 +5,10 @@ import com.intellij.openapi.ui.Messages;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -57,73 +60,6 @@ public class SqlDialect {
             throw new RuntimeException("不支持的数据库类型");
         }
         return function.apply(fieldType);
-    }
-
-    /**
-     * mysql字段类型与java字段类型映射
-     *
-     * @param fieldType 字段类型
-     * @return {@code String}
-     */
-    @Nullable
-    private static String mysqlToJavaFieldType(String fieldType) {
-        String javaType = null;
-        String packagePath = null;
-        // 自定义字段类型映射
-        if (fieldType.equalsIgnoreCase("DECIMAL")) {
-            javaType = "BigDecimal";
-            packagePath = "java.math.BigDecimal";
-        } else if (fieldType.equalsIgnoreCase("TINYINT")) {
-            javaType = "byte";
-        } else if (fieldType.equalsIgnoreCase("SMALLINT")) {
-            javaType = "short";
-        } else if (fieldType.equalsIgnoreCase("MEDIUMINT") ||
-                fieldType.equalsIgnoreCase("INT")) {
-            javaType = "int";
-        } else if (fieldType.equalsIgnoreCase("BIGINT")) {
-            javaType = "long";
-        } else if (fieldType.equalsIgnoreCase("FLOAT")) {
-            javaType = "float";
-        } else if (fieldType.equalsIgnoreCase("DOUBLE")) {
-            javaType = "double";
-        } else if (fieldType.equalsIgnoreCase("DATE") ||
-                fieldType.equalsIgnoreCase("TIME") ||
-                fieldType.equalsIgnoreCase("DATETIME") ||
-                fieldType.equalsIgnoreCase("TIMESTAMP") ||
-                fieldType.equalsIgnoreCase("YEAR")) {
-            javaType = "Date";
-            packagePath = "java.util.Date";
-        } else if (fieldType.equalsIgnoreCase("CHAR") ||
-                fieldType.equalsIgnoreCase("VARCHAR") ||
-                fieldType.equalsIgnoreCase("TINYTEXT") ||
-                fieldType.equalsIgnoreCase("TEXT") ||
-                fieldType.equalsIgnoreCase("MEDIUMTEXT") ||
-                fieldType.equalsIgnoreCase("LONGTEXT") ||
-                fieldType.equalsIgnoreCase("ENUM") ||
-                fieldType.equalsIgnoreCase("SET") ||
-                fieldType.equalsIgnoreCase("JSON")) {
-            javaType = "String";
-        } else if (fieldType.equalsIgnoreCase("BINARY") ||
-                fieldType.equalsIgnoreCase("VARBINARY") ||
-                fieldType.equalsIgnoreCase("TINYBLOB") ||
-                fieldType.equalsIgnoreCase("BLOB") ||
-                fieldType.equalsIgnoreCase("MEDIUMBLOB") ||
-                fieldType.equalsIgnoreCase("LONGBLOB")) {
-            javaType = "byte[]";
-        } else if (fieldType.equalsIgnoreCase("BOOLEAN") || fieldType.equals("BOOL")) {
-            javaType = "boolean";
-        }
-
-        if (javaType != null) {
-            // 设置包路径
-            if (packagePath == null) {
-                return javaType;
-            }
-            importClassList.add(packagePath);
-            return javaType;
-        }
-        // 其他类型保持不变
-        return null;
     }
 
 
@@ -226,5 +162,72 @@ public class SqlDialect {
             // 默认情况下，返回VARCHAR
             return "VARCHAR";
         }
+    }
+
+    /**
+     * mysql字段类型与java字段类型映射
+     *
+     * @param fieldType 字段类型
+     * @return {@code String}
+     */
+    @Nullable
+    private static String mysqlToJavaFieldType(String fieldType) {
+        String javaType = null;
+        String packagePath = null;
+        // 自定义字段类型映射
+        if (fieldType.equalsIgnoreCase("DECIMAL")) {
+            javaType = "BigDecimal";
+            packagePath = "java.math.BigDecimal";
+        } else if (fieldType.equalsIgnoreCase("TINYINT")) {
+            javaType = "byte";
+        } else if (fieldType.equalsIgnoreCase("SMALLINT")) {
+            javaType = "short";
+        } else if (fieldType.equalsIgnoreCase("MEDIUMINT") ||
+                fieldType.equalsIgnoreCase("INT")) {
+            javaType = "int";
+        } else if (fieldType.equalsIgnoreCase("BIGINT")) {
+            javaType = "long";
+        } else if (fieldType.equalsIgnoreCase("FLOAT")) {
+            javaType = "float";
+        } else if (fieldType.equalsIgnoreCase("DOUBLE")) {
+            javaType = "double";
+        } else if (fieldType.equalsIgnoreCase("DATE") ||
+                fieldType.equalsIgnoreCase("TIME") ||
+                fieldType.equalsIgnoreCase("DATETIME") ||
+                fieldType.equalsIgnoreCase("TIMESTAMP") ||
+                fieldType.equalsIgnoreCase("YEAR")) {
+            javaType = "Date";
+            packagePath = "java.util.Date";
+        } else if (fieldType.equalsIgnoreCase("CHAR") ||
+                fieldType.equalsIgnoreCase("VARCHAR") ||
+                fieldType.equalsIgnoreCase("TINYTEXT") ||
+                fieldType.equalsIgnoreCase("TEXT") ||
+                fieldType.equalsIgnoreCase("MEDIUMTEXT") ||
+                fieldType.equalsIgnoreCase("LONGTEXT") ||
+                fieldType.equalsIgnoreCase("ENUM") ||
+                fieldType.equalsIgnoreCase("SET") ||
+                fieldType.equalsIgnoreCase("JSON")) {
+            javaType = "String";
+        } else if (fieldType.equalsIgnoreCase("BINARY") ||
+                fieldType.equalsIgnoreCase("VARBINARY") ||
+                fieldType.equalsIgnoreCase("TINYBLOB") ||
+                fieldType.equalsIgnoreCase("BLOB") ||
+                fieldType.equalsIgnoreCase("MEDIUMBLOB") ||
+                fieldType.equalsIgnoreCase("LONGBLOB")) {
+            javaType = "byte[]";
+        } else if (fieldType.equalsIgnoreCase("BOOLEAN") || fieldType.equals("BOOL")) {
+            javaType = "boolean";
+        }
+
+        if (javaType != null) {
+            // 设置包路径
+            if (packagePath == null) {
+                return javaType;
+            }
+            importClassList.add(packagePath);
+            return javaType;
+        }
+        // 其他类型保持不变
+        return null;
     }
 }

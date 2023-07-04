@@ -11,6 +11,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
@@ -55,6 +56,7 @@ public class Template {
      */
     @NotNull
     private static String getTemplateContent(String templateName) {
+        String separator = File.separator;
         URL resource = Template.class.getResource(StrUtil.format("/templates/{}.vm", templateName));
         String templateContent = null;
         try {

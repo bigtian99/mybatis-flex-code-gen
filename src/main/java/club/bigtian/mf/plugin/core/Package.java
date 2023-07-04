@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.core;
 
+import club.bigtian.mf.plugin.core.util.Modules;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.ide.util.PackageChooserDialog;
 import com.intellij.openapi.module.Module;
@@ -41,7 +42,12 @@ public class Package {
     public static String selectPackageResources(Module module, String... packagePath) {
         Project project = module.getProject();
         String separator = File.separator;
-        String path = project.getBaseDir().getCanonicalPath() + separator + StrUtil.format("src{}main{}resources{}", separator, separator, separator);
+        String modulePath = Modules.getModulePath(module);
+        String name = module.getName();
+        if (!modulePath.contains(name)) {
+            modulePath = modulePath + File.separator + name;
+        }
+        String path = modulePath + separator + StrUtil.format("src{}main{}resources{}", separator, separator, separator);
         ArrayList<String> resourcesList = new ArrayList<>();
         getSubDirectory(path, resourcesList);
         PsiManager psiManager = PsiManager.getInstance(project);

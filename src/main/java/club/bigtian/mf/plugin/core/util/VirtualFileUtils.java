@@ -3,10 +3,13 @@ package club.bigtian.mf.plugin.core.util;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
+
+import java.io.File;
 
 public class VirtualFileUtils {
 
@@ -51,14 +54,25 @@ public class VirtualFileUtils {
      */
     public static PsiDirectory getPsiDirectory(Module module, String packageName, String key) {
         String modulePath = Modules.getModulePath(module);
-        String path = "/src/main/java/";
-        if (StrUtil.isEmpty(key)) {
-            path = "/src/main/resources/";
+        String name = module.getName();
+        String separator = File.separator;
+        if (!modulePath.contains(name)) {
+            modulePath = modulePath + separator + name;
         }
-        modulePath = modulePath + path + packageName.replace(".", "/");
+        String path = StrUtil.format("{}src{}main{}java{}",separator,separator,separator,separator);
+        if (StrUtil.isEmpty(key)) {
+            path = StrUtil.format("{}src{}main{}resources{}",separator,separator,separator,separator);
+        }
+        modulePath = modulePath + path + packageName.replace(".", separator);
         PsiManager psiManager = PsiManager.getInstance(module.getProject());
         VirtualFile virtualFile = transToJavaFile(modulePath);
-        PsiDirectory psiDirectory = psiManager.findDirectory(virtualFile);
+        PsiDirectory psiDirectory = null;
+        try {
+            psiDirectory = psiManager.findDirectory(virtualFile);
+        } catch (Exception e) {
+            Messages.showErrorDialog(StrUtil.format("找不到路径为【{}】的文件夹",modulePath),"错误");
+            throw new RuntimeException(e);
+        }
         return psiDirectory;
     }
 
