@@ -21,7 +21,13 @@ public class InvertedIndexSearch {
                 INVERTED_INDEX.computeIfAbsent(word + "", k -> new HashSet<>()).add(tableName);
             }
         }
+    }
 
+    /**
+     * 清空倒排索引
+     */
+    public  static void clear(){
+        INVERTED_INDEX.clear();
     }
 
     /**
@@ -31,6 +37,11 @@ public class InvertedIndexSearch {
      * @return {@code Set<String>}
      */
     public static Set<String> search(String keyword) {
+        if (StrUtil.isEmpty(keyword)) {
+            return INVERTED_INDEX.values().stream()
+                    .flatMap(el -> el.stream())
+                    .collect(Collectors.toSet());
+        }
         keyword = keyword.toLowerCase();
         Set<String> result = new HashSet<>();
         for (int i = 0; i < keyword.length(); i++) {
@@ -54,35 +65,35 @@ public class InvertedIndexSearch {
         return result;
     }
 
-    public static void main(String[] args) {
-        List<String> tableName = Arrays.asList("t_crm_contract", "t_crm_contract_order", "t_crm_returns", "t_crm_returns_detail", "t_crm_baseclient", "t_crm_baseorg");
-        indexText(tableName);
-        highlightKey("tcttar").forEach(System.out::println);
-    }
 
-    public static List<String> highlightKey(String keyword) {
-        keyword = keyword.toLowerCase();
+    public static Map<String, String> highlightKey(String keyword) {
+
         Set<String> result = search(keyword);
-        String finalKeyword = keyword;
+        if (StrUtil.isEmpty(keyword)) {
+            return result.stream().collect(Collectors.toMap(el -> el, el -> el));
+        }
+        //字符串排序
+
         Map<String, Integer> idxMap = new HashMap<>();
-        List<String> list = result.stream()
-                .map(el -> {
+        Map<String, String> highlightMap = new HashMap<>();
+        result.stream()
+                .forEach(el -> {
+                    String finalKeyword = keyword;
                     String htmlText = "<html>";
-                    for (int i = 0; i < finalKeyword.length(); i++) {
-                        String key = finalKeyword.charAt(i) + "";
-                        int idx = el.indexOf(key, idxMap.getOrDefault(key, Integer.valueOf(0)).intValue());
-                        htmlText += el.substring(0, idx);
-                        htmlText += "<span style='background-color: orange;color:black'>";
-                        htmlText += el.substring(idx, idx + 1);
-                        htmlText += "</span>";
-                        idxMap.put(key, idx);
+                    for (int i = 0; i < el.length(); i++) {
+                        String key = el.charAt(i) + "";
+                        if (StrUtil.containsIgnoreCase(finalKeyword, key)) {
+                            htmlText += "<span style='background-color: orange;color:black'>" + key + "</span>";
+                            finalKeyword = finalKeyword.replaceFirst(key, "");
+                            continue;
+                        }
+                        htmlText += key;
                     }
                     htmlText += "</html>";
                     idxMap.clear();
-                    return htmlText;
-                }).collect(Collectors.toList());
-
-        return list;
+                    highlightMap.put(el, htmlText);
+                });
+        return highlightMap;
     }
 
 }

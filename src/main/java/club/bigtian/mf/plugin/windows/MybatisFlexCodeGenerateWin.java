@@ -6,6 +6,7 @@ import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.render.TableListCellRenderer;
+import club.bigtian.mf.plugin.core.search.InvertedIndexSearch;
 import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.core.validator.InputValidatorImpl;
 import club.bigtian.mf.plugin.entity.TableInfo;
@@ -175,6 +176,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         DefaultListModel model = new DefaultListModel();
         //tableNameSet按照字母降序
         tableNameList = new ArrayList<>(tableInfoMap.keySet());
+        //初始化倒排索引
+        InvertedIndexSearch.indexText(tableNameList);
         Collections.sort(tableNameList);
         model.addAll(tableNameList);
         tableList.setModel(model);
@@ -205,15 +208,13 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
             @Override
             protected void textChanged(@NotNull DocumentEvent e) {
                 String tableName = tableSearch.getText();
-                List<String> searchTableList = MybatisFlexCodeGenerateWin.this.tableNameList.stream()
-                        .filter(el -> el.contains(tableName))
-                        .collect(Collectors.toList());
+                Map<String, String> highlightKey = InvertedIndexSearch.highlightKey(tableName);
                 cellRenderer.setSearchTableName(tableName);
+                cellRenderer.setHighlightKey(highlightKey);
                 model.removeAllElements();
-                model.addAll(searchTableList);
+                model.addAll(highlightKey.keySet());
             }
         });
-
         setSelectTalbe(actionEvent);
     }
 
@@ -342,6 +343,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
      */
     private void onCancel() {
         SqlDialect.clear();
+        InvertedIndexSearch.clear();
         dispose();
     }
 

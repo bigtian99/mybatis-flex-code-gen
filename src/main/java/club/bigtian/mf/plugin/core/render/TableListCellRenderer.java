@@ -4,6 +4,7 @@ import club.bigtian.mf.plugin.entity.TableInfo;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
 import java.util.Map;
 
 public class TableListCellRenderer extends JLabel implements ListCellRenderer<String> {
@@ -11,6 +12,16 @@ public class TableListCellRenderer extends JLabel implements ListCellRenderer<St
     private JLabel rowEndLabel;
     Map<String, TableInfo> tableInfoMap;
     String searchTableName;
+
+    Map<String, String> highlightKey=new HashMap<>();
+
+    public Map<String, String> getHighlightKey() {
+        return highlightKey;
+    }
+
+    public void setHighlightKey(Map<String, String> highlightKey) {
+        this.highlightKey = highlightKey;
+    }
 
     public String getSearchTableName() {
         return searchTableName;
@@ -35,26 +46,10 @@ public class TableListCellRenderer extends JLabel implements ListCellRenderer<St
     public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
                                                   boolean isSelected, boolean cellHasFocus) {
         label.setText(value);
-
-        // 高亮部分文字
-        if (searchTableName != null && !searchTableName.isEmpty()) {
-            String text = value.toLowerCase();
-            String highlight = searchTableName.toLowerCase();
-            int startPos = text.indexOf(highlight);
-            if (startPos >= 0) {
-                int endPos = startPos + highlight.length();
-                String highlightedText = "<html>" +
-                        value.substring(0, startPos) +
-                        "<span style='background-color: orange;color:black'>" +
-                        value.substring(startPos, endPos) +
-                        "</span>" +
-                        value.substring(endPos) +
-                        "</html>";
-                label.setText(highlightedText);
-            }
+        if (highlightKey.containsKey(value)) {
+            label.setText(highlightKey.get(value));
         }
         rowEndLabel.setText(tableInfoMap.get(value).getComment());
-
         if (isSelected) {
             setBackground(list.getSelectionBackground());
             setForeground(list.getSelectionForeground());
@@ -62,7 +57,6 @@ public class TableListCellRenderer extends JLabel implements ListCellRenderer<St
             setBackground(list.getBackground());
             setForeground(list.getForeground());
         }
-
         return this;
     }
 }
