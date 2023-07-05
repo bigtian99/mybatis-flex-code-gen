@@ -3,13 +3,15 @@ package club.bigtian.mf.plugin.core.util;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
+import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
-import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class VirtualFileUtils {
 
@@ -45,6 +47,15 @@ public class VirtualFileUtils {
         return psiDirectory;
     }
 
+    public static PsiDirectory getPsiDirectory(Project project, VirtualFile virtualFile) {
+        PsiManager psiManager = PsiManager.getInstance(project);
+        PsiDirectory psiDirectory = psiManager.findDirectory(virtualFile);
+        return psiDirectory;
+    }
+
+
+    private static Map<String, PsiDirectory> PSI_DIRECTORY_MAP = new HashMap<>();
+
     /**
      * 得到psi目录
      *
@@ -53,32 +64,12 @@ public class VirtualFileUtils {
      * @return {@code PsiDirectory}
      */
     public static PsiDirectory getPsiDirectory(Module module, String packageName, String key) {
-        String modulePath = Modules.getModulePath(module);
-        String name = Modules.getModuleName(module);
-        String separator = File.separator;
-        if (!modulePath.contains(name)) {
-            modulePath = modulePath + separator + name + separator;
-        }
-        String path = StrUtil.format("src{}main{}java{}", separator, separator, separator);
-        if (StrUtil.isEmpty(key)) {
-            path = StrUtil.format("src{}main{}resources{}", separator, separator, separator);
-        }
-        createSubDirectory(module.getProject(), modulePath + path, packageName);
-        modulePath = modulePath + path + packageName.replace(".", separator);
-        PsiManager psiManager = PsiManager.getInstance(module.getProject());
-        VirtualFile virtualFile = transToJavaFile(modulePath);
-        PsiDirectory psiDirectory = null;
-        try {
-            psiDirectory = psiManager.findDirectory(virtualFile);
-        } catch (Exception e) {
-            Messages.showErrorDialog(StrUtil.format("找不到路径为【{}】的文件夹", modulePath), "错误");
-            throw new RuntimeException(e);
-        }
-        return psiDirectory;
+        Set javaResourceRootTypes = StrUtil.isEmpty(key) ? JavaModuleSourceRootTypes.RESOURCES : JavaModuleSourceRootTypes.SOURCES;
+        return PSI_DIRECTORY_MAP.getOrDefault(packageName, createSubDirectory(module, javaResourceRootTypes, packageName));
     }
 
-    public static void createSubDirectory(Project project, String targetPath, String packageName) {
-        PsiDirectory targetDirectory = getPsiDirectory(project, targetPath);
+    public static PsiDirectory createSubDirectory(Module module, Set javaResourceRootTypes, String packageName) {
+        PsiDirectory targetDirectory = Modules.getModuleDirectory(module, javaResourceRootTypes);
         if (targetDirectory != null) {
             String[] directories = packageName.split("\\.");
             for (String directoryName : directories) {
@@ -89,5 +80,10 @@ public class VirtualFileUtils {
                 targetDirectory = subdirectory;
             }
         }
+        return targetDirectory;
+    }
+
+    public static void clearPsiDirectoryMap() {
+        PSI_DIRECTORY_MAP.clear();
     }
 }

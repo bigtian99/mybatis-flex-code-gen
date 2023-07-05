@@ -2,18 +2,13 @@
 package club.bigtian.mf.plugin.core;
 
 import com.intellij.CommonBundle;
-import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.ide.util.PackageUtil;
 import com.intellij.icons.AllIcons.Actions;
 import com.intellij.ide.IdeBundle;
 import com.intellij.ide.IdeCoreBundle;
 import com.intellij.ide.highlighter.JavaFileType;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionToolbar;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.ide.util.PackageUtil;
+import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.diagnostic.Logger;
@@ -31,11 +26,7 @@ import com.intellij.openapi.ui.PackageChooser;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.NlsContexts.DialogTitle;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.psi.JavaDirectoryService;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiNamedElement;
-import com.intellij.psi.PsiPackage;
+import com.intellij.psi.*;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.JavaReferenceEditorUtil;
 import com.intellij.ui.ScrollPaneFactory;
@@ -46,28 +37,18 @@ import com.intellij.util.Alarm;
 import com.intellij.util.PlatformIcons;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
-
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Objects;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
+
+import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.*;
+import java.awt.*;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Objects;
 
 
 @SuppressWarnings("deprecation")
@@ -235,7 +216,6 @@ public class PackageChooserDialogCustom extends PackageChooser {
             TreePath path = new TreePath(node.getPath());
             TreeUtil.selectPath(this.myTree, path);
         }
-
     }
 
     private @Nullable PsiPackage getTreeSelection() {
@@ -255,8 +235,8 @@ public class PackageChooserDialogCustom extends PackageChooser {
     private void createTreeModel() {
         PsiManager psiManager = PsiManager.getInstance(this.myProject);
         FileIndex fileIndex = this.myModule != null ? ModuleRootManager.getInstance(this.myModule).getFileIndex() : ProjectRootManager.getInstance(this.myProject).getFileIndex();
-        ((FileIndex) fileIndex).iterateContent((fileOrDir) -> {
-            if (fileOrDir.isDirectory() && fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.SOURCES)) {
+        fileIndex.iterateContent(fileOrDir -> {
+            if (fileOrDir.isDirectory() && (fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.SOURCES) || fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.RESOURCES))) {
                 PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
                 LOG.assertTrue(psiDirectory != null);
                 PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
@@ -264,7 +244,6 @@ public class PackageChooserDialogCustom extends PackageChooser {
                     this.addPackage(aPackage);
                 }
             }
-
             return true;
         });
         TreeUtil.sort(this.myModel, (o1, o2) -> {
@@ -285,14 +264,10 @@ public class PackageChooserDialogCustom extends PackageChooser {
             rootNode = (DefaultMutableTreeNode) this.myModel.getRoot();
             if (qualifiedPackageName.length() == 0) {
                 rootNode.setUserObject(aPackage);
-
-
                 return rootNode;
             } else {
                 packageNode = findPackageNode(rootNode, qualifiedPackageName);
                 if (packageNode != null) {
-
-
                     return packageNode;
                 } else {
                     packageNode = new DefaultMutableTreeNode(aPackage);
@@ -306,8 +281,6 @@ public class PackageChooserDialogCustom extends PackageChooser {
             rootNode = this.addPackage(parentPackage);
             packageNode = findPackageNode(rootNode, qualifiedPackageName);
             if (packageNode != null) {
-
-
                 return packageNode;
             } else {
                 packageNode = new DefaultMutableTreeNode(aPackage);
@@ -334,7 +307,6 @@ public class PackageChooserDialogCustom extends PackageChooser {
     private DefaultMutableTreeNode findNodeForPackage(String qualifiedPackageName) {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.myModel.getRoot();
         Enumeration enumeration = root.depthFirstEnumeration();
-
         while (enumeration.hasMoreElements()) {
             Object o = enumeration.nextElement();
             if (o instanceof DefaultMutableTreeNode) {
@@ -348,6 +320,7 @@ public class PackageChooserDialogCustom extends PackageChooser {
 
         return null;
     }
+
     @SuppressWarnings("deprecation")
     private void createNewPackage() {
         PsiPackage selectedPackage = this.getTreeSelection();

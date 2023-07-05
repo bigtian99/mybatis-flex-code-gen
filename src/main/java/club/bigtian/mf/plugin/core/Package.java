@@ -1,21 +1,14 @@
 package club.bigtian.mf.plugin.core;
 
-import club.bigtian.mf.plugin.core.util.Modules;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.intellij.ide.util.PackageChooserDialog;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.JavaDirectoryService;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiPackage;
 
-import java.io.File;
-import java.util.ArrayList;
-
 public class Package {
+    private static final Logger LOG = Logger.getInstance(Package.class);
+
     /**
      * 选择包路径
      *
@@ -30,6 +23,10 @@ public class Package {
         // 显示对话框并等待用户选择
         chooser.show();
         PsiPackage selectedPackage = chooser.getSelectedPackage();
+        if (ObjectUtil.isNull(selectedPackage)) {
+            LOG.warn("selectedPackage is null");
+            throw new RuntimeException("selectedPackage is null");
+        }
         return selectedPackage.getQualifiedName();
     }
 
@@ -40,43 +37,17 @@ public class Package {
      * @return {@code String}
      */
     public static String selectPackageResources(Module module, String... packagePath) {
-        Project project = module.getProject();
-        String separator = File.separator;
-        String modulePath = Modules.getModulePath(module);
-//        String name = module.getName().replaceAll("\\.main","");
-        String name = Modules.getModuleName(module);
-        if (!modulePath.contains(name)) {
-            modulePath = modulePath + File.separator + name;
-        }
-        String path = modulePath + separator + StrUtil.format("{}src{}main{}resources{}", separator,separator, separator, separator);
-        ArrayList<String> resourcesList = new ArrayList<>();
-        getSubDirectory(path, resourcesList);
-        PsiManager psiManager = PsiManager.getInstance(project);
         PackageChooserDialogCustom chooser = new PackageChooserDialogCustom("Select Package", module);
-        for (String path1 : resourcesList) {
-            VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path1);
-            PsiDirectory psiDirectory = psiManager.findDirectory(file);
-            PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
-            chooser.addPackage(aPackage);
-        }
         if (packagePath.length > 0) {
             chooser.selectPackage(packagePath[0]);
         }
         // 显示对话框并等待用户选择
         chooser.show();
         PsiPackage selectedPackage = chooser.getSelectedPackage();
+        if (ObjectUtil.isNull(selectedPackage)) {
+            LOG.warn("selectedPackage is null");
+            throw new RuntimeException("selectedPackage is null");
+        }
         return selectedPackage.getQualifiedName();
-    }
-
-    private static void getSubDirectory(String path, ArrayList<String> resourcesList) {
-        File file = new File(path);
-        file.listFiles(pathname -> {
-            if (pathname.isDirectory()) {
-                resourcesList.add(pathname.getAbsolutePath());
-                getSubDirectory(pathname.getAbsolutePath(), resourcesList);
-                return true;
-            }
-            return false;
-        });
     }
 }

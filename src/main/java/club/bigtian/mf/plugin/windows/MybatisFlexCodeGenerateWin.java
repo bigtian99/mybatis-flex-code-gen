@@ -11,6 +11,7 @@ import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.core.validator.InputValidatorImpl;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.icons.AllIcons;
@@ -31,6 +32,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -66,6 +68,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private JCheckBox selectAllChexBox;
     private JTextField tableSearch;
     private FixedSizeButton sortBtn;
+
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
     List<JTextField> packageList = Arrays.asList(controllerPath, modelPackagePath, serviceIntefacePath, serviceImpPath, mapperPackagePath, mapperXmlPath);
@@ -323,6 +326,8 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
      * 生成按钮事件
      */
     private void onGenerate() {
+        StopWatch watch = new StopWatch();
+        watch.start();
         List<String> selectedTabeList = tableList.getSelectedValuesList();
         if (CollUtil.isEmpty(selectedTabeList)) {
             Messages.showWarningDialog("请选择要生成的表", "提示");
@@ -334,8 +339,10 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         }
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
         NotificationUtils.notifySuccess("代码生成成功", actionEvent.getProject());
-        SqlDialect.clear();
-        dispose();
+        watch.stop();
+        System.out.println("代码生成耗时：" + watch.getTotalTimeMillis() + "ms");
+        System.out.println("代码生成耗时：" + watch.getTotal(TimeUnit.SECONDS) + "s");
+        onCancel();
     }
 
     /**
@@ -344,6 +351,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private void onCancel() {
         SqlDialect.clear();
         InvertedIndexSearch.clear();
+        VirtualFileUtils.clearPsiDirectoryMap();
         dispose();
     }
 

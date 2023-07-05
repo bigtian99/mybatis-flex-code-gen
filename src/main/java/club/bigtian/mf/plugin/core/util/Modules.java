@@ -6,13 +6,18 @@ import cn.hutool.core.util.ObjectUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleFileIndex;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDirectory;
+import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import javax.swing.*;
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -58,10 +63,10 @@ public class Modules {
      * @return boolean
      */
     public static boolean isManvenProject(Project project) {
-        if (ObjectUtil.isNull(isManvenProject)) {
-            VirtualFile virtualFile = project.getBaseDir().findChild("pom.xml");
-            isManvenProject = ObjectUtil.isNotNull(virtualFile);
-        }
+//        if (ObjectUtil.isNull(isManvenProject)) {
+        VirtualFile virtualFile = project.getBaseDir().findChild("pom.xml");
+        isManvenProject = ObjectUtil.isNotNull(virtualFile);
+//        }
         return isManvenProject;
     }
 
@@ -84,12 +89,35 @@ public class Modules {
      */
     public static String getModulePath(String moduleName) {
         Module module = moduleMap.get(moduleName);
-        return getModulePath(module);
+        return getModulePath(module, JavaModuleSourceRootTypes.SOURCES);
     }
 
-    public static String getModulePath(Module module) {
-        Project project = module.getProject();
-        return project.getBasePath() + File.separator;
+    public static String getModulePath(Module module, Set javaResourceRootTypes) {
+        AtomicReference<String> path = new AtomicReference<>();
+        ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
+        fileIndex.iterateContent(fileOrDir -> {
+            if (fileOrDir.isDirectory() && fileIndex.isUnderSourceRootOfType(fileOrDir, javaResourceRootTypes)) {
+                String canonicalPath = fileOrDir.getCanonicalPath();
+                path.set(canonicalPath);
+                return false;
+            }
+            return true;
+        });
+        return path.get();
+    }
+
+
+    public static PsiDirectory getModuleDirectory(Module module, Set javaResourceRootTypes) {
+        AtomicReference<PsiDirectory> directory = new AtomicReference<>();
+        ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
+        fileIndex.iterateContent(fileOrDir -> {
+            if (fileOrDir.isDirectory() && fileIndex.isUnderSourceRootOfType(fileOrDir, javaResourceRootTypes)) {
+                directory.set(VirtualFileUtils.getPsiDirectory(module.getProject(), fileOrDir));
+                return false;
+            }
+            return true;
+        });
+        return directory.get();
     }
 
 
