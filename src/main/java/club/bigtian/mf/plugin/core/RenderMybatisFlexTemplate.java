@@ -10,7 +10,9 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
@@ -32,6 +34,7 @@ import java.util.Map;
  * @date 2023/06/27
  */
 public class RenderMybatisFlexTemplate {
+    private static final Logger LOG = Logger.getInstance(RenderMybatisFlexTemplate.class);
 
     public static void assembleData(List<TableInfo> selectedTableInfo, MybatisFlexConfig config, @Nullable Project project) {
         VelocityEngine velocityEngine = new VelocityEngine();
@@ -42,7 +45,7 @@ public class RenderMybatisFlexTemplate {
         Map<String, String> packages = config.getPackages();
         Map<String, String> modules = config.getModules();
         for (TableInfo tableInfo : selectedTableInfo) {
-            String   className = TableCore.getClassName(tableInfo.getName(), config.getTablePrefix());
+            String className = TableCore.getClassName(tableInfo.getName(), config.getTablePrefix());
             context.put("className", className);
             context.put("requestPath", TableCore.getTableName(tableInfo.getName(), config.getTablePrefix()));
             context.put("author", ObjectUtil.defaultIfEmpty(config.getAuthor(), "mybatis-flex-helper automatic generation"));
@@ -56,48 +59,52 @@ public class RenderMybatisFlexTemplate {
             context.put("config", config);
             context.put("importClassList", SqlDialect.getImportClassList());
             context.put("table", tableInfo);
-            renderTemplate(config, project, templates, context, className, velocityEngine, templateMap, packages, suffixMap,modules);
+            renderTemplate( project, templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules);
         }
         WriteCommandAction.runWriteCommandAction(project, () -> {
-                for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
-                    List<PsiElement> list = entry.getValue();
-                    PsiDirectory directory = entry.getKey();
-                    // 如果勾选了覆盖，则删除原有文件
-                    if (config.isOverrideCheckBox()) {
-                        for (PsiElement psiFile : list) {
-                            if (psiFile instanceof PsiFile) {
-                                PsiFile file = (PsiFile) psiFile;
-                                PsiFile directoryFile = directory.findFile(file.getName());
-                                if (ObjectUtil.isNotNull(directoryFile)) {
-                                    directoryFile.delete();
-                                }
-                            }
-                        }
-                    }
-                    // 提交所有待处理的文档,防止出现索引未更新的情况
-                    PsiDocumentManager.getInstance(project).commitAllDocuments();
-                    for (PsiElement psiFile : list) {
 
-                        try {
-                            directory.add(psiFile);
-                        } catch (IncorrectOperationException e) {
-                            if (e.getMessage().contains("already exists")) {
-                                PsiFile file = (PsiFile) psiFile;
-                                Messages.showErrorDialog("文件已存在：" + file.getName(), "错误");
+            for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
+                List<PsiElement> list = entry.getValue();
+                PsiDirectory directory = entry.getKey();
+                DumbService.getInstance(project).runWithAlternativeResolveEnabled(() -> {
+                    // 如果勾选了覆盖，则删除原有文件
+                if (config.isOverrideCheckBox()) {
+                    for (PsiElement psiFile : list) {
+                        if (psiFile instanceof PsiFile) {
+                            PsiFile file = (PsiFile) psiFile;
+                            PsiFile directoryFile = directory.findFile(file.getName());
+                            if (ObjectUtil.isNotNull(directoryFile)) {
+                                directoryFile.delete();
                             }
-                            throw e;
-                        } catch (Exception e) {
-                            throw e;
                         }
                     }
                 }
+//                // 提交所有待处理的文档,防止出现索引未更新的情况
+                PsiDocumentManager.getInstance(project).commitAllDocuments();
+                for (PsiElement psiFile : list) {
+                    try {
+                        directory.add(psiFile);
+                    } catch (IncorrectOperationException e) {
+                        if (e.getMessage().contains("already exists")) {
+                            PsiFile file = (PsiFile) psiFile;
+                            Messages.showErrorDialog("文件已存在：" + file.getName(), "错误");
+                        }
+                        throw e;
+                    } catch (Exception e) {
+                        LOG.error("添加文件失败", e);
+                        Messages.showErrorDialog("索引未更新", "错误");
+                        throw e;
+                    }
+                }
+                });
+            }
         });
     }
+
 
     /**
      * 渲染模板
      *
-     * @param config         配置
      * @param project        项目
      * @param templates      模板
      * @param context        上下文
@@ -108,13 +115,13 @@ public class RenderMybatisFlexTemplate {
      * @param suffixMap
      * @param modules
      */
-    private static void renderTemplate(MybatisFlexConfig config,
-                                       @Nullable Project project,
-                                       Map<String, String> templates,
-                                       VelocityContext context,
-                                       String className,
-                                       VelocityEngine velocityEngine,
-                                       HashMap<PsiDirectory, List<PsiElement>> templateMap, Map<String, String> packages, Map<String, String> suffixMap, Map<String, String> modules) {
+    private static void renderTemplate(
+            @Nullable Project project,
+            Map<String, String> templates,
+            VelocityContext context,
+            String className,
+            VelocityEngine velocityEngine,
+            HashMap<PsiDirectory, List<PsiElement>> templateMap, Map<String, String> packages, Map<String, String> suffixMap, Map<String, String> modules) {
         for (Map.Entry<String, String> entry : templates.entrySet()) {
             StringWriter sw = new StringWriter();
             context.put("className", className);

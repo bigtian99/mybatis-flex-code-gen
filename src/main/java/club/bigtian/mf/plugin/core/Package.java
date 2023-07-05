@@ -43,11 +43,12 @@ public class Package {
         Project project = module.getProject();
         String separator = File.separator;
         String modulePath = Modules.getModulePath(module);
-        String name = module.getName();
+//        String name = module.getName().replaceAll("\\.main","");
+        String name = Modules.getModuleName(module);
         if (!modulePath.contains(name)) {
             modulePath = modulePath + File.separator + name;
         }
-        String path = modulePath + separator + StrUtil.format("src{}main{}resources{}", separator, separator, separator);
+        String path = modulePath + separator + StrUtil.format("{}src{}main{}resources{}", separator,separator, separator, separator);
         ArrayList<String> resourcesList = new ArrayList<>();
         getSubDirectory(path, resourcesList);
         PsiManager psiManager = PsiManager.getInstance(project);

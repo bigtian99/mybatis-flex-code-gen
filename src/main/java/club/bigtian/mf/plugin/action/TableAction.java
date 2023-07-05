@@ -1,6 +1,7 @@
 package club.bigtian.mf.plugin.action;
 
 import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateWin;
+import club.bigtian.mf.plugin.windows.ProgressBarDialog;
 import com.intellij.database.model.DasTable;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -16,6 +17,14 @@ public class TableAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+//        VirtualFile virtualFile = VirtualFileUtils.transToJavaFile("/Users/daijunxiong/code/MybatisFlex-Hepler/src/main/resources/club/mappingsxml");
+//        WriteCommandAction.runWriteCommandAction(e.getProject(), () -> {
+//            PsiDirectoryFactory.getInstance(e.getProject()).createDirectory(virtualFile);
+//        });
+
+
+
+        // 在对话框显示后开始更新进度
         MybatisFlexCodeGenerateWin generateWin = new MybatisFlexCodeGenerateWin(e);
         generateWin.show();
     }

@@ -66,6 +66,9 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private JCheckBox selectAllChexBox;
     private JTextField tableSearch;
     private FixedSizeButton sortBtn;
+    private JProgressBar progressBar;
+    private JPanel progressBarPanel;
+    private JLabel genLabel;
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
     List<JTextField> packageList = Arrays.asList(controllerPath, modelPackagePath, serviceIntefacePath, serviceImpPath, mapperPackagePath, mapperXmlPath);
@@ -332,7 +335,11 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         for (String tableName : selectedTabeList) {
             selectedTableInfo.add(tableInfoMap.get(tableName));
         }
+        progressBar.setMaximum(selectedTableInfo.size());
+        progressBarPanel.setVisible(true);
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
+
+
         NotificationUtils.notifySuccess("代码生成成功", actionEvent.getProject());
         SqlDialect.clear();
         dispose();

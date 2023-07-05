@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
  */
 public class Modules {
     private static Map<String, Module> moduleMap;
+    private static Boolean isManvenProject;
 
     /**
      * 获取模块
@@ -31,8 +32,7 @@ public class Modules {
      * @return {@code List<String>}
      */
     public static void addModulesItem(Project project, List<JComboBox> modulesComboxs) {
-        VirtualFile virtualFile = project.getBaseDir().findChild("pom.xml");
-        boolean isManvenProject = ObjectUtil.isNotNull(virtualFile);
+        boolean isManvenProject = isManvenProject(project);
         Module[] modules = ModuleManager.getInstance(project).getModules();
         for (JComboBox modulesCombox : modulesComboxs) {
             modulesCombox.setRenderer(new ModuleComBoxRender());
@@ -44,11 +44,25 @@ public class Modules {
                         // 非maven项目只显示main模块,只有main模块才有java目录
                         return el.getName().contains(".main");
                     })
-                    .collect(Collectors.toMap(Module::getName, module -> module));
+                    .collect(Collectors.toMap(el -> el.getName().split("\\.")[0], module -> module));
             FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().toList());
             modulesCombox.setModel(model);
             modulesCombox.setSelectedIndex(0);
         }
+    }
+
+    /**
+     * 判断是否manven项目
+     *
+     * @param project 项目
+     * @return boolean
+     */
+    public static boolean isManvenProject(Project project) {
+        if (ObjectUtil.isNull(isManvenProject)) {
+            VirtualFile virtualFile = project.getBaseDir().findChild("pom.xml");
+            isManvenProject = ObjectUtil.isNotNull(virtualFile);
+        }
+        return isManvenProject;
     }
 
 
@@ -122,5 +136,9 @@ public class Modules {
             modulesCombox.repaint();
         }
 
+    }
+
+    public static String getModuleName(Module module) {
+        return module.getName().replaceAll("\\.main", "");
     }
 }
