@@ -54,15 +54,16 @@ public class VirtualFileUtils {
      */
     public static PsiDirectory getPsiDirectory(Module module, String packageName, String key) {
         String modulePath = Modules.getModulePath(module);
-        String name =Modules.getModuleName(module);
+        String name = Modules.getModuleName(module);
         String separator = File.separator;
         if (!modulePath.contains(name)) {
-            modulePath = modulePath + separator + name+ separator ;
+            modulePath = modulePath + separator + name + separator;
         }
-        String path = StrUtil.format("src{}main{}java{}",separator,separator,separator);
+        String path = StrUtil.format("src{}main{}java{}", separator, separator, separator);
         if (StrUtil.isEmpty(key)) {
-            path = StrUtil.format("src{}main{}resources{}",separator,separator,separator);
+            path = StrUtil.format("src{}main{}resources{}", separator, separator, separator);
         }
+        createSubDirectory(module.getProject(), modulePath + path, packageName);
         modulePath = modulePath + path + packageName.replace(".", separator);
         PsiManager psiManager = PsiManager.getInstance(module.getProject());
         VirtualFile virtualFile = transToJavaFile(modulePath);
@@ -70,11 +71,23 @@ public class VirtualFileUtils {
         try {
             psiDirectory = psiManager.findDirectory(virtualFile);
         } catch (Exception e) {
-            Messages.showErrorDialog(StrUtil.format("找不到路径为【{}】的文件夹",modulePath),"错误");
+            Messages.showErrorDialog(StrUtil.format("找不到路径为【{}】的文件夹", modulePath), "错误");
             throw new RuntimeException(e);
         }
         return psiDirectory;
     }
 
-
+    public static void createSubDirectory(Project project, String targetPath, String packageName) {
+        PsiDirectory targetDirectory = getPsiDirectory(project, targetPath);
+        if (targetDirectory != null) {
+            String[] directories = packageName.split("\\.");
+            for (String directoryName : directories) {
+                PsiDirectory subdirectory = targetDirectory.findSubdirectory(directoryName);
+                if (subdirectory == null) {
+                    subdirectory = targetDirectory.createSubdirectory(directoryName);
+                }
+                targetDirectory = subdirectory;
+            }
+        }
+    }
 }
