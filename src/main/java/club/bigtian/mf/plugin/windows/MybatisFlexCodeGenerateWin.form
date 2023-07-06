@@ -90,13 +90,14 @@
                   </model>
                 </properties>
               </component>
-              <component id="d48dd" class="com.intellij.ui.components.ActionLink" binding="settingLabel">
+              <component id="b7074" class="com.intellij.openapi.ui.FixedSizeButton" binding="settingLabel">
                 <constraints>
                   <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text value="设置"/>
-                  <visited value="false"/>
+                  <icon value="icons/setting.png"/>
+                  <text value=""/>
+                  <toolTipText value="设置"/>
                 </properties>
               </component>
               <component id="ac4c8" class="javax.swing.JLabel">
@@ -463,7 +464,7 @@
           <borderPainted value="true"/>
           <requestFocusEnabled value="true"/>
           <stringPainted value="true"/>
-          <visible value="true"/>
+          <visible value="false"/>
         </properties>
       </component>
     </children>

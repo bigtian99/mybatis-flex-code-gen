@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.mybatisflex.plugin"
-version = "1.0-SNAPSHOT"
+version = "1.1-SNAPSHOT"
 
 repositories {
     maven {
@@ -36,15 +36,15 @@ tasks {
     }
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+        sourceCompatibility = "8"
+        targetCompatibility = "8"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions.jvmTarget = "17"
     }
 
     patchPluginXml {
-        sinceBuild.set("201.0")
+        sinceBuild.set("191.0")
         untilBuild.set("232.*")
     }
 

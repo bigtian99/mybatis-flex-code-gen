@@ -29,7 +29,7 @@ mybatisFlex code generation is based on the official code generation template, b
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <!--        打开项目的时候获取project-->
-        <applicationInitializedListener implementation="club.bigtian.mf.plugin.core.util.MyApplicationComponent"/>
+<!--        <applicationInitializedListener implementation="club.bigtian.mf.plugin.core.util.MyApplicationComponent"/>-->
         <!--        <applicationConfigurable groupId="MybatisFlex" displayName="MybatisFlexHelper"-->
         <!--                                 id="MybatisFlexPluginConfigurable"-->
         <!--                                 instance="com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings"/>-->
@@ -41,5 +41,5 @@ mybatisFlex code generation is based on the official code generation template, b
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
     </actions>
-    <idea-version since-build="201.0"/>
+    <idea-version since-build="191.0"/>
 </idea-plugin>

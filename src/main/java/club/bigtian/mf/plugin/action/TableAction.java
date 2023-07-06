@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.action;
 
+import club.bigtian.mf.plugin.core.util.TableUtils;
 import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateWin;
 import com.intellij.database.model.DasTable;
 import com.intellij.openapi.actionSystem.AnAction;

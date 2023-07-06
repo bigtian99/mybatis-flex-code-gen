@@ -61,7 +61,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private FixedSizeButton mapperXmlBtn;
     private JComboBox xmlComBox;
     private JCheckBox syncCheckBox;
-    private ActionLink settingLabel;
+    private FixedSizeButton settingLabel;
 
     private JComboBox sinceComBox;
     private JList tableList;
@@ -341,14 +341,10 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         }
         progressBar.setMaximum(selectedTableInfo.size());
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
-
-//        onCancel();
         NotificationUtils.notifySuccess("代码生成成功", project);
         watch.stop();
         System.out.println("代码生成耗时：" + watch.getTotalTimeMillis() + "ms");
         System.out.println("代码生成耗时：" + watch.getTotal(TimeUnit.SECONDS) + "s");
-
-
         onCancel();
     }
 

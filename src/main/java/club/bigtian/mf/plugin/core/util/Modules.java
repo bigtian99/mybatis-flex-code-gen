@@ -50,7 +50,7 @@ public class Modules {
                         return el.getName().contains(".main");
                     })
                     .collect(Collectors.toMap(el -> el.getName().split("\\.")[0], module -> module));
-            FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().toList());
+            FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().collect(Collectors.toList()));
             modulesCombox.setModel(model);
             modulesCombox.setSelectedIndex(0);
         }
@@ -63,10 +63,8 @@ public class Modules {
      * @return boolean
      */
     public static boolean isManvenProject(Project project) {
-//        if (ObjectUtil.isNull(isManvenProject)) {
         VirtualFile virtualFile = project.getBaseDir().findChild("pom.xml");
         isManvenProject = ObjectUtil.isNotNull(virtualFile);
-//        }
         return isManvenProject;
     }
 
