@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 渲染MybatisFlex模板
@@ -66,44 +65,40 @@ public class RenderMybatisFlexTemplate {
             context.put("table", tableInfo);
             renderTemplate(templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules, factory);
         }
-
-
         WriteCommandAction.runWriteCommandAction(project, () -> {
             for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
                 List<PsiElement> list = entry.getValue();
                 PsiDirectory directory = entry.getKey();
-                CompletableFuture.runAsync(() -> {
-                    DumbService.getInstance(project).runWithAlternativeResolveEnabled(() -> {
-                        // 如果勾选了覆盖，则删除原有文件
-                        if (config.isOverrideCheckBox()) {
-                            for (PsiElement psiFile : list) {
-                                if (psiFile instanceof PsiFile) {
-                                    PsiFile file = (PsiFile) psiFile;
-                                    PsiFile directoryFile = directory.findFile(file.getName());
-                                    if (ObjectUtil.isNotNull(directoryFile)) {
-                                        directoryFile.delete();
-                                    }
-                                }
-                            }
-                        }
-//                // 提交所有待处理的文档,防止出现索引未更新的情况
-                        PsiDocumentManager.getInstance(project).commitAllDocuments();
+                DumbService.getInstance(project).runWithAlternativeResolveEnabled(() -> {
+                    // 如果勾选了覆盖，则删除原有文件
+                    if (config.isOverrideCheckBox()) {
                         for (PsiElement psiFile : list) {
-                            try {
-                                directory.add(psiFile);
-                            } catch (IncorrectOperationException e) {
-                                if (e.getMessage().contains("already exists")) {
-                                    PsiFile file = (PsiFile) psiFile;
-                                    Messages.showErrorDialog("文件已存在：" + file.getName(), "错误");
+                            if (psiFile instanceof PsiFile) {
+                                PsiFile file = (PsiFile) psiFile;
+                                PsiFile directoryFile = directory.findFile(file.getName());
+                                if (ObjectUtil.isNotNull(directoryFile)) {
+                                    directoryFile.delete();
                                 }
-                                throw e;
-                            } catch (Exception e) {
-                                LOG.error("添加文件失败", e);
-                                Messages.showErrorDialog("索引未更新", "错误");
-                                throw e;
                             }
                         }
-                    });
+                    }
+//                // 提交所有待处理的文档,防止出现索引未更新的情况
+                    PsiDocumentManager.getInstance(project).commitAllDocuments();
+                    for (PsiElement psiFile : list) {
+                        try {
+                            directory.add(psiFile);
+                        } catch (IncorrectOperationException e) {
+                            if (e.getMessage().contains("already exists")) {
+                                PsiFile file = (PsiFile) psiFile;
+                                Messages.showErrorDialog("文件已存在：" + file.getName(), "错误");
+                            }
+                            throw e;
+                        } catch (Exception e) {
+                            LOG.error("添加文件失败", e);
+                            Messages.showErrorDialog("索引未更新", "错误");
+                            throw e;
+                        }
+                    }
                 });
             }
         });

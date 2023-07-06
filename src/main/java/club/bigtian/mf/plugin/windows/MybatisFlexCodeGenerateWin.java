@@ -68,6 +68,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     private JCheckBox selectAllChexBox;
     private JTextField tableSearch;
     private FixedSizeButton sortBtn;
+    private JProgressBar progressBar;
 
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
@@ -219,6 +220,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
             }
         });
         setSelectTalbe(actionEvent);
+
     }
 
     /**
@@ -337,13 +339,20 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         for (String tableName : selectedTabeList) {
             selectedTableInfo.add(tableInfoMap.get(tableName));
         }
+        progressBar.setMaximum(selectedTableInfo.size());
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
-        NotificationUtils.notifySuccess("代码生成成功", actionEvent.getProject());
+
+//        onCancel();
+        NotificationUtils.notifySuccess("代码生成成功", project);
         watch.stop();
         System.out.println("代码生成耗时：" + watch.getTotalTimeMillis() + "ms");
         System.out.println("代码生成耗时：" + watch.getTotal(TimeUnit.SECONDS) + "s");
+
+
         onCancel();
     }
+
+
 
     /**
      * 取消按钮事件
