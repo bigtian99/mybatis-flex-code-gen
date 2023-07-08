@@ -9,9 +9,9 @@ import club.bigtian.mf.plugin.core.render.TableListCellRenderer;
 import club.bigtian.mf.plugin.core.search.InvertedIndexSearch;
 import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.core.validator.InputValidatorImpl;
+import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.StopWatch;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.icons.AllIcons;
@@ -22,7 +22,6 @@ import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.DocumentAdapter;
-import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +31,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -328,8 +326,6 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
      * 生成按钮事件
      */
     private void onGenerate() {
-        StopWatch watch = new StopWatch();
-        watch.start();
         List<String> selectedTabeList = tableList.getSelectedValuesList();
         if (CollUtil.isEmpty(selectedTabeList)) {
             Messages.showWarningDialog("请选择要生成的表", "提示");
@@ -339,22 +335,43 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         for (String tableName : selectedTabeList) {
             selectedTableInfo.add(tableInfoMap.get(tableName));
         }
+        boolean flag = checkTableInfo(selectedTableInfo);
+        if (flag) {
+            startGenCode(selectedTableInfo);
+        }
+    }
+
+    private void startGenCode(List<TableInfo> selectedTableInfo) {
         progressBar.setMaximum(selectedTableInfo.size());
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
         NotificationUtils.notifySuccess("代码生成成功", project);
-        watch.stop();
-        System.out.println("代码生成耗时：" + watch.getTotalTimeMillis() + "ms");
-        System.out.println("代码生成耗时：" + watch.getTotal(TimeUnit.SECONDS) + "s");
         onCancel();
     }
 
+    private boolean checkTableInfo(List<TableInfo> selectedTableInfo) {
+        List<TableInfo> confirmTableList = selectedTableInfo.stream()
+                .filter(el -> {
+                    Optional<ColumnInfo> columnInfo = el.getColumnList()
+                            .stream()
+                            .filter(els -> "Object".equalsIgnoreCase(els.getFieldType()))
+                            .findAny();
+                    return columnInfo.isPresent();
+                })
+                .collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(confirmTableList)) {
+            ConfirmTableInfoDialog dialog = new ConfirmTableInfoDialog(confirmTableList, () -> {
+                startGenCode(selectedTableInfo);
+            });
+            dialog.show();
+        }
+        return CollUtil.isEmpty(confirmTableList);
+    }
 
 
     /**
      * 取消按钮事件
      */
     private void onCancel() {
-        SqlDialect.clear();
         InvertedIndexSearch.clear();
         VirtualFileUtils.clearPsiDirectoryMap();
         dispose();

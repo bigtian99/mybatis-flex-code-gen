@@ -1,6 +1,10 @@
 package club.bigtian.mf.plugin.entity;
 
+import cn.hutool.core.collection.CollUtil;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 表信息
@@ -23,6 +27,22 @@ public class TableInfo {
      * 列信息集合
      */
     private List<ColumnInfo> columnList;
+
+    /**
+     * 导入的类集合
+     */
+    private Set<String> importClassList;
+
+    public Set<String> getImportClassList() {
+        return importClassList;
+    }
+
+    public void addImportClassItem(String importClassItem) {
+        if (CollUtil.isEmpty(importClassList)) {
+            importClassList = new HashSet<>();
+        }
+        this.importClassList.add(importClassItem);
+    }
 
     public String getName() {
         return name;
@@ -47,7 +67,6 @@ public class TableInfo {
     public void setColumnList(List<ColumnInfo> columnList) {
         this.columnList = columnList;
     }
-
 
 
     @Override

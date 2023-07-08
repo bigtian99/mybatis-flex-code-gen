@@ -3,7 +3,6 @@ package club.bigtian.mf.plugin.core;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.util.CodeReformat;
 import club.bigtian.mf.plugin.core.util.Modules;
-import club.bigtian.mf.plugin.core.util.SqlDialect;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.util.ObjectUtil;
@@ -61,7 +60,7 @@ public class RenderMybatisFlexTemplate {
             context.put("implName", className + ObjectUtil.defaultIfNull(config.getImplSuffix(), "ServiceImpl"));
             context.put("mapperName", className + ObjectUtil.defaultIfNull(config.getMapperSuffix(), "Mapper"));
             context.put("config", config);
-            context.put("importClassList", SqlDialect.getImportClassList());
+            context.put("importClassList", tableInfo.getImportClassList());
             context.put("table", tableInfo);
             renderTemplate(templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules, factory);
         }

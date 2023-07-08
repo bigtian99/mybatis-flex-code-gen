@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -84,7 +85,8 @@ public class TableUtils {
                 columnInfo.setFieldName(StrUtil.toCamelCase(dasColumn.getName()));
                 String jdbcTypeStr = getFieldType(dasColumn.getDataType().typeName);
                 int jdbc = dialect.getJavaTypeForNativeType(jdbcTypeStr);
-                columnInfo.setFieldType(getFieldType(jdbc));
+                String fieldType = getFieldType(jdbc, tableInfo);
+                columnInfo.setFieldType(fieldType);
                 columnInfo.setComment(dasColumn.getComment());
                 columnInfo.setMethodName(StrUtil.upperFirst(columnInfo.getFieldName()));
                 columnInfo.setType(JdbcUtil.getJdbcTypeName(jdbc));
@@ -103,10 +105,18 @@ public class TableUtils {
      * @param jdbc jdbc
      * @return {@code String}
      */
-    private static String getFieldType(int jdbc) {
+    private static String getFieldType(int jdbc, TableInfo tableInfo) {
         String className = convert(jdbc).getName();
-        SqlDialect.addImportClass(className);
-        return className.substring(className.lastIndexOf(".") + 1);
+        boolean flag = className.contains(";");
+        if (flag) {
+            className = className.replace(";", "").replace("[L", "");
+        }
+        tableInfo.addImportClassItem(className);
+        String fieldType = className.substring(className.lastIndexOf(".") + 1);
+        if (flag) {
+            fieldType += "[]";
+        }
+        return fieldType;
     }
 
 
@@ -143,16 +153,16 @@ public class TableUtils {
             case Types.LONGVARCHAR:
             case Types.LONGNVARCHAR:
                 return String.class;
-            case Types.DATE:
-                return java.sql.Date.class;
             case Types.TIME:
-                return java.sql.Time.class;
+//                return java.sql.Time.class;
             case Types.TIMESTAMP:
-                return java.sql.Timestamp.class;
+//                return java.sql.Timestamp.class;
+            case Types.DATE:
+                return Date.class;
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
-                return byte[].class;
+                return Byte[].class;
             case Types.CLOB:
             case Types.NCLOB:
             case Types.BLOB:
