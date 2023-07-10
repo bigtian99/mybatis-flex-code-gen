@@ -1,14 +1,15 @@
 package club.bigtian.mf.plugin.core.persistent;
 
+import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +32,9 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
     private State myState = new State();
 
     public static MybatisFlexPluginConfigData getInstance() {
-        return ServiceManager.getService(MybatisFlexPluginConfigData.class);
+        ComponentManager componentManager = ApplicationManager.getApplication();
+        MybatisFlexPluginConfigData service = componentManager.getService(MybatisFlexPluginConfigData.class);
+        return service;
     }
 
     public static void clear() {
@@ -112,16 +115,56 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
 
 
     public static class State {
+        /**
+         * 当前项目配置（项目隔离）
+         */
         public String mybatisFlexConfig = "{}";
+        /**
+         * 生成配置（项目隔离）
+         */
         public String configSince = "{}";
+        /**
+         * 列类型和字段类型映射（通用）
+         */
+        public String colunmFieldMap = "{}";
 
+    }
+
+    /**
+     * 获取字段类型
+     *
+     * @param columnType 列类型
+     * @return {@code String}
+     */
+    public static String getFieldType(String columnType) {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        Map<String, String> colunmFieldMap = JSONObject.parseObject(state.colunmFieldMap, new TypeReference<Map<String, String>>() {
+        });
+        return colunmFieldMap.get(columnType);
+    }
+
+    /**
+     * 设置字段类型
+     *
+     * @param columnType    列类型
+     * @param qualifiedName 限定名
+     */
+    public static void setFieldType(String columnType, String qualifiedName) {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        Map<String, String> colunmFieldMap = JSONObject.parseObject(state.colunmFieldMap, new TypeReference<Map<String, String>>() {
+        });
+        colunmFieldMap.put(columnType.toLowerCase(), qualifiedName);
+        state.colunmFieldMap = JSONObject.toJSONString(colunmFieldMap);
+        instance.loadState(state);
     }
 
     /**
      * 获取项目配置（全局）
      *
      * @return {@code Map<String, LinkedHashMap<String, MybatisFlexConfig>>}
-     *///工具方法
+     */// 工具方法
     @Nullable
     private static LinkedHashMap<String, LinkedHashMap<String, MybatisFlexConfig>> getProjectSinceMap() {
         MybatisFlexPluginConfigData instance = getInstance();
@@ -150,7 +193,7 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
         Map<String, LinkedHashMap<String, MybatisFlexConfig>> projectMap = getProjectSinceMap();
-        projectMap.computeIfAbsent(ProjectUtils.getCurrentProjectName(),k-> new LinkedHashMap<>()).put(key, config);
+        projectMap.computeIfAbsent(ProjectUtils.getCurrentProjectName(), k -> new LinkedHashMap<>()).put(key, config);
         state.configSince = JSONObject.toJSONString(projectMap);
         instance.loadState(state);
     }

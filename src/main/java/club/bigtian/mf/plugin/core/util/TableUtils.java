@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.core.util;
 
+import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.util.StrUtil;
@@ -84,12 +85,14 @@ public class TableUtils {
                 columnInfo.setName(dasColumn.getName());
                 columnInfo.setFieldName(StrUtil.toCamelCase(dasColumn.getName()));
                 String jdbcTypeStr = getFieldType(dasColumn.getDataType().typeName);
+
                 int jdbc = dialect.getJavaTypeForNativeType(jdbcTypeStr);
-                String fieldType = getFieldType(jdbc, tableInfo);
+                String jdbcTypeName = JdbcUtil.getJdbcTypeName(jdbc);
+                String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName);
                 columnInfo.setFieldType(fieldType);
                 columnInfo.setComment(dasColumn.getComment());
                 columnInfo.setMethodName(StrUtil.upperFirst(columnInfo.getFieldName()));
-                columnInfo.setType(JdbcUtil.getJdbcTypeName(jdbc));
+                columnInfo.setType(jdbcTypeName);
                 columnInfo.setPrimaryKey(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.PRIMARY_KEY));
                 columnInfo.setAutoIncrement(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.AUTO_GENERATED));
                 columnList.add(columnInfo);
@@ -102,11 +105,19 @@ public class TableUtils {
     /**
      * 获取字段类型
      *
-     * @param jdbc jdbc
+     * @param jdbc         jdbc
+     * @param jdbcTypeName
      * @return {@code String}
      */
-    private static String getFieldType(int jdbc, TableInfo tableInfo) {
+    private static String getFieldType(int jdbc, TableInfo tableInfo, String jdbcTypeName) {
         String className = convert(jdbc).getName();
+        if (Object.class.getName().equals(className)) {
+            String fieldType = MybatisFlexPluginConfigData.getFieldType(jdbcTypeName);
+            if (StrUtil.isNotBlank(fieldType)) {
+                className = fieldType;
+            }
+        }
+
         boolean flag = className.contains(";");
         if (flag) {
             className = className.replace(";", "").replace("[L", "");

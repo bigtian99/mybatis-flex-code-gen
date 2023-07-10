@@ -1,6 +1,7 @@
 package club.bigtian.mf.plugin.windows;
 
 import club.bigtian.mf.plugin.core.function.SimpleFunction;
+import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
@@ -115,11 +116,14 @@ public class ConfirmTableInfoDialog extends JDialog {
                 tableInfoMap.values().forEach(el -> {
                     el.addImportClassItem(qualifiedName);
                 });
+                String columnType = dataTable.getValueAt(dataTable.getSelectedRow(), 2).toString().toUpperCase();
+                // 为当前类型添加持久化配置，下次同种类型的字段不需要再次选择
+                MybatisFlexPluginConfigData.setFieldType(columnType, qualifiedName);
                 if (syncCheckBox.isSelected()) {
-                    syncTypeVal(dataTable.getSelectedRow(), qualifiedName);
-                    //添加导入包
+                    syncTypeVal(columnType, qualifiedName);
+                    // 添加导入包
                 }
-                //重新渲染 table 需要重新设置事件
+                // 重新渲染 table 需要重新设置事件
                 setColumnInput();
             }
         });
@@ -139,8 +143,8 @@ public class ConfirmTableInfoDialog extends JDialog {
      *
      * @param row 行
      */
-    public void syncTypeVal(int row, String typeName) {
-        String columnType = dataTable.getValueAt(row, 2).toString().toUpperCase();
+    public void syncTypeVal(String columnType, String typeName) {
+
         List<ColumnInfo> columnInfos = columnInfoMap.get(columnType);
         for (ColumnInfo info : columnInfos) {
             info.setFieldType(typeName.substring(typeName.lastIndexOf(".") + 1));
