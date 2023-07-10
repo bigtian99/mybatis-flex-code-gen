@@ -40,6 +40,19 @@ public class ColumnInfo {
      */
     private String methodName;
 
+    /**
+     * 是否必填
+     */
+    private boolean notNull;
+
+    public boolean isNotNull() {
+        return notNull;
+    }
+
+    public void setNotNull(boolean notNull) {
+        notNull = notNull;
+    }
+
     public String getMethodName() {
         return methodName;
     }

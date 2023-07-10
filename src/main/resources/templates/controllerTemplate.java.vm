@@ -14,9 +14,16 @@ import ${config.modelPackage}.${modelName};
 import org.springframework.web.bind.annotation.RestController;
 import java.io.Serializable;
 import java.util.List;
+
 #if($config.swagger)
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+#end
+#if($config.swagger3)
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.tags.Tag;
 #end
 /**
 * $!table.comment 控制层。
@@ -28,6 +35,9 @@ import io.swagger.annotations.ApiOperation;
 @RequestMapping("/$requestPath")
 #if($config.swagger)
 @Api(tags ="$!table.comment" )
+#end
+#if($config.swagger3)
+@Tag(name = "$!{table.comment}控制层" )
 #end
 public class ${controllerName}{
 
@@ -44,6 +54,15 @@ public class ${controllerName}{
     #if($config.swagger)
     @ApiOperation(value = "添加$!table.comment", notes = "添加$!table.comment")
     #end
+    #if($config.swagger3)
+    @Operation(summary = "添加$!table.comment")
+    @Parameters(value = {
+#foreach($column in $table.columnList)
+            @Parameter(name = "$column.fieldName", description = "$!column.comment" #if($column.notNull), required = $column.notNull #end) #if($foreach.hasNext),
+           #end
+#end
+    })
+    #end
     public boolean save(@RequestBody $modelName  $requestPath) {
         return ${interfaceVariable}.save($requestPath);
     }
@@ -57,6 +76,16 @@ public class ${controllerName}{
     @DeleteMapping("/remove/{id}")
     #if($config.swagger)
     @ApiOperation(value = "根据主键删除$!table.comment", notes = "根据主键删除$!table.comment")
+    #end
+    #if($config.swagger3)
+    @Operation(summary = "根据主键删除$!table.comment")
+    @Parameters(value = {
+        #foreach($column in $table.columnList)
+          #if($column.primaryKey)
+              @Parameter(name = "$column.fieldName", description = "$!column.comment", required =true)
+          #end
+        #end
+    })
     #end
     public boolean remove(@PathVariable Serializable id) {
         return ${interfaceVariable}.removeById(id);
@@ -72,6 +101,15 @@ public class ${controllerName}{
     #if($config.swagger)
     @ApiOperation(value = "根据主键更新$!table.comment", notes = "根据主键更新$!table.comment")
     #end
+    #if($config.swagger3)
+    @Operation(summary = "根据主键更新$!table.comment")
+    @Parameters(value = {
+        #foreach($column in $table.columnList)
+            @Parameter(name = "$column.fieldName", description = "$!column.comment" #if($column.primaryKey), required = true #end) #if($foreach.hasNext),
+         #end
+        #end
+    })
+    #end
     public boolean update(@RequestBody $modelName $requestPath ) {
         return ${interfaceVariable}.updateById($requestPath);
     }
@@ -84,6 +122,9 @@ public class ${controllerName}{
     @GetMapping("/list")
     #if($config.swagger)
     @ApiOperation(value = "查询所有$!table.comment", notes = "查询所有$!table.comment")
+    #end
+    #if($config.swagger3)
+    @Operation(summary = "查询所有$!table.comment")
     #end
     public List<$modelName> list() {
         return ${interfaceVariable}.list();
@@ -99,6 +140,16 @@ public class ${controllerName}{
     #if($config.swagger)
     @ApiOperation(value = "根据$!{table.comment}主键获取详细信息", notes = "根据$!{table.comment}主键获取详细信息")
     #end
+    #if($config.swagger3)
+    @Operation(summary = "根据主键删除$!table.comment")
+    @Parameters(value = {
+        #foreach($column in $table.columnList)
+            #if($column.primaryKey)
+                @Parameter(name = "$column.fieldName", description = "$!column.comment", required =true)
+            #end
+        #end
+    })
+    #end
     public $modelName getInfo(@PathVariable Serializable id) {
         return ${interfaceVariable}.getById(id);
     }
@@ -112,6 +163,13 @@ public class ${controllerName}{
     @GetMapping("/page")
     #if($config.swagger)
     @ApiOperation(value = "分页查询$!{table.comment}", notes = "分页查询$!{table.comment}")
+    #end
+    #if($config.swagger3)
+    @Operation(summary = "分页查询$!table.comment")
+    @Parameters(value = {
+            @Parameter(name = "pageNumber", description = "页码", required = true),
+            @Parameter(name = "pageSize", description = "每页大小", required = true)
+    })
     #end
     public Page<$modelName> page(Page<$modelName> page) {
         return ${interfaceVariable}.page(page);

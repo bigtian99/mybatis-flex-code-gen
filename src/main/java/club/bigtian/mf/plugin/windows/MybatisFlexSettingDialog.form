@@ -62,7 +62,14 @@
                         <constraints/>
                         <properties>
                           <name value="swagger"/>
-                          <text value="Swagger"/>
+                          <text value="Swagger2"/>
+                        </properties>
+                      </component>
+                      <component id="8bea7" class="javax.swing.JCheckBox" binding="swagger3CheckBox" default-binding="true">
+                        <constraints/>
+                        <properties>
+                          <name value="swagger3"/>
+                          <text value="Swagger3"/>
                         </properties>
                       </component>
                     </children>

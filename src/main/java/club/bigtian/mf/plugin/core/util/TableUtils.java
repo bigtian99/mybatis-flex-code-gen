@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.core.util;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.database.dialects.DatabaseDialectEx;
 import com.intellij.database.model.DasColumn;
@@ -85,12 +86,12 @@ public class TableUtils {
                 columnInfo.setName(dasColumn.getName());
                 columnInfo.setFieldName(StrUtil.toCamelCase(dasColumn.getName()));
                 String jdbcTypeStr = getFieldType(dasColumn.getDataType().typeName);
-
                 int jdbc = dialect.getJavaTypeForNativeType(jdbcTypeStr);
                 String jdbcTypeName = JdbcUtil.getJdbcTypeName(jdbc);
                 String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName);
                 columnInfo.setFieldType(fieldType);
-                columnInfo.setComment(dasColumn.getComment());
+                columnInfo.setNotNull(dasColumn.isNotNull());
+                columnInfo.setComment(ObjectUtil.defaultIfNull(dasColumn.getComment(),"").replaceAll("\r\n",""));
                 columnInfo.setMethodName(StrUtil.upperFirst(columnInfo.getFieldName()));
                 columnInfo.setType(jdbcTypeName);
                 columnInfo.setPrimaryKey(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.PRIMARY_KEY));

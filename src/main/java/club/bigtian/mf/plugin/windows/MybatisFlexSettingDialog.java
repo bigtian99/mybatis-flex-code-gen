@@ -65,6 +65,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JPanel modelTab;
     private JPanel panel1;
     private JButton restBtn;
+    private JCheckBox swagger3CheckBox;
 
     private Project project;
 
@@ -160,13 +161,31 @@ public class MybatisFlexSettingDialog extends JDialog {
 
         restBtn.addActionListener(e -> {
             int flag = Messages.showYesNoDialog(project, "确定要恢复自带模板吗？", "提示", Messages.getQuestionIcon());
-            if (MessageConstants.YES == flag) {
+            if (0 == flag) {
                 MybatisFlexPluginConfigData.clearCode();
                 init();
                 Messages.showInfoMessage(project, "恢复成功", "提示");
             }
         });
 
+        swagger3CheckBox.addActionListener(e -> {
+            if (swagger3CheckBox.isSelected()) {
+                boolean selected = swaggerCheckBox.isSelected();
+                if (selected) {
+                    Messages.showWarningDialog("swagger2和swagger3只能选一个", "提示");
+                    swagger3CheckBox.setSelected(false);
+                }
+            }
+        });
+        swaggerCheckBox.addActionListener(e -> {
+            if (swaggerCheckBox.isSelected()) {
+                boolean selected = swagger3CheckBox.isSelected();
+                if (selected) {
+                    Messages.showWarningDialog("swagger2和swagger3只能选一个", "提示");
+                    swaggerCheckBox.setSelected(false);
+                }
+            }
+        });
     }
 
 
@@ -192,6 +211,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         mapperSuffix.setText(Template.getSuffix("mapperSuffix", mapperSuffix.getText()));
         cacheCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.CACHE));
         overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
+        swagger3CheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER3));
         initSinceComBox();
     }
 
@@ -256,6 +276,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setModelSuffix(modelSuffix.getText());
         config.setMapperSuffix(mapperSuffix.getText());
         config.setCache(cacheCheckBox.isSelected());
+        config.setSwagger3(swagger3CheckBox.isSelected());
         config.setOverrideCheckBox(overrideCheckBox.isSelected());
         return config;
     }

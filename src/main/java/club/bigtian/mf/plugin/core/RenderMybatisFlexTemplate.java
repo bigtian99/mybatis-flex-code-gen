@@ -50,13 +50,14 @@ public class RenderMybatisFlexTemplate {
         for (TableInfo tableInfo : selectedTableInfo) {
             String className = TableCore.getClassName(tableInfo.getName(), config.getTablePrefix());
             context.put("className", className);
-            context.put("requestPath", TableCore.getTableName(tableInfo.getName(), config.getTablePrefix()));
+            String tableName = TableCore.getTableName(tableInfo.getName(), config.getTablePrefix());
+            context.put("requestPath", tableName);
             context.put("author", ObjectUtil.defaultIfEmpty(config.getAuthor(), "mybatis-flex-helper automatic generation"));
             context.put("since", ObjectUtil.defaultIfEmpty(config.getSince(), "1.0"));
             context.put("controllerName", className + ObjectUtil.defaultIfNull(config.getControllerSuffix(), "Controller"));
             context.put("modelName", className + ObjectUtil.defaultIfNull(config.getModelSuffix(), "Entity"));
             context.put("interfaceName", "I" + className + ObjectUtil.defaultIfNull(config.getInterfaceSuffix(), "Service"));
-            context.put("interfaceVariable", StrUtil.toCamelCase(className + ObjectUtil.defaultIfNull(config.getInterfaceSuffix(), "Service")));
+            context.put("interfaceVariable", tableName + ObjectUtil.defaultIfNull(config.getInterfaceSuffix(), "Service"));
             context.put("implName", className + ObjectUtil.defaultIfNull(config.getImplSuffix(), "ServiceImpl"));
             context.put("mapperName", className + ObjectUtil.defaultIfNull(config.getMapperSuffix(), "Mapper"));
             context.put("config", config);

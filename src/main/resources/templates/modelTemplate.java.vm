@@ -16,6 +16,9 @@ import lombok.Builder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 #end
+#if($config.swagger3)
+import io.swagger.v3.oas.annotations.media.Schema;
+#end
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
@@ -45,6 +48,9 @@ import $classImport;
 #if($config.swagger)
 @ApiModel(value = "$!table.comment", description = "$!table.comment")
 #end
+#if($config.swagger3)
+@Schema(name = "$table.comment")
+#end
 @Table("$table.name")
 public class ${modelName} {
 
@@ -56,6 +62,9 @@ public class ${modelName} {
     #end
     #if($config.swagger && $column.comment)
     @ApiModelProperty(value = "$column.comment")
+    #end
+    #if($config.swagger3 && $column.comment)
+    @Schema(description = "$column.comment")
     #end
     #if($column.primaryKey)
     @Id(keyType = KeyType.$config.idType)

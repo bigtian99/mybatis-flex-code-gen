@@ -38,4 +38,5 @@ public class MybatisFlexConstant {
     public static final String CACHE = "cache";
     public static final String OVERRIDE = "overrideCheckBox";
     public static final String NOTICE_GROUP_ID = "mybatis-flex";
+    public static final String SWAGGER3 = "swagger3";
 }

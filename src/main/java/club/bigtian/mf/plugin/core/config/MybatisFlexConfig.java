@@ -40,6 +40,8 @@ public class MybatisFlexConfig {
      */
     private boolean swagger;
 
+    private boolean swagger3;
+
     /**
      * 控制器模板
      */
@@ -470,6 +472,14 @@ public class MybatisFlexConfig {
 
     public void setSync(boolean sync) {
         this.sync = sync;
+    }
+
+    public boolean isSwagger3() {
+        return swagger3;
+    }
+
+    public void setSwagger3(boolean swagger3) {
+        this.swagger3 = swagger3;
     }
 
     @Override
