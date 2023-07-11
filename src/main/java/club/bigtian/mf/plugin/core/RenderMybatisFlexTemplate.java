@@ -63,6 +63,12 @@ public class RenderMybatisFlexTemplate {
             context.put("config", config);
             context.put("importClassList", tableInfo.getImportClassList());
             context.put("table", tableInfo);
+            String qualifiedName = config.getQualifiedName();
+            if (StrUtil.isNotBlank(qualifiedName)) {
+                String methodName = config.getMethodName();
+                config.setMethodName(methodName.substring(0, methodName.indexOf("(")));
+                context.put("resutlClass", qualifiedName.substring(qualifiedName.lastIndexOf(".") + 1));
+            }
             renderTemplate(templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules, factory);
         }
         WriteCommandAction.runWriteCommandAction(project, () -> {

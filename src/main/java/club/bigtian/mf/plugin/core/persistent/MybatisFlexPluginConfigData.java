@@ -33,8 +33,7 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
 
     public static MybatisFlexPluginConfigData getInstance() {
         ComponentManager componentManager = ApplicationManager.getApplication();
-        MybatisFlexPluginConfigData service = componentManager.getService(MybatisFlexPluginConfigData.class);
-        return service;
+        return componentManager.getService(MybatisFlexPluginConfigData.class);
     }
 
     public static void clear() {

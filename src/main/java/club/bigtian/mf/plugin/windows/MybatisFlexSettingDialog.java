@@ -1,21 +1,19 @@
 package club.bigtian.mf.plugin.windows;
 
 import club.bigtian.mf.plugin.core.Template;
+import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
+import club.bigtian.mf.plugin.core.util.FileChooserUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.ui.MessageConstants;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.LanguageTextField;
-import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
-import club.bigtian.mf.plugin.core.util.FileChooserUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -66,7 +64,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JPanel panel1;
     private JButton restBtn;
     private JCheckBox swagger3CheckBox;
-
+    private JButton returnBtn;
     private Project project;
 
     public MybatisFlexSettingDialog(Project project) {
@@ -105,27 +103,27 @@ public class MybatisFlexSettingDialog extends JDialog {
         init();
 
         resetBtn.addActionListener(e -> {
-            int flag = Messages.showYesNoDialog(project, "确定要重置吗？", "提示", Messages.getQuestionIcon());
-            if (MessageConstants.YES == flag) {
+            int flag = Messages.showYesNoDialog("确定要重置吗？", "提示", Messages.getQuestionIcon());
+            if (0 == flag) {
                 MybatisFlexPluginConfigData.clear();
                 init();
-                Messages.showInfoMessage(project, "重置成功", "提示");
+                Messages.showInfoMessage("重置成功", "提示");
             }
         });
 
         clearAll.addActionListener(e -> {
-            int flag = Messages.showYesNoDialog(project, "确定要清空吗？", "提示", Messages.getQuestionIcon());
-            if (MessageConstants.YES == flag) {
+            int flag = Messages.showYesNoDialog("确定要清空吗？", "提示", Messages.getQuestionIcon());
+            if (0 == flag) {
                 MybatisFlexPluginConfigData.clearSince();
                 sinceConfigComBox.removeAllItems();
                 sinceConfigComBox.repaint();
-                Messages.showInfoMessage(project, "清空成功", "提示");
+                Messages.showInfoMessage("清空成功", "提示");
             }
         });
 
         del.addActionListener(e -> {
-            int flag = Messages.showYesNoDialog(project, "确定要删除吗？", "提示", Messages.getQuestionIcon());
-            if (MessageConstants.YES == flag) {
+            int flag = Messages.showYesNoDialog("确定要删除吗？", "提示", Messages.getQuestionIcon());
+            if (0 == flag) {
                 Object selectedItem = sinceConfigComBox.getSelectedItem();
                 if (ObjectUtil.isNull(selectedItem)) {
                     Messages.showErrorDialog("请选择要删除的配置", "提示");
@@ -135,7 +133,7 @@ public class MybatisFlexSettingDialog extends JDialog {
                 MybatisFlexPluginConfigData.removeSinceConfig(since);
                 sinceConfigComBox.removeItemAt(sinceConfigComBox.getSelectedIndex());
                 sinceConfigComBox.repaint();
-                Messages.showInfoMessage(project, "删除成功", "提示");
+                Messages.showInfoMessage("删除成功", "提示");
             }
         });
 
@@ -160,11 +158,11 @@ public class MybatisFlexSettingDialog extends JDialog {
         });
 
         restBtn.addActionListener(e -> {
-            int flag = Messages.showYesNoDialog(project, "确定要恢复自带模板吗？", "提示", Messages.getQuestionIcon());
+            int flag = Messages.showYesNoDialog("确定要恢复自带模板吗？", "提示", Messages.getQuestionIcon());
             if (0 == flag) {
                 MybatisFlexPluginConfigData.clearCode();
                 init();
-                Messages.showInfoMessage(project, "恢复成功", "提示");
+                Messages.showInfoMessage("恢复成功", "提示");
             }
         });
 
@@ -185,6 +183,11 @@ public class MybatisFlexSettingDialog extends JDialog {
                     swaggerCheckBox.setSelected(false);
                 }
             }
+        });
+
+        returnBtn.addActionListener(e -> {
+            ReturnInfoDialog dialog = new ReturnInfoDialog();
+            dialog.show();
         });
     }
 
@@ -255,7 +258,7 @@ public class MybatisFlexSettingDialog extends JDialog {
 
 
     public MybatisFlexConfig getConfigData() {
-        MybatisFlexConfig config = new MybatisFlexConfig();
+        MybatisFlexConfig config = Template.getMybatisFlexConfig();
         config.setControllerTemplate(controllerTemplate.getText());
         config.setModelTemplate(modelTemplate.getText());
         config.setInterfaceTempalate(interfaceTempalate.getText());
@@ -284,13 +287,11 @@ public class MybatisFlexSettingDialog extends JDialog {
 
     private void onOK() {
         MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(getConfigData());
-        Project project = ProjectManager.getInstance().getDefaultProject();
-        Messages.showMessageDialog(project, "保存成功", "提示", Messages.getInformationIcon());
+        Messages.showInfoMessage("保存成功", "提示");
         dispose();
     }
 
     private void onCancel() {
-        // add your code here if necessary
         dispose();
     }
 }

@@ -150,6 +150,25 @@ public class MybatisFlexConfig {
 
     private boolean overrideCheckBox;
 
+    /**
+     * 生成结果类型：new/static
+     */
+    private String resultType;
+
+    /**
+     * 统一返回对象
+     */
+    private String qualifiedName;
+
+    /**
+     * 方法
+     */
+    private String methodName;
+
+    /**
+     * 是否泛型
+     */
+    private  boolean genericity;
 
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
@@ -183,6 +202,7 @@ public class MybatisFlexConfig {
         data.put("", xmlPackage);
         return data;
     }
+
     public Map<String, String> getModules() {
         Map<String, String> data = new HashMap<>();
         data.put("Controller", controllerModule);
@@ -482,43 +502,35 @@ public class MybatisFlexConfig {
         this.swagger3 = swagger3;
     }
 
-    @Override
-    public String toString() {
-        return "MybatisFlexConfig{" +
-                "author='" + author + '\'' +
-                ", since='" + since + '\'' +
-                ", tablePrefix='" + tablePrefix + '\'' +
-                ", builder=" + builder +
-                ", data=" + data +
-                ", allArgsConstructor=" + allArgsConstructor +
-                ", noArgsConstructor=" + noArgsConstructor +
-                ", swagger=" + swagger +
-                ", controllerTemplate='" + controllerTemplate + '\'' +
-                ", modelTemplate='" + modelTemplate + '\'' +
-                ", interfaceTempalate='" + interfaceTempalate + '\'' +
-                ", implTemplate='" + implTemplate + '\'' +
-                ", mapperTemplate='" + mapperTemplate + '\'' +
-                ", xmlTemplate='" + xmlTemplate + '\'' +
-                ", controllerPackage='" + controllerPackage + '\'' +
-                ", modelPackage='" + modelPackage + '\'' +
-                ", interfacePackage='" + interfacePackage + '\'' +
-                ", implPackage='" + implPackage + '\'' +
-                ", mapperPackage='" + mapperPackage + '\'' +
-                ", xmlPackage='" + xmlPackage + '\'' +
-                ", controllerModule='" + controllerModule + '\'' +
-                ", modelModule='" + modelModule + '\'' +
-                ", interfaceModule='" + interfaceModule + '\'' +
-                ", implModule='" + implModule + '\'' +
-                ", mapperModule='" + mapperModule + '\'' +
-                ", xmlModule='" + xmlModule + '\'' +
-                ", sync=" + sync +
-                ", controllerSuffix='" + controllerSuffix + '\'' +
-                ", interfaceSuffix='" + interfaceSuffix + '\'' +
-                ", implSuffix='" + implSuffix + '\'' +
-                ", modelSuffix='" + modelSuffix + '\'' +
-                ", mapperSuffix='" + mapperSuffix + '\'' +
-                ", idType='" + idType + '\'' +
-                ", cache=" + cache +
-                '}';
+    public String getResultType() {
+        return resultType;
+    }
+
+    public void setResultType(String resultType) {
+        this.resultType = resultType;
+    }
+
+    public String getQualifiedName() {
+        return qualifiedName;
+    }
+
+    public void setQualifiedName(String qualifiedName) {
+        this.qualifiedName = qualifiedName;
+    }
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
+    }
+
+    public boolean isGenericity() {
+        return genericity;
+    }
+
+    public void setGenericity(boolean genericity) {
+        this.genericity = genericity;
     }
 }

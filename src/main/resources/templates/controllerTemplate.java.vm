@@ -12,9 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ${config.interfacePackage}.${interfaceName};
 import ${config.modelPackage}.${modelName};
 import org.springframework.web.bind.annotation.RestController;
+
 import java.io.Serializable;
 import java.util.List;
-
+#if($config.qualifiedName)
+import ${config.qualifiedName};
+#end
 #if($config.swagger)
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,36 +31,36 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 #end
 /**
-* $!table.comment 控制层。
-*
-* @author $author
-* @since  $since
-*/
+ * $!table.comment 控制层。
+ *
+ * @author $author
+ * @since  $since
+ */
 @RestController
 @RequestMapping("/$requestPath")
 #if($config.swagger)
-@Api(tags ="$!table.comment" )
+@Api(tags = "$!table.comment")
 #end
 #if($config.swagger3)
-@Tag(name = "$!{table.comment}控制层" )
+@Tag(name = "$!{table.comment}控制层")
 #end
 public class ${controllerName}{
 
     @Autowired
     private ${interfaceName} ${interfaceVariable};
 
-    /**
-    * 添加 $!table.comment
-    *
-    * @param $requestPath $!table.comment
-    * @return {@code true} 添加成功，{@code false} 添加失败
-    */
+/**
+ * 添加 $!table.comment
+ *
+ * @param $requestPath $!table.comment
+ * @return {@code true} 添加成功，{@code false} 添加失败
+ */
     @PostMapping("/save")
     #if($config.swagger)
     @ApiOperation(value = "添加$!table.comment", notes = "添加$!table.comment")
     @ApiImplicitParams(value = {
         #foreach($column in $table.columnList)
-          @ApiImplicitParam(name = "$column.fieldName", value = "$!column.comment" #if($column.notNull), required = $column.notNull #end) #if($foreach.hasNext),
+                @ApiImplicitParam(name = "$column.fieldName", value = "$!column.comment" #if($column.notNull), required = $column.notNull #end) #if($foreach.hasNext),
         #end
         #end
     })
@@ -65,29 +68,40 @@ public class ${controllerName}{
     #if($config.swagger3)
     @Operation(summary = "添加$!table.comment")
     @Parameters(value = {
-#foreach($column in $table.columnList)
-            @Parameter(name = "$column.fieldName", description = "$!column.comment" #if($column.notNull), required = $column.notNull #end) #if($foreach.hasNext),
-           #end
-#end
+        #foreach($column in $table.columnList)
+                @Parameter(name = "$column.fieldName", description = "$!column.comment" #if($column.notNull), required = $column.notNull #end) #if($foreach.hasNext),
+        #end
+        #end
     })
     #end
-    public boolean save(@RequestBody $modelName  $requestPath) {
+#if($config.qualifiedName)
+    public ${resutlClass} #if($config.genericity)<$modelName> #end save(@RequestBody $modelName  $requestPath){
+#if($config.resultType=='static')
+        return ${resutlClass}.${config.methodName}(${interfaceVariable}.save($requestPath));
+#else
+        return new ${resutlClass}(${interfaceVariable}.save($requestPath));
+#end
+        }
+#else
+    public boolean save(@RequestBody $modelName  $requestPath){
         return ${interfaceVariable}.save($requestPath);
     }
+#end
 
-    /**
-    * 根据主键删除$!table.comment
-    *
-    * @param id 主键
-    * @return {@code true} 删除成功，{@code false} 删除失败
-    */
+
+/**
+ * 根据主键删除$!table.comment
+ *
+ * @param id 主键
+ * @return {@code true} 删除成功，{@code false} 删除失败
+ */
     @DeleteMapping("/remove/{id}")
     #if($config.swagger)
     @ApiOperation(value = "根据主键删除$!table.comment", notes = "根据主键删除$!table.comment")
     @ApiImplicitParams(value = {
         #foreach($column in $table.columnList)
             #if($column.primaryKey)
-                    @ApiImplicitParam(name = "$column.fieldName", value = "$!column.comment", required =true)
+                    @ApiImplicitParam(name = "$column.fieldName", value = "$!column.comment", required = true)
             #end
         #end
     })
@@ -96,22 +110,33 @@ public class ${controllerName}{
     @Operation(summary = "根据主键删除$!table.comment")
     @Parameters(value = {
         #foreach($column in $table.columnList)
-          #if($column.primaryKey)
-              @Parameter(name = "$column.fieldName", description = "$!column.comment", required =true)
-          #end
+            #if($column.primaryKey)
+                    @Parameter(name = "$column.fieldName", description = "$!column.comment", required = true)
+            #end
         #end
     })
     #end
-    public boolean remove(@PathVariable Serializable id) {
+#if($config.qualifiedName)
+    public ${resutlClass} remove(@PathVariable Serializable id){
+    #if($config.resultType=='static')
+            return ${resutlClass}.${config.methodName}(${interfaceVariable}.removeById(id));
+    #else
+            return new ${resutlClass}(${interfaceVariable}.removeById(id));
+    #end
+    }
+#else
+    public boolean remove(@PathVariable Serializable id){
         return ${interfaceVariable}.removeById(id);
     }
+#end
 
-    /**
-    * 根据主键更新$!table.comment
-    *
-    * @param $requestPath $!table.comment
-    * @return {@code true} 更新成功，{@code false} 更新失败
-    */
+
+/**
+ * 根据主键更新$!table.comment
+ *
+ * @param $requestPath $!table.comment
+ * @return {@code true} 更新成功，{@code false} 更新失败
+ */
     @PutMapping("/update")
     #if($config.swagger)
     @ApiOperation(value = "根据主键更新$!table.comment", notes = "根据主键更新$!table.comment")
@@ -126,20 +151,31 @@ public class ${controllerName}{
     @Operation(summary = "根据主键更新$!table.comment")
     @Parameters(value = {
         #foreach($column in $table.columnList)
-            @Parameter(name = "$column.fieldName", description = "$!column.comment" #if($column.primaryKey), required = true #end) #if($foreach.hasNext),
-         #end
+                @Parameter(name = "$column.fieldName", description = "$!column.comment" #if($column.primaryKey), required = true #end) #if($foreach.hasNext),
+        #end
         #end
     })
     #end
-    public boolean update(@RequestBody $modelName $requestPath ) {
+#if($config.qualifiedName)
+    public  ${resutlClass} update(@RequestBody $modelName $requestPath ){
+    #if($config.resultType=='static')
+            return ${resutlClass}.${config.methodName}(${interfaceVariable}.updateById($requestPath));
+    #else
+            return new ${resutlClass}(${interfaceVariable}.updateById($requestPath));
+    #end
+    }
+#else
+    public boolean update(@RequestBody $modelName $requestPath ){
         return ${interfaceVariable}.updateById($requestPath);
     }
+#end
 
-    /**
-    * 查询所有$!table.comment
-    *
-    * @return 所有数据
-    */
+
+/**
+ * 查询所有$!table.comment
+ *
+ * @return 所有数据
+ */
     @GetMapping("/list")
     #if($config.swagger)
     @ApiOperation(value = "查询所有$!table.comment", notes = "查询所有$!table.comment")
@@ -147,23 +183,34 @@ public class ${controllerName}{
     #if($config.swagger3)
     @Operation(summary = "查询所有$!table.comment")
     #end
-    public List<$modelName> list() {
+#if($config.qualifiedName)
+    public ${resutlClass}#if($config.genericity)<List<$modelName>> #end list(){
+    #if($config.resultType=='static')
+            return ${resutlClass}.${config.methodName}(${interfaceVariable}.list());
+    #else
+            return new ${resutlClass}(${interfaceVariable}.list());
+    #end
+    }
+#else
+    public List<$modelName> list(){
         return ${interfaceVariable}.list();
     }
+#end
 
-    /**
-    * 根据$!{table.comment}主键获取详细信息。
-    *
-    * @param id ${requestPath}主键
-    * @return $!{table.comment}详情
-    */
+
+/**
+ * 根据$!{table.comment}主键获取详细信息。
+ *
+ * @param id ${requestPath}主键
+ * @return $!{table.comment}详情
+ */
     @GetMapping("/getInfo/{id}")
     #if($config.swagger)
     @ApiOperation(value = "根据$!{table.comment}主键获取详细信息", notes = "根据$!{table.comment}主键获取详细信息")
     @ApiImplicitParams(value = {
         #foreach($column in $table.columnList)
             #if($column.primaryKey)
-                    @ApiImplicitParam(name = "$column.fieldName", value = "$!column.comment", required =true)
+                    @ApiImplicitParam(name = "$column.fieldName", value = "$!column.comment", required = true)
             #end
         #end
     })
@@ -173,21 +220,32 @@ public class ${controllerName}{
     @Parameters(value = {
         #foreach($column in $table.columnList)
             #if($column.primaryKey)
-                @Parameter(name = "$column.fieldName", description = "$!column.comment", required =true)
+                    @Parameter(name = "$column.fieldName", description = "$!column.comment", required = true)
             #end
         #end
     })
     #end
-    public $modelName getInfo(@PathVariable Serializable id) {
+#if($config.qualifiedName)
+    public ${resutlClass}#if($config.genericity)<$modelName> #end  getInfo(@PathVariable Serializable id){
+    #if($config.resultType=='static')
+            return ${resutlClass}.${config.methodName}(${interfaceVariable}.getById(id));
+    #else
+            return new ${resutlClass}(${interfaceVariable}.getById(id));
+    #end
+    }
+#else
+    public $modelName getInfo(@PathVariable Serializable id){
         return ${interfaceVariable}.getById(id);
     }
+#end
 
-    /**
-    * 分页查询$!{table.comment}
-    *
-    * @param page 分页对象
-    * @return 分页对象
-    */
+
+/**
+ * 分页查询$!{table.comment}
+ *
+ * @param page 分页对象
+ * @return 分页对象
+ */
     @GetMapping("/page")
     #if($config.swagger)
     @ApiOperation(value = "分页查询$!{table.comment}", notes = "分页查询$!{table.comment}")
@@ -203,8 +261,17 @@ public class ${controllerName}{
             @Parameter(name = "pageSize", description = "每页大小", required = true)
     })
     #end
-    public Page<$modelName> page(Page<$modelName> page) {
+#if($config.qualifiedName)
+    public ${resutlClass}#if($config.genericity)<Page<$modelName>> #end page(Page<$modelName> page){
+    #if($config.resultType=='static')
+            return ${resutlClass}.${config.methodName}(${interfaceVariable}.page(page));
+    #else
+            return new ${resutlClass}(${interfaceVariable}.page(page));
+    #end
+    }
+#else
+    public ${resutlClass}#if($config.genericity)<Page<$modelName>> #end page(Page<$modelName> page){
         return ${interfaceVariable}.page(page);
     }
-
+#end
 }
