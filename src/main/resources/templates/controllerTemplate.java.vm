@@ -270,7 +270,7 @@ public class ${controllerName}{
     #end
     }
 #else
-    public ${resutlClass}#if($config.genericity)<Page<$modelName>> #end page(Page<$modelName> page){
+    public Page<$modelName> page(Page<$modelName> page){
         return ${interfaceVariable}.page(page);
     }
 #end
