@@ -11,7 +11,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
@@ -56,7 +55,6 @@ public class Template {
      */
     @NotNull
     private static String getTemplateContent(String templateName) {
-        String separator = File.separator;
         URL resource = Template.class.getResource(StrUtil.format("/templates/{}.vm", templateName));
         String templateContent = null;
         try {
@@ -64,38 +62,20 @@ public class Template {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-//        addMd5(templateContent + templateName);
         return templateContent;
     }
 
-//    private static void addMd5(String templateContent) {
-//        String md5 = SecureUtil.md5(templateContent);
-//        set.add(md5);
-//    }
-
-
-//    /**
-//     * 包含
-//     *
-//     * @param code md5
-//     * @return boolean
-//     */
-//    public static boolean contains(String code) {
-//        return set.contains(SecureUtil.md5(code));
-//    }
 
     public static String getConfigData(String property) {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
         String value = ObjectUtil.defaultIfNull(fieldValue, "").toString();
-//        addMd5(value + property);
         return value;
     }
 
     public static String getSuffix(String property, String val) {
         String fieldValue = getConfigData(property);
         String value = ObjectUtil.defaultIfBlank(fieldValue, val).toString();
-//        addMd5(value + property);
         return value;
     }
 
@@ -103,7 +83,6 @@ public class Template {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
         boolean value = (boolean) ObjectUtil.defaultIfNull(fieldValue, false);
-//        addMd5(value + property);
         return value;
     }
 

@@ -1,6 +1,7 @@
 package club.bigtian.mf.plugin.core.config;
 
 
+import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import cn.hutool.core.util.ObjectUtil;
 
 import java.util.HashMap;
@@ -172,44 +173,44 @@ public class MybatisFlexConfig {
 
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
-        data.put("Controller", ObjectUtil.defaultIfBlank(controllerSuffix, "Controller"));
-        data.put("Entity", ObjectUtil.defaultIfBlank(modelSuffix, "Entity"));
-        data.put("Service", ObjectUtil.defaultIfBlank(interfaceSuffix, "Service"));
-        data.put("ServiceImpl", ObjectUtil.defaultIfBlank(implSuffix, "ServiceImpl"));
-        data.put("Mapper", ObjectUtil.defaultIfBlank(mapperSuffix, "Mapper"));
-        data.put("", ObjectUtil.defaultIfBlank(mapperSuffix, "Mapper"));
+        data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, MybatisFlexConstant.CONTROLLER));
+        data.put(MybatisFlexConstant.ENTITY, ObjectUtil.defaultIfBlank(modelSuffix, MybatisFlexConstant.ENTITY));
+        data.put(MybatisFlexConstant.SERVICE, ObjectUtil.defaultIfBlank(interfaceSuffix, MybatisFlexConstant.SERVICE));
+        data.put(MybatisFlexConstant.SERVICE_IMPL, ObjectUtil.defaultIfBlank(implSuffix, MybatisFlexConstant.SERVICE_IMPL));
+        data.put(MybatisFlexConstant.MAPPER, ObjectUtil.defaultIfBlank(mapperSuffix, MybatisFlexConstant.MAPPER));
+        data.put("", ObjectUtil.defaultIfBlank(mapperSuffix, MybatisFlexConstant.MAPPER));
         return data;
     }
 
     public Map<String, String> getTemplates() {
         Map<String, String> data = new HashMap<>();
-        data.put("Controller", controllerTemplate);
-        data.put("Entity", modelTemplate);
-        data.put("Service", interfaceTempalate);
-        data.put("ServiceImpl", implTemplate);
-        data.put("Mapper", mapperTemplate);
+        data.put(MybatisFlexConstant.CONTROLLER, controllerTemplate);
+        data.put(MybatisFlexConstant.ENTITY, modelTemplate);
+        data.put(MybatisFlexConstant.SERVICE, interfaceTempalate);
+        data.put(MybatisFlexConstant.SERVICE_IMPL, implTemplate);
+        data.put(MybatisFlexConstant.MAPPER, mapperTemplate);
         data.put("", xmlTemplate);
         return data;
     }
 
     public Map<String, String> getPackages() {
         Map<String, String> data = new HashMap<>();
-        data.put("Controller", controllerPackage);
-        data.put("Entity", modelPackage);
-        data.put("Service", interfacePackage);
-        data.put("ServiceImpl", implPackage);
-        data.put("Mapper", mapperPackage);
+        data.put(MybatisFlexConstant.CONTROLLER, controllerPackage);
+        data.put(MybatisFlexConstant.ENTITY, modelPackage);
+        data.put(MybatisFlexConstant.SERVICE, interfacePackage);
+        data.put(MybatisFlexConstant.SERVICE_IMPL, implPackage);
+        data.put(MybatisFlexConstant.MAPPER, mapperPackage);
         data.put("", xmlPackage);
         return data;
     }
 
     public Map<String, String> getModules() {
         Map<String, String> data = new HashMap<>();
-        data.put("Controller", controllerModule);
-        data.put("Entity", modelModule);
-        data.put("Service", interfaceModule);
-        data.put("ServiceImpl", implModule);
-        data.put("Mapper", mapperModule);
+        data.put(MybatisFlexConstant.CONTROLLER, controllerModule);
+        data.put(MybatisFlexConstant.ENTITY, modelModule);
+        data.put(MybatisFlexConstant.SERVICE, interfaceModule);
+        data.put(MybatisFlexConstant.SERVICE_IMPL, implModule);
+        data.put(MybatisFlexConstant.MAPPER, mapperModule);
         data.put("", xmlModule);
         return data;
     }

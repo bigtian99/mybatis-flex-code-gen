@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class VirtualFileUtils {
+    private static Map<String, PsiDirectory> PSI_DIRECTORY_MAP = new HashMap<>();
 
     /**
      * 反式到java文件
@@ -26,6 +27,13 @@ public class VirtualFileUtils {
         return file;
     }
 
+    /**
+     *根据路径获取 psi目录
+     *
+     * @param project 项目
+     * @param path    路径
+     * @return {@code PsiDirectory}
+     */
     public static PsiDirectory psiDirectory(Project project, String path) {
         PsiManager psiManager = PsiManager.getInstance(project);
         VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
@@ -47,6 +55,13 @@ public class VirtualFileUtils {
         return psiDirectory;
     }
 
+    /**
+     * 得到psi目录
+     *
+     * @param project     项目
+     * @param virtualFile 虚拟文件
+     * @return {@code PsiDirectory}
+     */
     public static PsiDirectory getPsiDirectory(Project project, VirtualFile virtualFile) {
         PsiManager psiManager = PsiManager.getInstance(project);
         PsiDirectory psiDirectory = psiManager.findDirectory(virtualFile);
@@ -54,7 +69,6 @@ public class VirtualFileUtils {
     }
 
 
-    private static Map<String, PsiDirectory> PSI_DIRECTORY_MAP = new HashMap<>();
 
     /**
      * 得到psi目录
@@ -83,6 +97,9 @@ public class VirtualFileUtils {
         return targetDirectory;
     }
 
+    /**
+     * 清空psi目录
+     */
     public static void clearPsiDirectoryMap() {
         PSI_DIRECTORY_MAP.clear();
     }

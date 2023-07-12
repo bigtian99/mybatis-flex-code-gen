@@ -1,5 +1,5 @@
 
-package club.bigtian.mf.plugin.core;
+package club.bigtian.mf.plugin.core.util;
 
 import com.intellij.CommonBundle;
 import com.intellij.icons.AllIcons.Actions;

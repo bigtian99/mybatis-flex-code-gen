@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.core;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.util.CodeReformat;
 import club.bigtian.mf.plugin.core.util.Modules;
+import club.bigtian.mf.plugin.core.util.TableCore;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.util.ObjectUtil;

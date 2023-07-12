@@ -2,6 +2,7 @@ package club.bigtian.mf.plugin.windows;
 
 import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
+import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
@@ -121,7 +122,7 @@ public class ReturnInfoDialog extends JDialog {
             methodComBox.setSelectedItem(config.getMethodName());
         }
         genericityCheckBox.setSelected(config.isGenericity());
-        if ("static".equals(config.getResultType())) {
+        if (MybatisFlexConstant.STRING.equals(config.getResultType())) {
             staticRadio.setSelected(true);
             newRadio.setSelected(false);
         } else {
@@ -134,7 +135,7 @@ public class ReturnInfoDialog extends JDialog {
         MybatisFlexConfig config = Template.getMybatisFlexConfig();
         config.setQualifiedName(classField.getText());
         config.setMethodName(methodComBox.getSelectedItem().toString());
-        config.setResultType(staticRadio.isSelected() ? "static" : "new");
+        config.setResultType(staticRadio.isSelected() ? MybatisFlexConstant.STRING : MybatisFlexConstant.NEW);
         config.setGenericity(genericityCheckBox.isSelected());
         MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(config);
         Messages.showInfoMessage("保存成功", "提示");

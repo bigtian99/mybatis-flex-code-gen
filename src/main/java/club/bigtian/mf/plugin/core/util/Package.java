@@ -1,4 +1,4 @@
-package club.bigtian.mf.plugin.core;
+package club.bigtian.mf.plugin.core.util;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.intellij.ide.util.PackageChooserDialog;

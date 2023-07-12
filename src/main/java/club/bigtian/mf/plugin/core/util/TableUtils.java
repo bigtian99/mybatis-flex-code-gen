@@ -59,6 +59,12 @@ public class TableUtils {
     }
 
 
+    /**
+     * 得到方言
+     *
+     * @param dasTable das表
+     * @return {@code DatabaseDialectEx}
+     */
     public static DatabaseDialectEx getDialect(DasTable dasTable) {
         DbTableImpl table = (DbTableImpl) dasTable;
         DbDataSourceImpl dataSource = table.getDataSource();

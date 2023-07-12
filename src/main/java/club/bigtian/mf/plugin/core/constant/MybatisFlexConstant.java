@@ -39,4 +39,16 @@ public class MybatisFlexConstant {
     public static final String OVERRIDE = "overrideCheckBox";
     public static final String NOTICE_GROUP_ID = "mybatis-flex";
     public static final String SWAGGER3 = "swagger3";
+    public static final String CONTROLLER_SUFFIX = "controllerSuffix";
+    public static final String INTERFACE_SUFFIX = "interfaceSuffix";
+    public static final String IMPL_SUFFIX = "implSuffix";
+    public static final String MODEL_SUFFIX = "modelSuffix";
+    public static final String MAPPER_SUFFIX = "mapperSuffix";
+    public static final String STRING = "static";
+    public static final String NEW = "new";
+    public static final String CONTROLLER = "Controller";
+    public static final String ENTITY = "Entity";
+    public static final String SERVICE = "Service";
+    public static final String SERVICE_IMPL = "ServiceImpl";
+    public static final String MAPPER = "Mapper";
 }

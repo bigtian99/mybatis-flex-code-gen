@@ -207,11 +207,11 @@ public class MybatisFlexSettingDialog extends JDialog {
         allArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ALL_ARGS_CONSTRUCTOR));
         noArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_NO_ARGS_CONSTRUCTOR));
         swaggerCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER));
-        controllerSuffix.setText(Template.getSuffix("controllerSuffix", controllerSuffix.getText()));
-        interfaceSuffix.setText(Template.getSuffix("interfaceSuffix", interfaceSuffix.getText()));
-        implSuffix.setText(Template.getSuffix("implSuffix", implSuffix.getText()));
-        modelSuffix.setText(Template.getSuffix("modelSuffix", modelSuffix.getText()));
-        mapperSuffix.setText(Template.getSuffix("mapperSuffix", mapperSuffix.getText()));
+        controllerSuffix.setText(Template.getSuffix(MybatisFlexConstant.CONTROLLER_SUFFIX, controllerSuffix.getText()));
+        interfaceSuffix.setText(Template.getSuffix(MybatisFlexConstant.INTERFACE_SUFFIX, interfaceSuffix.getText()));
+        implSuffix.setText(Template.getSuffix(MybatisFlexConstant.IMPL_SUFFIX, implSuffix.getText()));
+        modelSuffix.setText(Template.getSuffix(MybatisFlexConstant.MODEL_SUFFIX, modelSuffix.getText()));
+        mapperSuffix.setText(Template.getSuffix(MybatisFlexConstant.MAPPER_SUFFIX, mapperSuffix.getText()));
         cacheCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.CACHE));
         overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
         swagger3CheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER3));

@@ -1,6 +1,6 @@
 package club.bigtian.mf.plugin.windows;
 
-import club.bigtian.mf.plugin.core.Package;
+import club.bigtian.mf.plugin.core.util.Package;
 import club.bigtian.mf.plugin.core.RenderMybatisFlexTemplate;
 import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
@@ -34,7 +34,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class MybatisFlexCodeGenerateWin extends JDialog {
+public class MybatisFlexCodeGenerateDialog extends JDialog {
     private JPanel contentPane;
     private JButton generateBtn;
     private JButton cancelBtn;
@@ -77,7 +77,7 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
     Map<String, TableInfo> tableInfoMap;
 
 
-    public MybatisFlexCodeGenerateWin(AnActionEvent actionEvent) {
+    public MybatisFlexCodeGenerateDialog(AnActionEvent actionEvent) {
         this.actionEvent = actionEvent;
         setContentPane(contentPane);
         setModal(true);
@@ -126,7 +126,6 @@ public class MybatisFlexCodeGenerateWin extends JDialog {
         });
 
         settingLabel.addActionListener(e -> {
-//            new ShowSettingsUtilImpl().showSettingsDialog(project, MybatisFlexPluginSettings.class);
             MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project);
             dialog.show();
             initSinceComBox();

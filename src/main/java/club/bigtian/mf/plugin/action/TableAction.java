@@ -1,7 +1,6 @@
 package club.bigtian.mf.plugin.action;
 
-import club.bigtian.mf.plugin.core.util.TableUtils;
-import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateWin;
+import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateDialog;
 import com.intellij.database.model.DasTable;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -17,7 +16,7 @@ public class TableAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        MybatisFlexCodeGenerateWin generateWin = new MybatisFlexCodeGenerateWin(e);
+        MybatisFlexCodeGenerateDialog generateWin = new MybatisFlexCodeGenerateDialog(e);
         generateWin.show();
     }
 
