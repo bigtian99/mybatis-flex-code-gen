@@ -29,7 +29,7 @@ mybatisFlex code generation is based on the official code generation template, b
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <consoleFilterProvider implementation="club.bigtian.mf.plugin.core.console.MyBatisFlexConsoleFilterProvider"/>
-        <executor implementation="club.bigtian.mf.plugin.core.MyBatisLogExecutor"
+        <executor implementation="club.bigtian.mf.plugin.core.log.MyBatisLogExecutor"
                   id="MyBatisLogFreeExecutor"/>
     </extensions>
 
