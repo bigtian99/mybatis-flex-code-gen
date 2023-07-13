@@ -28,18 +28,23 @@ mybatisFlex code generation is based on the official code generation template, b
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <!--        打开项目的时候获取project-->
-<!--        <applicationInitializedListener implementation="club.bigtian.mf.plugin.core.util.MyApplicationComponent"/>-->
-        <!--        <applicationConfigurable groupId="MybatisFlex" displayName="MybatisFlexHelper"-->
-        <!--                                 id="MybatisFlexPluginConfigurable"-->
-        <!--                                 instance="com.mybatisflex.plugin.core.plugin.MybatisFlexPluginSettings"/>-->
+        <consoleFilterProvider implementation="club.bigtian.mf.plugin.core.console.MyBatisFlexConsoleFilterProvider"/>
+        <executor implementation="club.bigtian.mf.plugin.core.MyBatisLogExecutor"
+                  id="MyBatisLogFreeExecutor"/>
     </extensions>
 
     <actions>
-        <action id="MyBatisFlex_TableAction" class="club.bigtian.mf.plugin.action.TableAction" icon="/icons/icon.png"
+        <action id="MyBatisFlex_TableAction" class="club.bigtian.mf.plugin.action.flex.TableAction" icon="/icons/icon.png"
                 text="mybatis flex code generate" description="用于选择database中的table从而进行代码生成">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
+
+        <action id="com.starxg.mybatislog.action.MyBatisLogAction"
+                class="club.bigtian.mf.plugin.action.log.MyBatisLogAction"
+                text="MyBatis Log Plugin" description="MyBatis log plugin free" icon="/icons/icon.png">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="before" relative-to-action="ConsoleView.ClearAll"/>
+        </action>
     </actions>
-    <idea-version since-build="193.*"/>
+    <idea-version since-build="222.3345.*"/>
 </idea-plugin>
