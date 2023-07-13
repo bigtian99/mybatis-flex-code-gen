@@ -1,4 +1,4 @@
-package club.bigtian.mf.plugin.action;
+package club.bigtian.mf.plugin.action.flex;
 
 import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateDialog;
 import com.intellij.database.model.DasTable;
