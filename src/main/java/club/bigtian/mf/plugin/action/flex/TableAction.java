@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
  * @date 2023/06/22
  */
 public class TableAction extends AnAction {
+    //静态代码将在系统启动时执行
 
     @Override
     public void actionPerformed(AnActionEvent e) {

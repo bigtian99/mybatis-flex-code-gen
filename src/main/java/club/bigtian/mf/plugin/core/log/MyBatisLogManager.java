@@ -82,16 +82,12 @@ public class MyBatisLogManager implements Disposable {
         this.project = project;
 
         this.consoleView = createConsoleView();
-
         final JPanel panel = createConsolePanel(this.consoleView);
-
         RunnerLayoutUi layoutUi = getRunnerLayoutUi();
 
         Content content = layoutUi.createContent(UUID.randomUUID().toString(), panel, "SQL", Icons.MY_BATIS, panel);
-
         content.setCloseable(true);
         layoutUi.addContent(content);
-
         layoutUi.getOptions().setLeftToolbar(createActionToolbar(), "RunnerToolbar");
 
         final MessageBusConnection messageBusConnection = project.getMessageBus().connect();
@@ -134,7 +130,6 @@ public class MyBatisLogManager implements Disposable {
     private ActionGroup createActionToolbar() {
 
         final ConsoleViewImpl consoleView = this.consoleView;
-
         final DefaultActionGroup actionGroup = new DefaultActionGroup();
         actionGroup.add(new RerunAction());
         actionGroup.add(new StopAction(this));
@@ -189,7 +184,6 @@ public class MyBatisLogManager implements Disposable {
         }, new DefaultExecutionResult(), layoutUi);
         descriptor.setExecutionId(System.nanoTime());
 // Add this line to disable the close button
-
         return descriptor;
     }
 

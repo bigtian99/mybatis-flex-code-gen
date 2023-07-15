@@ -18,7 +18,7 @@ public class InvertedIndexSearch {
         for (String tableName : tableNames) {
             for (int i = 0; i < tableName.length(); i++) {
                 char word = tableName.charAt(i);
-                INVERTED_INDEX.computeIfAbsent(word + "", k -> new HashSet<>()).add(tableName);
+                INVERTED_INDEX.computeIfAbsent((word + "").toLowerCase(), k -> new HashSet<>()).add(tableName);
             }
         }
     }

@@ -31,10 +31,13 @@ mybatisFlex code generation is based on the official code generation template, b
         <consoleFilterProvider implementation="club.bigtian.mf.plugin.core.console.MyBatisFlexConsoleFilterProvider"/>
         <executor implementation="club.bigtian.mf.plugin.core.log.MyBatisLogExecutor"
                   id="MyBatisLogFreeExecutor"/>
+        <editorFactoryListener implementation="club.bigtian.mf.plugin.core.MybatisFlexDocumentChangeHandler"/>
+
     </extensions>
 
     <actions>
-        <action id="MyBatisFlex_TableAction" class="club.bigtian.mf.plugin.action.flex.TableAction" icon="/icons/icon.png"
+        <action id="MyBatisFlex_TableAction" class="club.bigtian.mf.plugin.action.flex.TableAction"
+                icon="/icons/icon.png"
                 text="mybatis flex code generate" description="用于选择database中的table从而进行代码生成">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
