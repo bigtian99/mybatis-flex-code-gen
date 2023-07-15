@@ -175,9 +175,9 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
 
         DefaultListModel model = new DefaultListModel();
-        //tableNameSet按照字母降序
+        // tableNameSet按照字母降序
         tableNameList = new ArrayList<>(tableInfoMap.keySet());
-        //初始化倒排索引
+        // 初始化倒排索引
         InvertedIndexSearch.indexText(tableNameList);
         Collections.sort(tableNameList);
         model.addAll(tableNameList);
@@ -185,6 +185,8 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         TableListCellRenderer cellRenderer = new TableListCellRenderer(tableInfoMap);
         tableList.setCellRenderer(cellRenderer);
         sortBtn.addActionListener(e -> {
+            String tableName = tableSearch.getText();
+            tableNameList = search(tableName, cellRenderer, model).stream().collect(Collectors.toList());
             if (sortBtn.getToolTipText().equals("升序")) {
                 sortBtn.setToolTipText("降序");
                 Collections.sort(tableNameList, Comparator.reverseOrder());
@@ -194,6 +196,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             }
             selectAllChexBox.setSelected(false);
             model.removeAllElements();
+
             model.addAll(tableNameList);
         });
 
@@ -209,15 +212,20 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             @Override
             protected void textChanged(@NotNull DocumentEvent e) {
                 String tableName = tableSearch.getText();
-                Map<String, String> highlightKey = InvertedIndexSearch.highlightKey(tableName);
-                cellRenderer.setSearchTableName(tableName);
-                cellRenderer.setHighlightKey(highlightKey);
+                Set<String> search = search(tableName, cellRenderer, model);
                 model.removeAllElements();
-                model.addAll(highlightKey.keySet());
+                model.addAll(search);
             }
         });
         setSelectTalbe(actionEvent);
 
+    }
+
+    private static Set<String> search(String tableName, TableListCellRenderer cellRenderer, DefaultListModel model) {
+        Map<String, String> highlightKey = InvertedIndexSearch.highlightKey(tableName);
+        cellRenderer.setSearchTableName(tableName);
+        cellRenderer.setHighlightKey(highlightKey);
+        return highlightKey.keySet();
     }
 
     /**

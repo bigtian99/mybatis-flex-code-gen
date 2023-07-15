@@ -90,23 +90,25 @@ public class ReturnInfoDialog extends JDialog {
 
     private void addMethodComBoxItem(PsiClass psiClass) {
         methodComBox.removeAllItems();
-        Arrays.stream(psiClass.getMethods()).forEach(method -> {
-            String name = method.getName();
-            StringJoiner joiner = new StringJoiner(",");
-            PsiParameter[] parameters = method.getParameterList().getParameters();
-            if (parameters.length != 1) {
-                return;
-            }
-            for (PsiParameter parameter : parameters) {
-                String canonicalText = parameter.getType().getCanonicalText();
-                int idx = canonicalText.lastIndexOf(".");
-                if (idx > -1) {
-                    canonicalText = canonicalText.substring(idx + 1);
-                }
-                joiner.add(canonicalText + " " + parameter.getName());
-            }
-            methodComBox.addItem(name + "(" + joiner.toString() + ")");
-        });
+        Arrays.stream(psiClass.getMethods())
+                .filter(el -> !el.getName().startsWith("set"))
+                .forEach(method -> {
+                    String name = method.getName();
+                    StringJoiner joiner = new StringJoiner(",");
+                    PsiParameter[] parameters = method.getParameterList().getParameters();
+                    if (parameters.length != 1) {
+                        return;
+                    }
+                    for (PsiParameter parameter : parameters) {
+                        String canonicalText = parameter.getType().getCanonicalText();
+                        int idx = canonicalText.lastIndexOf(".");
+                        if (idx > -1) {
+                            canonicalText = canonicalText.substring(idx + 1);
+                        }
+                        joiner.add(canonicalText + " " + parameter.getName());
+                    }
+                    methodComBox.addItem(name + "(" + joiner.toString() + ")");
+                });
         methodComBox.revalidate();
         methodComBox.repaint();
     }
