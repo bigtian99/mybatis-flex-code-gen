@@ -1,9 +1,18 @@
 package club.bigtian.mf.plugin.core;
 
+import club.bigtian.mf.plugin.core.util.Modules;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
+import com.intellij.codeInsight.daemon.impl.LocalInspectionsPass;
+import com.intellij.codeInspection.InspectionManager;
+import com.intellij.codeInspection.ProblemDescriptor;
+import com.intellij.codeInspection.ex.GlobalInspectionContextBase;
+import com.intellij.codeInspection.ex.InspectionManagerEx;
+import com.intellij.compiler.impl.ModuleCompileScope;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.compiler.CompilerManager;
+import com.intellij.openapi.compiler.*;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
@@ -12,12 +21,30 @@ import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.editor.event.EditorFactoryEvent;
 import com.intellij.openapi.editor.event.EditorFactoryListener;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.StatusBarListener;
+import com.intellij.openapi.wm.StatusBarWidget;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiTreeUtilKt;
+import com.intellij.testFramework.LightVirtualFile;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments;
+import org.jetbrains.kotlin.config.CommonConfigurationKeys;
+import org.jetbrains.kotlin.config.CompilerConfiguration;
+import org.jetbrains.kotlin.idea.compiler.configuration.Kotlin2JvmCompilerArgumentsHolder;
+import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.psi.KtImportDirective;
 
 import java.util.HashSet;
 import java.util.concurrent.Executors;
@@ -61,11 +88,29 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         }
         PsiManager psiManager = PsiManager.getInstance(editor.getProject());
         PsiFile psiFile = psiManager.findFile(currentFile);
-        if (!(psiFile instanceof PsiJavaFile)) {
+        // 支持java和kotlin
+        if (!(psiFile instanceof PsiJavaFile) && !(psiFile instanceof KtFile)) {
             return false;
         }
-        PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-        return psiJavaFile.getText().contains("com.mybatisflex.annotation.Table");
+
+        if (psiFile instanceof KtFile) {
+            KtFile ktFile = (KtFile) psiFile;
+            for (KtImportDirective anImport : ktFile.getImportList().getImports()) {
+                if ("com.mybatisflex.annotation.Table".equals(anImport.getImportedFqName().asString())) {
+                    return true;
+                }
+            }
+        }
+        if (psiFile instanceof PsiJavaFile) {
+            PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
+            for (PsiImportStatement importStatement : psiJavaFile.getImportList().getImportStatements()) {
+                if ("com.mybatisflex.annotation.Table".equals(importStatement.getQualifiedName())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -85,8 +130,6 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             // 执行任务的逻辑
             Application application = ApplicationManager.getApplication();
             application.invokeLater(() -> {
-                // 在正确的上下文中执行的代码
-                // 修改模型、更新界面等操作
                 compile(event);
             });
         };
@@ -113,17 +156,31 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 return;
             }
             PsiFile psiFile = psiManager.findFile(currentFile);
-            if (!(psiFile instanceof PsiJavaFile)) {
+            if (!(psiFile instanceof PsiJavaFile) && !(psiFile instanceof KtFile)) {
                 return;
             }
-            PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
+            PsiClassOwner psiJavaFile = (PsiClassOwner) psiFile;
+
             PsiErrorElement errorElement = PsiTreeUtil.findChildOfType(psiJavaFile, PsiErrorElement.class);
-            if (currentFile != null && ObjectUtil.isNull(errorElement) && !isPsiErrorElement(psiJavaFile)) {
+            if (ObjectUtil.isNull(errorElement) && !isPsiErrorElement(psiJavaFile)) {
                 System.out.println("Task executed.");
-                compilerManager.compile(new VirtualFile[]{currentFile}, null);
+                Module[] modules = ModuleManager.getInstance(project).getModules();
+
+
+                compilerManager.compile(new VirtualFile[]{currentFile},  new CompileStatusNotification() {
+                    @Override
+                    public void finished(boolean aborted, int errors, int warnings, CompileContext compileContext) {
+                        CompilerMessage[] messages = compileContext.getMessages(CompilerMessageCategory.ERROR);
+                        for (CompilerMessage message : messages) {
+                            // 处理编译错误
+                            // 可以在这里显示错误消息或执行其他操作
+                        }
+                    }
+                });
             }
         });
     }
+
 
     /**
      * 规避复制方法或者字段的时候也触发编译
@@ -131,18 +188,15 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
      * @param psiJavaFile
      * @return
      */
-    private boolean isPsiErrorElement(PsiJavaFile psiJavaFile) {
+    private boolean isPsiErrorElement(PsiClassOwner psiJavaFile) {
+
+        if (psiJavaFile instanceof KtFile) {
+            return false;
+        }
         HashSet<String> elementSet = new HashSet<>();
         PsiClass[] classes = psiJavaFile.getClasses();
         for (PsiClass psiClass : classes) {
-            for (PsiMethod psiMethod : psiClass.getMethods()) {
-                String text = psiMethod.getText();
-                if (elementSet.contains(text)) {
-                    return true;
-                } else {
-                    elementSet.add(text);
-                }
-            }
+            HashSet<Object> fieldSet = new HashSet<>();
             for (PsiField field : psiClass.getFields()) {
                 String text = field.getText();
                 if (elementSet.contains(text)) {
@@ -150,9 +204,41 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 } else {
                     elementSet.add(text);
                 }
+                fieldSet.add(field.getName());
             }
-        }
+            PsiAnnotation annotation = psiClass.getAnnotation("lombok.Data");
+            for (PsiMethod psiMethod : psiClass.getMethods()) {
+                // 解决用户cv方法，导致编译错误
+                String text = psiMethod.getText();
+                if (elementSet.contains(text)) {
+                    return true;
+                } else {
+                    elementSet.add(text);
+                }
+                if (ObjectUtil.isNull(annotation)) {
+                    // 解决用户修改字段后，get/set没有及时更新，导致编译报错
+                    PsiCodeBlock body = psiMethod.getBody();
+                    if (psiMethod.getName().startsWith("get")) {
+                        String bodyText = body.getText();
+                        String aReturn = StrUtil.subBetween(bodyText, "return ", ";").trim();
+                        if (!fieldSet.contains(aReturn)) {
+                            return true;
+                        }
+                    } else if (psiMethod.getName().startsWith("set")) {
+                        String bodyText = body.getText();
+                        String aReturn = StrUtil.subBetween(bodyText, "this.", "=").trim();
+                        if (!fieldSet.contains(aReturn)) {
+                            return true;
+                        }
+                    }
+                }
 
+            }
+
+
+        }
         return false;
     }
+
+
 }

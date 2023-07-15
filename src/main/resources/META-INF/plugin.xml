@@ -22,6 +22,7 @@ mybatisFlex code generation is based on the official code generation template, b
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.java</depends>
+    <depends>org.jetbrains.kotlin</depends>
 
     <depends>com.intellij.database</depends>
 

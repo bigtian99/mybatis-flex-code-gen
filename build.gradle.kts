@@ -21,7 +21,7 @@ repositories {
 intellij {
     version.set("2022.2.5")
     type.set("IU") // Target IDE Platform
-    plugins.set(listOf("com.intellij.java", "IntelliLang","com.intellij.database"))
+    plugins.set(listOf("com.intellij.java", "org.jetbrains.kotlin", "IntelliLang", "com.intellij.database"))
 }
 dependencies {
     implementation("com.alibaba.fastjson2:fastjson2:2.0.34")
@@ -30,7 +30,7 @@ dependencies {
 
 tasks {
     runIde {
-    // 启用热重载功能，使用Build菜单编译项目后无需重启调试进程即可完成, 仅支持JBR
+        // 启用热重载功能，使用Build菜单编译项目后无需重启调试进程即可完成, 仅支持JBR
         jvmArgs = listOf("-XX:+AllowEnhancedClassRedefinition")
     }
     // Set the JVM compatibility versions
@@ -53,7 +53,7 @@ tasks {
         password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
     }
     publishPlugin {
-        token.set( System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken"))
+        token.set(System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken"))
     }
 
 }
