@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.core;
 import club.bigtian.mf.plugin.core.util.Modules;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.codeInsight.daemon.impl.LocalInspectionsPass;
 import com.intellij.codeInspection.InspectionManager;
@@ -10,6 +11,11 @@ import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ex.GlobalInspectionContextBase;
 import com.intellij.codeInspection.ex.InspectionManagerEx;
 import com.intellij.compiler.impl.ModuleCompileScope;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ExecutionManager;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.mediator.daemon.ExitCode;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.*;
@@ -25,6 +31,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
@@ -39,13 +46,17 @@ import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.cli.common.arguments.CommonCompilerArguments;
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments;
 import org.jetbrains.kotlin.config.CommonConfigurationKeys;
 import org.jetbrains.kotlin.config.CompilerConfiguration;
+import org.jetbrains.kotlin.idea.KotlinFileType;
 import org.jetbrains.kotlin.idea.compiler.configuration.Kotlin2JvmCompilerArgumentsHolder;
+import org.jetbrains.kotlin.idea.compiler.configuration.KotlinCompilerSettings;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtImportDirective;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -164,19 +175,11 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiErrorElement errorElement = PsiTreeUtil.findChildOfType(psiJavaFile, PsiErrorElement.class);
             if (ObjectUtil.isNull(errorElement) && !isPsiErrorElement(psiJavaFile)) {
                 System.out.println("Task executed.");
-                Module[] modules = ModuleManager.getInstance(project).getModules();
+                // compilerManager.compile(new VirtualFile[]{currentFile}, null);
+                // TODO Kotlin的编译暂时不支持
 
 
-                compilerManager.compile(new VirtualFile[]{currentFile},  new CompileStatusNotification() {
-                    @Override
-                    public void finished(boolean aborted, int errors, int warnings, CompileContext compileContext) {
-                        CompilerMessage[] messages = compileContext.getMessages(CompilerMessageCategory.ERROR);
-                        for (CompilerMessage message : messages) {
-                            // 处理编译错误
-                            // 可以在这里显示错误消息或执行其他操作
-                        }
-                    }
-                });
+
             }
         });
     }
