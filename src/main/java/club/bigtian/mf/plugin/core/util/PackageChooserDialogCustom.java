@@ -95,7 +95,7 @@ public class PackageChooserDialogCustom extends PackageChooser {
                     Object object = node.getUserObject();
                     if (object instanceof PsiPackage) {
                         String name = ((PsiPackage) object).getName();
-                        if (name != null && name.length() > 0) {
+                        if (name != null && !name.isEmpty()) {
                             this.setText(name);
                         } else {
                             this.setText("<default>");
@@ -112,7 +112,7 @@ public class PackageChooserDialogCustom extends PackageChooser {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
             Object object = node.getUserObject();
             return object instanceof PsiPackage ? ((PsiPackage) object).getName() : "";
-        });
+        }, true);
         this.myTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                 PsiPackage selection = PackageChooserDialogCustom.this.getTreeSelection();
@@ -123,7 +123,6 @@ public class PackageChooserDialogCustom extends PackageChooser {
                 } else {
                     PackageChooserDialogCustom.this.setTitle(PackageChooserDialogCustom.this.myTitle);
                 }
-
                 PackageChooserDialogCustom.this.updatePathFromTree();
             }
         });
@@ -132,6 +131,7 @@ public class PackageChooserDialogCustom extends PackageChooser {
         JPanel northPanel = new JPanel(new BorderLayout());
         panel.add(northPanel, "North");
         ActionToolbar toolBar = ActionManager.getInstance().createActionToolbar(PackageChooserDialogCustom.class.getSimpleName(), group, true);
+        toolBar.setTargetComponent(northPanel);
         northPanel.add(toolBar.getComponent(), "West");
         this.setupPathComponent(northPanel);
         return panel;

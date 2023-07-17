@@ -125,7 +125,7 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         /**
          * 列类型和字段类型映射（通用）
          */
-        public String colunmFieldMap = "{}";
+        public String columnFieldMap = "{}";
 
     }
 
@@ -138,7 +138,7 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
     public static String getFieldType(String columnType) {
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
-        Map<String, String> colunmFieldMap = JSONObject.parseObject(state.colunmFieldMap, new TypeReference<Map<String, String>>() {
+        Map<String, String> colunmFieldMap = JSONObject.parseObject(state.columnFieldMap, new TypeReference<Map<String, String>>() {
         });
         return colunmFieldMap.get(columnType);
     }
@@ -152,10 +152,10 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
     public static void setFieldType(String columnType, String qualifiedName) {
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
-        Map<String, String> colunmFieldMap = JSONObject.parseObject(state.colunmFieldMap, new TypeReference<Map<String, String>>() {
+        Map<String, String> colunmFieldMap = JSONObject.parseObject(state.columnFieldMap, new TypeReference<Map<String, String>>() {
         });
         colunmFieldMap.put(columnType.toLowerCase(), qualifiedName);
-        state.colunmFieldMap = JSONObject.toJSONString(colunmFieldMap);
+        state.columnFieldMap = JSONObject.toJSONString(colunmFieldMap);
         instance.loadState(state);
     }
 

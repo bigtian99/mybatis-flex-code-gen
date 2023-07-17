@@ -2,6 +2,7 @@ package club.bigtian.mf.plugin.core;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompilerManager;
@@ -14,6 +15,7 @@ import com.intellij.openapi.editor.event.EditorFactoryEvent;
 import com.intellij.openapi.editor.event.EditorFactoryListener;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -23,27 +25,26 @@ import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtImportDirective;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 
-public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener {
+public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable {
 
-    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
     private ScheduledFuture<?> scheduledFuture;
 
     public MybatisFlexDocumentChangeHandler() {
         super();
         // 所有的文档监听
-        EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this);
-        // for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
-        //     Document document = editor.getDocument();
-        //     if (getPsiJavaFile(editor)) {
-        //     document.addDocumentListener(this);
-        //     }
-        // }
+        EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this, this);
+        for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
+            Document document = editor.getDocument();
+            document.addDocumentListener(this);
+        }
     }
 
 
@@ -64,24 +65,22 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         if (ObjectUtil.isNull(currentFile)) {
             return false;
         }
-        PsiManager psiManager = PsiManager.getInstance(editor.getProject());
+        PsiManager psiManager = PsiManager.getInstance(Objects.requireNonNull(editor.getProject()));
         PsiFile psiFile = psiManager.findFile(currentFile);
         // 支持java和kotlin
         if (!(psiFile instanceof PsiJavaFile) && !(psiFile instanceof KtFile)) {
             return false;
         }
 
-        if (psiFile instanceof KtFile) {
-            KtFile ktFile = (KtFile) psiFile;
-            for (KtImportDirective anImport : ktFile.getImportList().getImports()) {
-                if ("com.mybatisflex.annotation.Table".equals(anImport.getImportedFqName().asString())) {
+        if (psiFile instanceof KtFile ktFile) {
+            for (KtImportDirective anImport : Objects.requireNonNull(ktFile.getImportList()).getImports()) {
+                if ("com.mybatisflex.annotation.Table".equals(Objects.requireNonNull(anImport.getImportedFqName()).asString())) {
                     return true;
                 }
             }
         }
-        if (psiFile instanceof PsiJavaFile) {
-            PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-            for (PsiImportStatement importStatement : psiJavaFile.getImportList().getImportStatements()) {
+        if (psiFile instanceof PsiJavaFile psiJavaFile) {
+            for (PsiImportStatement importStatement : Objects.requireNonNull(psiJavaFile.getImportList()).getImportStatements()) {
                 if ("com.mybatisflex.annotation.Table".equals(importStatement.getQualifiedName())) {
                     return true;
                 }
@@ -103,23 +102,25 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
     @Override
     public void documentChanged(@NotNull DocumentEvent event) {
-        Editor editor = EditorFactory.getInstance().editors(event.getDocument()).findAny().get();
-        boolean flag = getPsiJavaFile(editor);
-        if (!flag) {
-            return;
-        }
-        Runnable task = () -> {
-            // 执行任务的逻辑
-            Application application = ApplicationManager.getApplication();
-            application.invokeLater(() -> {
-                compile(event);
-            });
-        };
-        if (ObjectUtil.isNotNull(scheduledFuture)) {
-            scheduledFuture.cancel(true);
-        }
-        // 延迟触发任务
-        scheduledFuture = executorService.schedule(task, 800, TimeUnit.MILLISECONDS);
+        EditorFactory.getInstance().editors(event.getDocument()).findAny().ifPresent(editor -> {
+            boolean flag = getPsiJavaFile(editor);
+            if (!flag) {
+                return;
+            }
+            Runnable task = () -> {
+                // 执行任务的逻辑
+                Application application = ApplicationManager.getApplication();
+                application.invokeLater(() -> {
+                    compile(event);
+                });
+            };
+            if (ObjectUtil.isNotNull(scheduledFuture)) {
+                scheduledFuture.cancel(true);
+            }
+            // 延迟触发任务
+            scheduledFuture = EXECUTOR_SERVICE.schedule(task, 800, TimeUnit.MILLISECONDS);
+        });
+
     }
 
 
@@ -207,4 +208,12 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     }
 
 
+    @Override
+    public void dispose() {
+        if (ObjectUtil.isNotNull(scheduledFuture)) {
+            scheduledFuture.cancel(true);
+        }
+        EXECUTOR_SERVICE.shutdown();
+        Disposer.dispose(this);
+    }
 }

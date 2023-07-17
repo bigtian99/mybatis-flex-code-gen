@@ -25,7 +25,7 @@ public class Package {
         PsiPackage selectedPackage = chooser.getSelectedPackage();
         if (ObjectUtil.isNull(selectedPackage)) {
             LOG.warn("selectedPackage is null");
-            throw new RuntimeException("selectedPackage is null");
+            throw new RuntimeException("自定义异常请忽略：selectedPackage is null");
         }
         return selectedPackage.getQualifiedName();
     }

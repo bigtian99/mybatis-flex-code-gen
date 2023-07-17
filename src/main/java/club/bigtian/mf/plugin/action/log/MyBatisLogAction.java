@@ -19,14 +19,6 @@ public class MyBatisLogAction extends DumbAwareAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         final Project project = e.getProject();
-        // final MyBatisLogManager manager = MyBatisLogManager.getInstance(project);
-        // if (Objects.nonNull(manager) && manager.getToolWindow().isAvailable()) {
-        //     if (!manager.isRunning()) {
-        //         manager.run();
-        //     }
-        //     manager.getToolWindow().activate(null);
-        //     return;
-        // }
         rerun(project);
     }
 

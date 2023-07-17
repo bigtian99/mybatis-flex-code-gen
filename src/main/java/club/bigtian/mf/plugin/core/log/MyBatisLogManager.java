@@ -4,7 +4,6 @@ import club.bigtian.mf.plugin.action.log.*;
 import club.bigtian.mf.plugin.core.icons.Icons;
 import club.bigtian.mf.plugin.core.util.BasicFormatter;
 import com.intellij.execution.DefaultExecutionResult;
-import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
@@ -12,10 +11,7 @@ import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.ui.ConsoleView;
-import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.execution.ui.RunContentDescriptor;
-import com.intellij.execution.ui.RunnerLayoutUi;
+import com.intellij.execution.ui.*;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionGroup;
@@ -108,20 +104,17 @@ public class MyBatisLogManager implements Disposable {
 
         messageBusConnection.subscribe(ToolWindowManagerListener.TOPIC, new ToolWindowManagerListener() {
             @Override
-            public void toolWindowRegistered(@NotNull String id) {
-
-            }
-
-            @Override
-            public void stateChanged() {
+            public void stateChanged(@NotNull ToolWindowManager toolWindowManager) {
                 if (!getToolWindow().isAvailable()) {
                     Disposer.dispose(MyBatisLogManager.this);
                 }
             }
         });
-
-        ExecutionManager.getInstance(project).getContentManager().showRunContent(MyBatisLogExecutor.getInstance(),
+        RunContentManager.getInstance(project).showRunContent(MyBatisLogExecutor.getInstance(),
                 descriptor);
+
+        // ExecutionManager.getInstance(project).getContentManager().showRunContent(MyBatisLogExecutor.getInstance(),
+        //         descriptor);
 
         getToolWindow().activate(null);
     }
@@ -183,7 +176,7 @@ public class MyBatisLogManager implements Disposable {
             }
         }, new DefaultExecutionResult(), layoutUi);
         descriptor.setExecutionId(System.nanoTime());
-// Add this line to disable the close button
+// Add this line to disable the close buttoncreateInstance
         return descriptor;
     }
 
@@ -244,11 +237,9 @@ public class MyBatisLogManager implements Disposable {
     public static MyBatisLogManager createInstance(@NotNull Project project) {
 
         MyBatisLogManager manager = getInstance(project);
-
-        if (Objects.nonNull(manager) && !Disposer.isDisposed(manager)) {
+        if (Objects.nonNull(manager)) {
             Disposer.dispose(manager);
         }
-
         manager = new MyBatisLogManager(project);
         project.putUserData(KEY, manager);
 
@@ -315,8 +306,10 @@ public class MyBatisLogManager implements Disposable {
 
         stop();
 
-        ExecutionManager.getInstance(project).getContentManager().removeRunContent(MyBatisLogExecutor.getInstance(),
+        RunContentManager.getInstance(project).removeRunContent(MyBatisLogExecutor.getInstance(),
                 descriptor);
+        // ExecutionManager.getInstance(project).getContentManager().removeRunContent(MyBatisLogExecutor.getInstance(),
+        //         descriptor);
 
     }
 

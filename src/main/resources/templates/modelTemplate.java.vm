@@ -55,7 +55,7 @@ import $classImport;
 public class ${modelName} {
 
     #foreach($column in $table.columnList)
-    #if($column.comment)
+    #if($column.comment.length()>0)
     /**
     * $!column.comment
     */

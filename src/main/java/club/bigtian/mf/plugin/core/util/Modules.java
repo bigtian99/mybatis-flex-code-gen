@@ -2,6 +2,7 @@ package club.bigtian.mf.plugin.core.util;
 
 import club.bigtian.mf.plugin.core.filter.FilterComboBoxModel;
 import club.bigtian.mf.plugin.core.render.ModuleComBoxRender;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -37,8 +38,8 @@ public class Modules {
      * @return {@code List<String>}
      */
     public static void addModulesItem(Project project, List<JComboBox> modulesComboxs) {
-        boolean isManvenProject = isManvenProject(project);
         Module[] modules = ModuleManager.getInstance(project).getModules();
+        boolean isManvenProject = isManvenProject(modules[0]);
         for (JComboBox modulesCombox : modulesComboxs) {
             modulesCombox.setRenderer(new ModuleComBoxRender());
             moduleMap = Arrays.stream(modules)
@@ -62,8 +63,13 @@ public class Modules {
      * @param project 项目
      * @return boolean
      */
-    public static boolean isManvenProject(Project project) {
-        VirtualFile virtualFile = project.getBaseDir().findChild("pom.xml");
+    public static boolean isManvenProject(Module module) {
+        VirtualFile[] contentRoots = ModuleRootManager.getInstance(module).getContentRoots();
+        if (ArrayUtil.isEmpty(contentRoots)) {
+            return false;
+        }
+        VirtualFile contentRoot = contentRoots[0];
+        VirtualFile virtualFile = contentRoot.findChild("pom.xml");
         isManvenProject = ObjectUtil.isNotNull(virtualFile);
         return isManvenProject;
     }
