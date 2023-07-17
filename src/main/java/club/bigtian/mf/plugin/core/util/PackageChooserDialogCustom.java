@@ -4,7 +4,6 @@ package club.bigtian.mf.plugin.core.util;
 import com.intellij.CommonBundle;
 import com.intellij.icons.AllIcons.Actions;
 import com.intellij.ide.IdeBundle;
-import com.intellij.ide.IdeCoreBundle;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.ide.util.PackageUtil;
 import com.intellij.ide.util.PropertiesComponent;
@@ -99,7 +98,7 @@ public class PackageChooserDialogCustom extends PackageChooser {
                         if (name != null && name.length() > 0) {
                             this.setText(name);
                         } else {
-                            this.setText(IdeCoreBundle.message("node.default", new Object[0]));
+                            this.setText("<default>");
                         }
                     }
                 }
@@ -375,7 +374,6 @@ public class PackageChooserDialogCustom extends PackageChooser {
         }
 
         public void actionPerformed(@NotNull AnActionEvent e) {
-
             PackageChooserDialogCustom.this.createNewPackage();
         }
 

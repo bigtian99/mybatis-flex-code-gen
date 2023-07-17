@@ -33,7 +33,7 @@ mybatisFlex code generation is based on the official code generation template, b
         <executor implementation="club.bigtian.mf.plugin.core.log.MyBatisLogExecutor"
                   id="MyBatisLogFreeExecutor"/>
         <editorFactoryListener implementation="club.bigtian.mf.plugin.core.MybatisFlexDocumentChangeHandler"/>
-
+        <completion.contributor language="JAVA" implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexCompletionContributor" />
     </extensions>
 
     <actions>
