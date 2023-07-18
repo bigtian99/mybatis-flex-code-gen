@@ -10,19 +10,19 @@
 
 1、使用IDEA连接数据库
 
-<img src="http://blog.bigtian.club/assets/img/image-20230717175856701.f35018ca.png" alt="image-20230717175856701" style="zoom:67%;" />
+<img src="./docs/assets/image-20230717175856701.png" alt="image-20230717175856701" style="zoom:67%;" />
 
 2、右击表名选择`mybatis flex code generate`
 
-<img src="http://blog.bigtian.club/assets/img/image-20230717180225310.png" alt="image-20230717180225310" style="zoom:67%;" />
+<img src="./docs/assets/image-20230717180225310.png" alt="image-20230717180225310" style="zoom:67%;" />
 
 3、生成面板
 
-<img src="http://blog.bigtian.club/assets/img/image-20230717180517977.png" alt="image-20230717180517977" style="zoom:67%;" />
+<img src="./docs/assets/image-20230717180517977.png" alt="image-20230717180517977" style="zoom:67%;" />
 
 4、设置面板
 
-<img src="http://blog.bigtian.club/assets/img/image-20230717181012372.png" alt="image-20230717181012372" style="zoom:67%;" />
+<img src="./docs/assets/image-20230717181012372.png" alt="image-20230717181012372" style="zoom:67%;" />
 
 ### 四、功能
 
