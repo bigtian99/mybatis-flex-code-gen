@@ -90,8 +90,7 @@ public class PackageChooserDialogCustom extends PackageChooser {
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
                 super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
                 this.setIcon(PlatformIcons.PACKAGE_ICON);
-                if (value instanceof DefaultMutableTreeNode) {
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+                if (value instanceof DefaultMutableTreeNode node) {
                     Object object = node.getUserObject();
                     if (object instanceof PsiPackage) {
                         String name = ((PsiPackage) object).getName();
@@ -112,14 +111,13 @@ public class PackageChooserDialogCustom extends PackageChooser {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
             Object object = node.getUserObject();
             return object instanceof PsiPackage ? ((PsiPackage) object).getName() : "";
-        }, true);
+        });
         this.myTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                 PsiPackage selection = PackageChooserDialogCustom.this.getTreeSelection();
                 if (selection != null) {
                     String name = selection.getQualifiedName();
-                    String var10001 = PackageChooserDialogCustom.this.myTitle;
-                    PackageChooserDialogCustom.this.setTitle(var10001 + " - " + (name.isEmpty() ? IdeBundle.message("node.default.package", new Object[0]) : name));
+                    PackageChooserDialogCustom.this.setTitle(PackageChooserDialogCustom.this.myTitle + " - " + (name.isEmpty() ? IdeBundle.message("node.default.package", new Object[0]) : name));
                 } else {
                     PackageChooserDialogCustom.this.setTitle(PackageChooserDialogCustom.this.myTitle);
                 }
@@ -148,9 +146,7 @@ public class PackageChooserDialogCustom extends PackageChooser {
             public void documentChanged(@NotNull DocumentEvent e) {
 
                 PackageChooserDialogCustom.this.myAlarm.cancelAllRequests();
-                PackageChooserDialogCustom.this.myAlarm.addRequest(() -> {
-                    PackageChooserDialogCustom.this.updateTreeFromPath();
-                }, 300);
+                PackageChooserDialogCustom.this.myAlarm.addRequest(PackageChooserDialogCustom.this::updateTreeFromPath, 300);
             }
         });
         this.myPathEditor.setBorder(BorderFactory.createEmptyBorder(0, 0, 2, 0));

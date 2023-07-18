@@ -41,10 +41,6 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         super();
         // 所有的文档监听
         EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this, this);
-        for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
-            Document document = editor.getDocument();
-            document.addDocumentListener(this);
-        }
     }
 
 
