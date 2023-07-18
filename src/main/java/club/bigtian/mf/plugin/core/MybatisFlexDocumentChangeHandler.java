@@ -139,12 +139,19 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiErrorElement errorElement = PsiTreeUtil.findChildOfType(psiJavaFile, PsiErrorElement.class);
             if (ObjectUtil.isNull(errorElement) && !isPsiErrorElement(psiJavaFile)) {
                 System.out.println("Task executed.");
-                compilerManager.compile(new VirtualFile[]{currentFile}, null);
+                // compilerManager.compile(new VirtualFile[]{currentFile}, null);
+                compilerManager.compile(new VirtualFile[]{currentFile}, (aborted, errors, warnings, compileContext) -> {
+                    if (errors == 0) {
+                        System.out.println("编译成功");
+                    } else {
+                        System.out.println("编译失败");
+                    }
+
+                });
                 // TODO Kotlin的编译暂时不支持
             }
         });
     }
-
 
     /**
      * 规避复制方法或者字段的时候也触发编译
