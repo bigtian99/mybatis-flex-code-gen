@@ -196,7 +196,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             }
             selectAllChexBox.setSelected(false);
             model.removeAllElements();
-
             model.addAll(tableNameList);
         });
 

@@ -20,10 +20,7 @@ import com.intellij.util.containers.JBIterable;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.intellij.database.view.DatabaseView.DATABASE_NODES;
@@ -38,7 +35,7 @@ public class TableUtils {
      * @return {@code List<TableInfo>}
      */
     public static List<String> getSelectedTableName(AnActionEvent actionEvent) {
-        return Arrays.stream(actionEvent.getData(DATABASE_NODES))
+        return Arrays.stream(Objects.requireNonNull(actionEvent.getData(DATABASE_NODES)))
                 .map(el -> ((DasObject) el).getName()).collect(Collectors.toList());
     }
 
@@ -51,6 +48,7 @@ public class TableUtils {
     public static List<TableInfo> getAllTables(AnActionEvent event) {
         DbTableImpl table = (DbTableImpl) event.getData(CommonDataKeys.PSI_ELEMENT);
         DbElement tableParent = table.getParent();
+        assert tableParent != null;
         List<DasTable> list = tableParent.getDasChildren(ObjectKind.TABLE).map(el -> (DasTable) el)
                 .toList();
         List<TableInfo> tableInfoList = new ArrayList<>();
@@ -97,7 +95,7 @@ public class TableUtils {
                 String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName);
                 columnInfo.setFieldType(fieldType);
                 columnInfo.setNotNull(dasColumn.isNotNull());
-                columnInfo.setComment(ObjectUtil.defaultIfNull(dasColumn.getComment(),"").replaceAll("\r\n",""));
+                columnInfo.setComment(ObjectUtil.defaultIfNull(dasColumn.getComment(), "").replaceAll("\r\n", ""));
                 columnInfo.setMethodName(StrUtil.upperFirst(columnInfo.getFieldName()));
                 columnInfo.setType(jdbcTypeName);
                 columnInfo.setPrimaryKey(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.PRIMARY_KEY));
@@ -145,57 +143,26 @@ public class TableUtils {
      * @return {@code Class<?>}
      */
     public static Class<?> convert(int sqlType) {
-        switch (sqlType) {
-            case Types.BIT:
-                return Boolean.class;
-            case Types.TINYINT:
-                return Byte.class;
-            case Types.SMALLINT:
-                return Short.class;
-            case Types.INTEGER:
-                return Integer.class;
-            case Types.BIGINT:
-                return Long.class;
-            case Types.FLOAT:
-            case Types.REAL:
-                return Float.class;
-            case Types.DOUBLE:
-                return Double.class;
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-                return java.math.BigDecimal.class;
-            case Types.CHAR:
-            case Types.NCHAR:
-            case Types.VARCHAR:
-            case Types.NVARCHAR:
-            case Types.LONGVARCHAR:
-            case Types.LONGNVARCHAR:
-                return String.class;
-            case Types.TIME:
-//                return java.sql.Time.class;
-            case Types.TIMESTAMP:
-//                return java.sql.Timestamp.class;
-            case Types.DATE:
-                return Date.class;
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-                return Byte[].class;
-            case Types.CLOB:
-            case Types.NCLOB:
-            case Types.BLOB:
-                return java.sql.Blob.class;
-            case Types.ARRAY:
-                return java.sql.Array.class;
-            case Types.STRUCT:
-                return java.sql.Struct.class;
-            case Types.REF:
-                return java.sql.Ref.class;
-            case Types.SQLXML:
-                return java.sql.SQLXML.class;
-            default:
-                return Object.class;
-        }
+        return switch (sqlType) {
+            case Types.BIT -> Boolean.class;
+            case Types.TINYINT -> Byte.class;
+            case Types.SMALLINT -> Short.class;
+            case Types.INTEGER -> Integer.class;
+            case Types.BIGINT -> Long.class;
+            case Types.FLOAT, Types.REAL -> Float.class;
+            case Types.DOUBLE -> Double.class;
+            case Types.NUMERIC, Types.DECIMAL -> java.math.BigDecimal.class;
+            case Types.CHAR, Types.NCHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR ->
+                    String.class;
+            case Types.TIME, Types.TIMESTAMP, Types.DATE -> Date.class;
+            case Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY -> Byte[].class;
+            case Types.CLOB, Types.NCLOB, Types.BLOB -> java.sql.Blob.class;
+            case Types.ARRAY -> java.sql.Array.class;
+            case Types.STRUCT -> java.sql.Struct.class;
+            case Types.REF -> java.sql.Ref.class;
+            case Types.SQLXML -> java.sql.SQLXML.class;
+            default -> Object.class;
+        };
     }
 
     @NotNull

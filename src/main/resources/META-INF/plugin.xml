@@ -77,5 +77,5 @@
         </action>
     </actions>
 
-    <idea-version since-build="222.3345.*"/>
+    <idea-version since-build="202.*"/>
 </idea-plugin>

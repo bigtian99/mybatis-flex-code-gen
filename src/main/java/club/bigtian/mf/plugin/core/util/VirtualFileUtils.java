@@ -23,8 +23,7 @@ public class VirtualFileUtils {
      * @return {@code VirtualFile}
      */
     public static VirtualFile transToJavaFile(String path) {
-        VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
-        return file;
+        return LocalFileSystem.getInstance().findFileByPath(path);
     }
 
     /**
@@ -37,6 +36,7 @@ public class VirtualFileUtils {
     public static PsiDirectory psiDirectory(Project project, String path) {
         PsiManager psiManager = PsiManager.getInstance(project);
         VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+        assert file != null;
         return psiManager.findDirectory(file);
     }
 
@@ -51,8 +51,7 @@ public class VirtualFileUtils {
     public static PsiDirectory getPsiDirectory(Project project, String path) {
         PsiManager psiManager = PsiManager.getInstance(project);
         VirtualFile virtualFile = transToJavaFile(path);
-        PsiDirectory psiDirectory = psiManager.findDirectory(virtualFile);
-        return psiDirectory;
+        return psiManager.findDirectory(virtualFile);
     }
 
     /**
@@ -64,8 +63,7 @@ public class VirtualFileUtils {
      */
     public static PsiDirectory getPsiDirectory(Project project, VirtualFile virtualFile) {
         PsiManager psiManager = PsiManager.getInstance(project);
-        PsiDirectory psiDirectory = psiManager.findDirectory(virtualFile);
-        return psiDirectory;
+        return psiManager.findDirectory(virtualFile);
     }
 
 

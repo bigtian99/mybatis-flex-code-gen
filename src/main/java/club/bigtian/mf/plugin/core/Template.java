@@ -9,7 +9,6 @@ import cn.hutool.core.util.StrUtil;
 import com.intellij.ide.fileTemplates.impl.UrlUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.URL;
@@ -32,8 +31,7 @@ public class Template {
         return code;
     }
 
-    @Nullable
-    public static MybatisFlexConfig getMybatisFlexConfig() {
+    public static @NotNull MybatisFlexConfig getMybatisFlexConfig() {
         MybatisFlexConfig config = MybatisFlexPluginConfigData.getCurrentProjectMybatisFlexConfig();
         if (StrUtil.isEmpty(config.getControllerTemplate())) {
             config.setControllerTemplate(getTemplateContent(MybatisFlexConstant.CONTROLLER_TEMPLATE));
@@ -69,21 +67,18 @@ public class Template {
     public static String getConfigData(String property) {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
-        String value = ObjectUtil.defaultIfNull(fieldValue, "").toString();
-        return value;
+        return ObjectUtil.defaultIfNull(fieldValue, "").toString();
     }
 
     public static String getSuffix(String property, String val) {
         String fieldValue = getConfigData(property);
-        String value = ObjectUtil.defaultIfBlank(fieldValue, val).toString();
-        return value;
+        return ObjectUtil.defaultIfBlank(fieldValue, val).toString();
     }
 
     public static boolean getChecBoxConfig(String property) {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
-        boolean value = (boolean) ObjectUtil.defaultIfNull(fieldValue, false);
-        return value;
+        return (boolean) ObjectUtil.defaultIfNull(fieldValue, false);
     }
 
     public static String getTablePrefix() {

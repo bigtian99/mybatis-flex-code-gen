@@ -6,6 +6,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompilerManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
@@ -20,7 +21,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtImportDirective;
 
@@ -32,8 +32,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 
+/**
+ * @author bigtian
+ */
 public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable {
-
+    private static final Logger LOG = Logger.getInstance(MybatisFlexDocumentChangeHandler.class);
     private final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
     private ScheduledFuture<?> scheduledFuture;
 
@@ -54,7 +57,6 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         // }
     }
 
-    @Nullable
     private static boolean getPsiJavaFile(Editor editor) {
         FileDocumentManager fileDocumentManager = FileDocumentManager.getInstance();
         VirtualFile currentFile = fileDocumentManager.getFile(editor.getDocument());
@@ -138,16 +140,8 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiClassOwner psiJavaFile = (PsiClassOwner) psiFile;
             PsiErrorElement errorElement = PsiTreeUtil.findChildOfType(psiJavaFile, PsiErrorElement.class);
             if (ObjectUtil.isNull(errorElement) && !isPsiErrorElement(psiJavaFile)) {
-                System.out.println("Task executed.");
-                // compilerManager.compile(new VirtualFile[]{currentFile}, null);
-                compilerManager.compile(new VirtualFile[]{currentFile}, (aborted, errors, warnings, compileContext) -> {
-                    if (errors == 0) {
-                        System.out.println("编译成功");
-                    } else {
-                        System.out.println("编译失败");
-                    }
-
-                });
+                LOG.info("编译文件: " + currentFile.getName());
+                compilerManager.compile(new VirtualFile[]{currentFile}, null);
                 // TODO Kotlin的编译暂时不支持
             }
         });
@@ -189,12 +183,14 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                     // 解决用户修改字段后，get/set没有及时更新，导致编译报错
                     PsiCodeBlock body = psiMethod.getBody();
                     if (psiMethod.getName().startsWith("get")) {
+                        assert body != null;
                         String bodyText = body.getText();
                         String aReturn = StrUtil.subBetween(bodyText, "return ", ";").trim();
                         if (!fieldSet.contains(aReturn)) {
                             return true;
                         }
                     } else if (psiMethod.getName().startsWith("set")) {
+                        assert body != null;
                         String bodyText = body.getText();
                         String aReturn = StrUtil.subBetween(bodyText, "this.", "=").trim();
                         if (!fieldSet.contains(aReturn)) {
