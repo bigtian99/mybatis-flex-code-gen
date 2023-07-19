@@ -4,7 +4,7 @@
 
 [源码](https://gitee.com/djxchi/mybatis-flex-code-gen.git) 									QQ群：872707845
 
-​																						 [![star](../../Desktop/vuepress-starter/docs/mybatisFlex_Helper/assets/star.svg)](https://gitee.com/djxchi/mybatis-flex-code-gen/stargazers)
+​																						 [![star](./docs/assets/star.svg)](https://gitee.com/djxchi/mybatis-flex-code-gen/stargazers)
 
 ### 二、宗旨
 
