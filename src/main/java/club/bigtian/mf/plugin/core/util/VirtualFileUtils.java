@@ -1,11 +1,14 @@
 package club.bigtian.mf.plugin.core.util;
 
 import cn.hutool.core.util.StrUtil;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
@@ -15,6 +18,17 @@ import java.util.Set;
 
 public class VirtualFileUtils {
     private static Map<String, PsiDirectory> PSI_DIRECTORY_MAP = new HashMap<>();
+    private static FileDocumentManager fileDocumentManager = FileDocumentManager.getInstance();
+
+    public static PsiFile getPsiFile(Project project, VirtualFile virtualFile) {
+        PsiManager psiManager = PsiManager.getInstance(project);
+        return psiManager.findFile(virtualFile);
+    }
+
+    public static VirtualFile getVirtualFile(Document document) {
+        return fileDocumentManager.getFile(document);
+
+    }
 
     /**
      * 反式到java文件
@@ -27,7 +41,7 @@ public class VirtualFileUtils {
     }
 
     /**
-     *根据路径获取 psi目录
+     * 根据路径获取 psi目录
      *
      * @param project 项目
      * @param path    路径
@@ -65,7 +79,6 @@ public class VirtualFileUtils {
         PsiManager psiManager = PsiManager.getInstance(project);
         return psiManager.findDirectory(virtualFile);
     }
-
 
 
     /**

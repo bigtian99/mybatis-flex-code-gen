@@ -1,8 +1,13 @@
 package club.bigtian.mf.plugin.core.contributor;
 
+import club.bigtian.mf.plugin.core.util.KtFileUtil;
+import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.intellij.codeInsight.completion.*;
+import com.intellij.codeInsight.completion.CompletionContributor;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons.Nodes;
@@ -18,8 +23,10 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.psi.KtFile;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -40,21 +47,59 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
             psiFacade = JavaPsiFacade.getInstance(project);
             psiManager = PsiManager.getInstance(project);
         }
-        TreeMap<String, String> tableDefMap = new TreeMap<>();
+        Map<String, String> tableDefMap = new ConcurrentHashMap<>(new TreeMap<>());
         // 获取当前编辑的文件
         Document document = parameters.getEditor().getDocument();
-
         VirtualFile currentFile = fileDocumentManager.getFile(document);
+        assert currentFile != null;
+        getDependenciesTableDef(currentFile, project, tableDefMap);
+        // 移除重复的元素
+        removeRepetitionElement(currentFile, tableDefMap);
+        if (CollUtil.isEmpty(tableDefMap)) {
+            return;
+        }
+        // 添加代码提示
+        addCodeTip(result, tableDefMap, currentFile, project, document);
+    }
+
+
+    /**
+     * 获取模块依赖关系的所有 tableDef文件
+     *
+     * @param currentFile 当前文件
+     * @param project     项目
+     * @param tableDefMap 表def地图
+     */
+    private void getDependenciesTableDef(VirtualFile currentFile, Project project, Map<String, String> tableDefMap) {
         Module module = ModuleUtil.findModuleForFile(currentFile, project);
         // 获取当前模块的依赖模块
+        assert module != null;
         List<Module> moduleList = Arrays.stream(ModuleRootManager.getInstance(module).getDependencies())
                 .collect(Collectors.toList());
         moduleList.add(module);
         // 获取当前模块以及所依赖的模块的TableDef文件
         for (Module dependency : moduleList) {
             VirtualFile[] contentRoots = ModuleRootManager.getInstance(dependency).getContentRoots();
-            getTableDef(getVirtualFile(contentRoots[0]), tableDefMap, project);
+            VirtualFile virtualFile = null;
+            for (VirtualFile contentRoot : contentRoots) {
+                virtualFile = getVirtualFile(contentRoot);
+                if (ObjectUtil.isNotNull(virtualFile)) {
+                    break;
+                }
+            }
+            getTableDef(Objects.requireNonNull(virtualFile), tableDefMap, project);
         }
+    }
+
+    /**
+     * 添加代码提示
+     *
+     * @param result      结果
+     * @param tableDefMap 表def地图
+     * @param currentFile 当前文件
+     * @param project     项目
+     */
+    private void addCodeTip(@NotNull CompletionResultSet result, Map<String, String> tableDefMap, VirtualFile currentFile, Project project, Document document) {
         // 获取忽略大小写的结果集
         CompletionResultSet completionResultSet = result.caseInsensitive();
 
@@ -64,28 +109,91 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
                     .withTypeText(StrUtil.subAfter(entry.getValue(), ".", true) + "(MybatisFlex-Hepler)", true)
                     .withInsertHandler((context, item) -> {
                         // 选中后的处理事件
-                        PsiJavaFile psiJavaFile = (PsiJavaFile) psiManager.findFile(currentFile);
-                        // 搜索类
                         PsiClass psiClass = psiFacade.findClass(entry.getValue(), GlobalSearchScope.projectScope(project));
                         // 创建静态导入
-                        PsiImportStaticStatement importStaticStatement = elementFactory.createImportStaticStatement(psiClass, entry.getKey());
+                        assert psiClass != null;
                         // 获取导入的import
-                        List<String> list = Arrays.stream(Objects.requireNonNull(psiJavaFile.getImportList()).getAllImportStatements())
-                                .map(PsiElement::getText)
-                                .toList();
-                        // 如果已经导入了，就不再导入
-                        if (list.contains(importStaticStatement.getText())) {
-                            return;
-                        }
+                        PsiFile file = psiManager.findFile(currentFile);
                         // 导入import
                         WriteCommandAction.runWriteCommandAction(project, () -> {
-                            psiJavaFile.getImportList().add(importStaticStatement);
+                            if (file instanceof PsiJavaFile psiJavaFile) {
+                                javaImport(psiJavaFile, psiClass, entry.getKey());
+                            } else if (file instanceof KtFile ktFile) {
+                                ktImport(ktFile, psiClass, entry.getKey(), document);
+                            }
+
                         });
                     })
                     .withIcon(Nodes.Field);
             completionResultSet.addElement(lookupElement);
         }
+    }
 
+    /**
+     * java导入
+     *
+     * @param psiJavaFile psi java文件
+     * @param psiClass    psi类
+     * @param finalImport 最后导入
+     */
+    public void javaImport(PsiJavaFile psiJavaFile, PsiClass psiClass, String finalImport) {
+        Set<String> importSet = PsiJavaFileUtil.getImportSet(psiJavaFile);
+        PsiImportStaticStatement importStaticStatement = elementFactory.createImportStaticStatement(psiClass, finalImport);
+        // 如果已经导入了，就不再导入
+        if (importSet.contains(importStaticStatement.getText())) {
+            return;
+        }
+        psiJavaFile.getImportList().add(importStaticStatement);
+    }
+
+    /**
+     * kt导入
+     *
+     * @param ktFile   kt文件
+     * @param psiClass psi类
+     */
+    public void ktImport(KtFile ktFile, PsiClass psiClass, String finalImport, Document document) {
+        Set<String> importSet = KtFileUtil.getImportSet(ktFile);
+        String importText = Objects.requireNonNull(psiClass.getQualifiedName());
+        PsiImportStatement importStatementOnDemand = elementFactory.createImportStatementOnDemand(importText);
+        // 如果已经导入了，就不再导入
+        if (importSet.contains(importStatementOnDemand.getText())) {
+            return;
+        }
+        ktFile.getImportList().add(importStatementOnDemand);
+        //为什么要这样写，因为kotlin 不支持静态导入，要么就是.*导入，但是.*又会导致上面代码提示重复，所以只能这样写
+        String text = ktFile.getText().replace("import "+importText + ".*", "\nimport "+importText + "." + finalImport);
+        document.setText(text);
+    }
+
+    /**
+     * 移除重复的元素
+     *
+     * @param currentFile 当前编辑的文件
+     * @param tableDefMap 补全提示的map
+     */
+    private void removeRepetitionElement(VirtualFile currentFile, Map<String, String> tableDefMap) {
+        // 当文件导入过一次后，就不再提示，因为 idea 自带的就会提示了；
+        Set<String> importSet = getFileImport(currentFile);
+        for (String importExp : importSet) {
+            tableDefMap.remove(importExp);
+        }
+    }
+
+    private Set<String> getFileImport(VirtualFile currentFile) {
+        Set<String> importSet = new HashSet<>();
+        PsiFile file = psiManager.findFile(currentFile);
+        if (file instanceof PsiJavaFile javaFile) {
+            importSet = PsiJavaFileUtil.getImportSet(javaFile);
+        } else if (file instanceof KtFile ktFile) {
+            importSet = KtFileUtil.getImportSet(ktFile);
+        }
+        return importSet.stream()
+                .map(el -> {
+                    el = StrUtil.subAfter(el, ".", true);
+                    return StrUtil.subBefore(el, ";", true);
+                })
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -105,6 +213,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
                 String name = child.getName();
                 if (name.endsWith("TableDef.java")) {
                     PsiJavaFile psiJavaFile = (PsiJavaFile) psiManager.findFile(child);
+                    assert psiJavaFile != null;
                     String packageName = psiJavaFile.getPackageName();
                     String path = child.getPath().replace(".java", "");
                     String tableDef = StrUtil.subAfter(path, "/", true);
@@ -126,6 +235,12 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
         VirtualFile file = baseDir.findChild("target");
         if (ObjectUtil.isNull(file)) {
             file = baseDir.findChild("build");
+            if (baseDir.getPath().contains("kapt")) {
+                return baseDir;
+            }
+        }
+        if (ObjectUtil.isNull(file)) {
+            return null;
         }
         VirtualFile[] children = file.getChildren();
         for (VirtualFile child : children) {

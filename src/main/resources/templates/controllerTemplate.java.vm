@@ -75,7 +75,7 @@ public class ${controllerName}{
     })
     #end
 #if($config.qualifiedName)
-    public ${resutlClass} #if($config.genericity)<$modelName> #end save(@RequestBody $modelName  $requestPath){
+    public ${resutlClass} #if($config.genericity)<Boolean> #end save(@RequestBody $modelName  $requestPath){
 #if($config.resultType=='static')
         return ${resutlClass}.${config.methodName}(${interfaceVariable}.save($requestPath));
 #else
@@ -117,7 +117,7 @@ public class ${controllerName}{
     })
     #end
 #if($config.qualifiedName)
-    public ${resutlClass} remove(@PathVariable Serializable id){
+    public ${resutlClass} #if($config.genericity)<Boolean> #end  remove(@PathVariable Serializable id){
     #if($config.resultType=='static')
             return ${resutlClass}.${config.methodName}(${interfaceVariable}.removeById(id));
     #else
@@ -157,7 +157,7 @@ public class ${controllerName}{
     })
     #end
 #if($config.qualifiedName)
-    public  ${resutlClass} update(@RequestBody $modelName $requestPath ){
+    public  ${resutlClass} #if($config.genericity)<Boolean> #end  update(@RequestBody $modelName $requestPath ){
     #if($config.resultType=='static')
             return ${resutlClass}.${config.methodName}(${interfaceVariable}.updateById($requestPath));
     #else
@@ -216,7 +216,7 @@ public class ${controllerName}{
     })
     #end
     #if($config.swagger3)
-    @Operation(summary = "根据主键删除$!table.comment")
+    @Operation(summary = "根据$!{table.comment}主键获取详细信息")
     @Parameters(value = {
         #foreach($column in $table.columnList)
             #if($column.primaryKey)

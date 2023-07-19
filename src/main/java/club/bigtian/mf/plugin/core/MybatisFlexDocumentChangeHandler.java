@@ -1,5 +1,8 @@
 package club.bigtian.mf.plugin.core;
 
+import club.bigtian.mf.plugin.core.util.KtFileUtil;
+import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
+import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.Disposable;
@@ -22,10 +25,10 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.KtFile;
-import org.jetbrains.kotlin.psi.KtImportDirective;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -39,6 +42,8 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     private static final Logger LOG = Logger.getInstance(MybatisFlexDocumentChangeHandler.class);
     private final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
     private ScheduledFuture<?> scheduledFuture;
+    FileDocumentManager fileDocumentManager = FileDocumentManager.getInstance();
+
 
     public MybatisFlexDocumentChangeHandler() {
         super();
@@ -57,7 +62,13 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         // }
     }
 
-    private static boolean getPsiJavaFile(Editor editor) {
+    /**
+     * 校验文件是否导入了Table注解
+     *
+     * @param editor
+     * @return
+     */
+    private static boolean checkFile(Editor editor) {
         FileDocumentManager fileDocumentManager = FileDocumentManager.getInstance();
         VirtualFile currentFile = fileDocumentManager.getFile(editor.getDocument());
         if (ObjectUtil.isNull(currentFile)) {
@@ -69,23 +80,14 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         if (!(psiFile instanceof PsiJavaFile) && !(psiFile instanceof KtFile)) {
             return false;
         }
-
+        Set<String> importSet = new HashSet<>();
         if (psiFile instanceof KtFile ktFile) {
-            for (KtImportDirective anImport : Objects.requireNonNull(ktFile.getImportList()).getImports()) {
-                if ("com.mybatisflex.annotation.Table".equals(Objects.requireNonNull(anImport.getImportedFqName()).asString())) {
-                    return true;
-                }
-            }
+            importSet = KtFileUtil.getImportSet(ktFile);
         }
         if (psiFile instanceof PsiJavaFile psiJavaFile) {
-            for (PsiImportStatement importStatement : Objects.requireNonNull(psiJavaFile.getImportList()).getImportStatements()) {
-                if ("com.mybatisflex.annotation.Table".equals(importStatement.getQualifiedName())) {
-                    return true;
-                }
-            }
+            importSet = PsiJavaFileUtil.getImportSet(psiJavaFile);
         }
-
-        return false;
+        return importSet.contains("com.mybatisflex.annotation.Table");
     }
 
     @Override
@@ -101,7 +103,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     @Override
     public void documentChanged(@NotNull DocumentEvent event) {
         EditorFactory.getInstance().editors(event.getDocument()).findAny().ifPresent(editor -> {
-            boolean flag = getPsiJavaFile(editor);
+            boolean flag = checkFile(editor);
             if (!flag) {
                 return;
             }
@@ -126,14 +128,11 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         EditorFactory.getInstance().editors(event.getDocument()).findFirst().ifPresent(editor -> {
             Project project = editor.getProject();
             CompilerManager compilerManager = CompilerManager.getInstance(project);
-
-            PsiManager psiManager = PsiManager.getInstance(project);
-            FileDocumentManager fileDocumentManager = FileDocumentManager.getInstance();
-            VirtualFile currentFile = fileDocumentManager.getFile(editor.getDocument());
+            VirtualFile currentFile = VirtualFileUtils.getVirtualFile(editor.getDocument());
             if (ObjectUtil.isNull(currentFile)) {
                 return;
             }
-            PsiFile psiFile = psiManager.findFile(currentFile);
+            PsiFile psiFile = VirtualFileUtils.getPsiFile(project, currentFile);
             if (!(psiFile instanceof PsiJavaFile) && !(psiFile instanceof KtFile)) {
                 return;
             }

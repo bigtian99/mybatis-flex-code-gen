@@ -2,6 +2,10 @@
 
 `这是一款深度支持Mybatis-Flex的IDEA插件，它最大的亮点就是可以高度自定义代码生成模板，它可以快速根据表生成代码，可以使用导出/导入把配置分享给同事以便快速开发`
 
+[源码](https://gitee.com/djxchi/mybatis-flex-code-gen.git) 									QQ群：872707845
+
+​																						 [![star](../../Desktop/vuepress-starter/docs/mybatisFlex_Helper/assets/star.svg)](https://gitee.com/djxchi/mybatis-flex-code-gen/stargazers)
+
 ### 二、宗旨
 
 致力于简化Mybatis-Flex用户操作繁琐且毫无意义的额外操作

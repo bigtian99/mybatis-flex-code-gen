@@ -31,16 +31,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
-    <h3>1.4.2-RELEASE</h3>
+    <h3>1.4.3-RELEASE</h3>
     <ul>
-    <li>1、【新增】 mybatis log 显示功能，搬运自github</li>
-    <li>2、【新增】可配置统一返回</li>
-    <li>3、【新增】 apt自动编译（只会在有@Table标注的类上触发）beta</li>
-    <li>4、【新增】支持swagger3</li>
-    <li>5、【优化】 插件支持符合java sql协议类型的代码生成（不支持的类型会弹框让用户自行选择）</li>
-    <li>6、【优化】表名搜索不区分大小写</li>
-    <li>7、【优化】没有的包名自动创建</li>
-    <li>8、【修复】搜索表名的时候点击排序会把所有表显示出来</li>
+    <li>1、【新增】支持 APT 提示（java/Kotlin）</li>
+    <li>2、【优化】支持 IDEA2020.2往上版本</li>
+    <li>3、【优化】清理部分过时 API
+    <li>4、【修复】修复项目没有 TableDef 会导致IDEA 自身提示没有</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
@@ -59,6 +55,7 @@
         <executor implementation="club.bigtian.mf.plugin.core.log.MyBatisLogExecutor"
                   id="MyBatisLogFreeExecutor"/>
         <editorFactoryListener implementation="club.bigtian.mf.plugin.core.MybatisFlexDocumentChangeHandler"/>
+        <completion.contributor language="kotlin" implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexCompletionContributor" />
         <completion.contributor language="JAVA" implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexCompletionContributor" />
     </extensions>
 
