@@ -87,7 +87,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         if (psiFile instanceof PsiJavaFile psiJavaFile) {
             importSet = PsiJavaFileUtil.getImportSet(psiJavaFile);
         }
-        return importSet.contains("com.mybatisflex.annotation.Table");
+        return !importSet.contains("import com.mybatisflex.annotation.Table;");
     }
 
     @Override
@@ -102,32 +102,16 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
     @Override
     public void documentChanged(@NotNull DocumentEvent event) {
+        CharSequence newFragment = event.getNewFragment();
+        if ((StrUtil.isBlank(newFragment) && StrUtil.isBlank(event.getOldFragment()))) {
+            return;
+        }
         EditorFactory.getInstance().editors(event.getDocument()).findAny().ifPresent(editor -> {
             boolean flag = checkFile(editor);
-            if (!flag) {
+            if (flag) {
                 return;
             }
-            Runnable task = () -> {
-                // 执行任务的逻辑
-                Application application = ApplicationManager.getApplication();
-                application.invokeLater(() -> {
-                    compile(event);
-                });
-            };
-            if (ObjectUtil.isNotNull(scheduledFuture)) {
-                scheduledFuture.cancel(true);
-            }
-            // 延迟触发任务
-            scheduledFuture = EXECUTOR_SERVICE.schedule(task, 800, TimeUnit.MILLISECONDS);
-        });
-
-    }
-
-
-    private void compile(@NotNull DocumentEvent event) {
-        EditorFactory.getInstance().editors(event.getDocument()).findFirst().ifPresent(editor -> {
             Project project = editor.getProject();
-            CompilerManager compilerManager = CompilerManager.getInstance(project);
             VirtualFile currentFile = VirtualFileUtils.getVirtualFile(editor.getDocument());
             if (ObjectUtil.isNull(currentFile)) {
                 return;
@@ -137,14 +121,36 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 return;
             }
             PsiClassOwner psiJavaFile = (PsiClassOwner) psiFile;
-            PsiErrorElement errorElement = PsiTreeUtil.findChildOfType(psiJavaFile, PsiErrorElement.class);
-            if (ObjectUtil.isNull(errorElement) && !isPsiErrorElement(psiJavaFile)) {
-                LOG.info("编译文件: " + currentFile.getName());
-                compilerManager.compile(new VirtualFile[]{currentFile}, null);
-                // TODO Kotlin的编译暂时不支持
+            Runnable task = () -> {
+                // 执行任务的逻辑
+                Application application = ApplicationManager.getApplication();
+                application.invokeLater(() -> {
+                    PsiErrorElement errorElement = PsiTreeUtil.findChildOfType(psiJavaFile, PsiErrorElement.class);
+                    if (ObjectUtil.isNull(errorElement) && !isPsiErrorElement(psiJavaFile)) {
+                        compile(event);
+                    }
+                });
+            };
+            if (ObjectUtil.isNotNull(scheduledFuture)) {
+                scheduledFuture.cancel(true);
             }
+            // 延迟触发任务
+            scheduledFuture = EXECUTOR_SERVICE.schedule(task, 800, TimeUnit.MILLISECONDS);
         });
     }
+
+
+    private void compile(@NotNull DocumentEvent event) {
+        EditorFactory.getInstance().editors(event.getDocument()).findFirst().ifPresent(editor -> {
+            Project project = editor.getProject();
+            CompilerManager compilerManager = CompilerManager.getInstance(project);
+            VirtualFile currentFile = VirtualFileUtils.getVirtualFile(editor.getDocument());
+            LOG.warn("编译文件: " + currentFile.getName());
+            compilerManager.compile(new VirtualFile[]{currentFile}, null);
+            // TODO Kotlin的编译暂时不支持
+        });
+    }
+
 
     /**
      * 规避复制方法或者字段的时候也触发编译
@@ -158,29 +164,38 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         }
         HashSet<String> elementSet = new HashSet<>();
         PsiClass[] classes = psiJavaFile.getClasses();
+        Project project = psiJavaFile.getProject();
+
         for (PsiClass psiClass : classes) {
             HashSet<Object> fieldSet = new HashSet<>();
             for (PsiField field : psiClass.getFields()) {
-                String text = field.getText();
-                if (elementSet.contains(text)) {
+                if (fieldSet.contains(field.getName())) {
                     return true;
-                } else {
-                    elementSet.add(text);
                 }
                 fieldSet.add(field.getName());
             }
             PsiAnnotation annotation = psiClass.getAnnotation("lombok.Data");
             for (PsiMethod psiMethod : psiClass.getMethods()) {
+                for (PsiAnnotation psiAnnotation : psiMethod.getAnnotations()) {
+
+                }
                 // 解决用户cv方法，导致编译错误
                 String text = psiMethod.getText();
+                for (PsiAnnotation psiMethodAnnotation : psiMethod.getAnnotations()) {
+                    text = text.replace(psiMethodAnnotation.getText(), "").trim();
+                }
+                PsiCodeBlock body = psiMethod.getBody();
+                text = text.replace(body.getText(), "").trim();
                 if (elementSet.contains(text)) {
                     return true;
                 } else {
                     elementSet.add(text);
                 }
-                if (ObjectUtil.isNull(annotation)) {
+
+                //get/set方法
+                if (ObjectUtil.isNull(annotation) && (psiMethod.getName().startsWith("get") || psiMethod.getName().startsWith("set"))) {
                     // 解决用户修改字段后，get/set没有及时更新，导致编译报错
-                    PsiCodeBlock body = psiMethod.getBody();
+
                     if (psiMethod.getName().startsWith("get")) {
                         assert body != null;
                         String bodyText = body.getText();
@@ -197,6 +212,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                         }
                     }
                 }
+
 
             }
 

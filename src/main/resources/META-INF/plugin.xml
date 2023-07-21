@@ -35,8 +35,9 @@
     <ul>
     <li>1、【新增】支持 APT 提示（java/Kotlin）</li>
     <li>2、【优化】支持 IDEA2020.2往上版本</li>
-    <li>3、【优化】清理部分过时 API
-    <li>4、【修复】修复项目没有 TableDef 会导致IDEA 自身提示没有</li>
+    <li>3、【优化】清理部分过时 API </li>
+    <li>4、【优化】优化 APT 编译</li>
+    <li>5、【修复】修复项目没有 TableDef 会导致IDEA 自身提示没有</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.

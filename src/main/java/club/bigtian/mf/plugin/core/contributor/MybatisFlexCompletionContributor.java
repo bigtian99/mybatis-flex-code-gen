@@ -72,8 +72,10 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
      */
     private void getDependenciesTableDef(VirtualFile currentFile, Project project, Map<String, String> tableDefMap) {
         Module module = ModuleUtil.findModuleForFile(currentFile, project);
+        if (ObjectUtil.isNull(module)) {
+            return;
+        }
         // 获取当前模块的依赖模块
-        assert module != null;
         List<Module> moduleList = Arrays.stream(ModuleRootManager.getInstance(module).getDependencies())
                 .collect(Collectors.toList());
         moduleList.add(module);
@@ -87,7 +89,10 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
                     break;
                 }
             }
-            getTableDef(Objects.requireNonNull(virtualFile), tableDefMap, project);
+            if (ObjectUtil.isNull(virtualFile)) {
+                return;
+            }
+            getTableDef(virtualFile, tableDefMap, project);
         }
     }
 
@@ -162,7 +167,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
         }
         ktFile.getImportList().add(importStatementOnDemand);
         //为什么要这样写，因为kotlin 不支持静态导入，要么就是.*导入，但是.*又会导致上面代码提示重复，所以只能这样写
-        String text = ktFile.getText().replace("import "+importText + ".*", "\nimport "+importText + "." + finalImport);
+        String text = ktFile.getText().replace("import " + importText + ".*", "\nimport " + importText + "." + finalImport);
         document.setText(text);
     }
 
