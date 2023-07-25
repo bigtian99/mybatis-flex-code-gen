@@ -169,7 +169,12 @@ public class MybatisFlexConfig {
     /**
      * 是否泛型
      */
-    private  boolean genericity;
+    private boolean genericity;
+
+    /**
+     * 逻辑删除字段
+     */
+    private String logicDeleteField;
 
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
@@ -533,5 +538,13 @@ public class MybatisFlexConfig {
 
     public void setGenericity(boolean genericity) {
         this.genericity = genericity;
+    }
+
+    public String getLogicDeleteField() {
+        return logicDeleteField;
+    }
+
+    public void setLogicDeleteField(String logicDeleteField) {
+        this.logicDeleteField = logicDeleteField;
     }
 }

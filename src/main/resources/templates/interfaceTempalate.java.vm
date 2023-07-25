@@ -1,6 +1,9 @@
 package $interfacePackage;
 
-import ${config.modelPackage}.${className}Entity;
+
+#if($config.modelPackage.length() > 0)
+import ${config.modelPackage}.${modelName};
+#end
 import com.mybatisflex.core.service.IService;
 
 /**

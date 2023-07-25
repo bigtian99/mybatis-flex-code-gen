@@ -3,6 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="${config.mapperPackage}.${mapperName}">
+#if($config.modelPackage.length() > 0)
     <resultMap id="BaseResultMap" type="${config.modelPackage}.${modelName}">
 #set($result = "")
 #foreach($column in $table.columnList)
@@ -17,7 +18,7 @@
 #end
 #end
     </resultMap>
-
+#end
     <sql id="Base_Column_List">
         $result
     </sql>

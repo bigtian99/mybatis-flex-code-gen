@@ -58,6 +58,7 @@
         <editorFactoryListener implementation="club.bigtian.mf.plugin.core.MybatisFlexDocumentChangeHandler"/>
         <completion.contributor language="kotlin" implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexCompletionContributor" />
         <completion.contributor language="JAVA" implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexCompletionContributor" />
+
     </extensions>
 
     <actions>
@@ -73,6 +74,11 @@
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="before" relative-to-action="ConsoleView.ClearAll"/>
         </action>
+
+<!--        <action id="MavenSearchAction" class="club.bigtian.mf.plugin.action.maven.MavenSearchAction"-->
+<!--                text="MavenSearchAction" description="MavenSearchAction">-->
+<!--            <add-to-group group-id="GenerateGroup" anchor="before" />-->
+<!--        </action>-->
     </actions>
 
     <idea-version since-build="202.*"/>

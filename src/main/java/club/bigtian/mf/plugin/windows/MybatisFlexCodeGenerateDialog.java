@@ -1,12 +1,12 @@
 package club.bigtian.mf.plugin.windows;
 
-import club.bigtian.mf.plugin.core.util.Package;
 import club.bigtian.mf.plugin.core.RenderMybatisFlexTemplate;
 import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.render.TableListCellRenderer;
 import club.bigtian.mf.plugin.core.search.InvertedIndexSearch;
+import club.bigtian.mf.plugin.core.util.Package;
 import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.core.validator.InputValidatorImpl;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
@@ -67,6 +67,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     private JTextField tableSearch;
     private FixedSizeButton sortBtn;
     private JProgressBar progressBar;
+    private JCheckBox strictComBox;
 
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
@@ -218,6 +219,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         });
         setSelectTalbe(actionEvent);
 
+        strictComBox.addChangeListener(e -> generateBtn.setEnabled(!strictComBox.isSelected()));
     }
 
     private static Set<String> search(String tableName, TableListCellRenderer cellRenderer, DefaultListModel model) {

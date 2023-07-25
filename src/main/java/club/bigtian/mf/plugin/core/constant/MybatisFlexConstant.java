@@ -7,6 +7,10 @@ public class MybatisFlexConstant {
      */
     public static final String CONTROLLER_TEMPLATE = "controllerTemplate.java";
     public static final String TABLE_PREFIX = "tablePrefix";
+    /**
+     * 逻辑删除
+     */
+    public static final String LOGIC_DELETE_FIELD = "logicDeleteField";
     public static final String MODEL_TEMPLATE = "modelTemplate.java";
     public static final String INTERFACE_TEMPLATE = "interfaceTempalate.java";
     public static final String IMPL_TEMPLATE = "implTemplate.java";
@@ -21,7 +25,7 @@ public class MybatisFlexConstant {
     public static final String SINCE = "since";
 
     public static final String MYBATIS_FLEX_CONFIG = "mybatisFlexConfig";
-    public static final String MYBATIS_FLEX_CONFIGSINCE= "configSince";
+    public static final String MYBATIS_FLEX_CONFIGSINCE = "configSince";
     public static final String XML_COM_BOX = "xmlComBox";
     public static final String MAPPER_COM_BOX = "mapperComBox";
     public static final String SERVICE_IMPL_COM_BOX = "serviceImplComBox";

@@ -5,6 +5,7 @@ import club.bigtian.mf.plugin.core.util.CodeReformat;
 import club.bigtian.mf.plugin.core.util.Modules;
 import club.bigtian.mf.plugin.core.util.TableCore;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
+import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -23,10 +24,9 @@ import org.apache.velocity.app.VelocityEngine;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * 渲染MybatisFlex模板
@@ -42,12 +42,13 @@ public class RenderMybatisFlexTemplate {
         VelocityEngine velocityEngine = new VelocityEngine();
         VelocityContext context = new VelocityContext();
         HashMap<PsiDirectory, List<PsiElement>> templateMap = new HashMap<>();
-        Map<String, String> templates = config.getTemplates();
+        Map<String, String> templates = new ConcurrentHashMap<>(config.getTemplates());
         Map<String, String> suffixMap = config.getSuffix();
-        Map<String, String> packages = config.getPackages();
+        Map<String, String> packages = new ConcurrentHashMap<>(config.getPackages());
+        removeEmptyPackage(packages, templates);
         Map<String, String> modules = config.getModules();
         PsiFileFactory factory = PsiFileFactory.getInstance(project);
-
+        logicDelete(selectedTableInfo, config);
         for (TableInfo tableInfo : selectedTableInfo) {
             String className = TableCore.getClassName(tableInfo.getName(), config.getTablePrefix());
             context.put("className", className);
@@ -109,6 +110,29 @@ public class RenderMybatisFlexTemplate {
             }
         });
 
+    }
+
+    private static void logicDelete(List<TableInfo> selectedTableInfo, MybatisFlexConfig config) {
+        String logicDeleteField = config.getLogicDeleteField();
+        if (StrUtil.isBlank(logicDeleteField)) {
+            return;
+        }
+        Set<String> fieldSet = Arrays.stream(logicDeleteField.split(";"))
+                .collect(Collectors.toSet());
+        for (TableInfo info : selectedTableInfo) {
+            for (ColumnInfo columnInfo : info.getColumnList()) {
+                columnInfo.setLogicDelete(fieldSet.contains(columnInfo.getName()));
+            }
+        }
+    }
+
+    private static void removeEmptyPackage(Map<String, String> packages, Map<String, String> templates) {
+        for (Map.Entry<String, String> entry : packages.entrySet()) {
+            if (StrUtil.isEmpty(entry.getValue())) {
+                packages.remove(entry.getKey());
+                templates.remove(entry.getKey());
+            }
+        }
     }
 
 
