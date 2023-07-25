@@ -187,7 +187,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         tableList.setCellRenderer(cellRenderer);
         sortBtn.addActionListener(e -> {
             String tableName = tableSearch.getText();
-            tableNameList = search(tableName, cellRenderer, model).stream().collect(Collectors.toList());
+            tableNameList = search(tableName, cellRenderer).stream().collect(Collectors.toList());
             if (sortBtn.getToolTipText().equals("升序")) {
                 sortBtn.setToolTipText("降序");
                 Collections.sort(tableNameList, Comparator.reverseOrder());
@@ -212,7 +212,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             @Override
             protected void textChanged(@NotNull DocumentEvent e) {
                 String tableName = tableSearch.getText();
-                Set<String> search = search(tableName, cellRenderer, model);
+                Set<String> search = search(tableName, cellRenderer);
                 model.removeAllElements();
                 model.addAll(search);
             }
@@ -220,9 +220,34 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         setSelectTalbe(actionEvent);
 
         strictComBox.addChangeListener(e -> generateBtn.setEnabled(!strictComBox.isSelected()));
+
+        cotrollerCombox.addActionListener(e -> {
+            MybatisFlexConfig configData = getConfigData();
+            controllerPath.setText(Modules.getPackagePath(cotrollerCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getContrPath(), "controller")));
+        });
+        modelCombox.addActionListener(e -> {
+            MybatisFlexConfig configData = getConfigData();
+            modelPackagePath.setText(Modules.getPackagePath(modelCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getDomainPath(), "domain")));
+        });
+        serviceInteCombox.addActionListener(e -> {
+            MybatisFlexConfig configData = getConfigData();
+            serviceIntefacePath.setText(Modules.getPackagePath(serviceInteCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getServicePath(), "service")));
+        });
+        serviceImplComBox.addActionListener(e -> {
+            MybatisFlexConfig configData = getConfigData();
+            serviceImpPath.setText(Modules.getPackagePath(serviceImplComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getImplPath(), "impl")));
+        });
+        mapperComBox.addActionListener(e -> {
+            MybatisFlexConfig configData = getConfigData();
+            mapperPackagePath.setText(Modules.getPackagePath(mapperComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getMapperPath(), "mapper")));
+        });
+        xmlComBox.addActionListener(e -> {
+            MybatisFlexConfig configData = getConfigData();
+            mapperXmlPath.setText(Modules.getPackagePath(xmlComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getXmlPath(), "mappers")));
+        });
     }
 
-    private static Set<String> search(String tableName, TableListCellRenderer cellRenderer, DefaultListModel model) {
+    private static Set<String> search(String tableName, TableListCellRenderer cellRenderer) {
         Map<String, String> highlightKey = InvertedIndexSearch.highlightKey(tableName);
         cellRenderer.setSearchTableName(tableName);
         cellRenderer.setHighlightKey(highlightKey);

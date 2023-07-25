@@ -79,7 +79,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         setContentPane(contentPane);
         setModal(true);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
+        screenSize.setSize(screenSize.getWidth() * 0.8, screenSize.getHeight() * 0.8);
         setSize(screenSize);
         getRootPane().setDefaultButton(buttonOK);
         DialogUtil.centerShow(this);
@@ -225,12 +225,12 @@ public class MybatisFlexSettingDialog extends JDialog {
         overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
         swagger3CheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER3));
         logicTF.setText(Template.getConfigData(MybatisFlexConstant.LOGIC_DELETE_FIELD));
-        contrPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.CONTR_PATH),contrPath.getText()));
-        servicePath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.SERVICE_PATH),servicePath.getText()));
-        implPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.IMPL_PATH),implPath.getText()));
-        domainPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.DOMAIN_PATH),domainPath.getText()));
-        xmlPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.XML_PATH),xmlPath.getText()));
-        mapperPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.MAPPER_PATH),mapperPath.getText()));
+        contrPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.CONTR_PATH), contrPath.getText()));
+        servicePath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.SERVICE_PATH), servicePath.getText()));
+        implPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.IMPL_PATH), implPath.getText()));
+        domainPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.DOMAIN_PATH), domainPath.getText()));
+        xmlPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.XML_PATH), xmlPath.getText()));
+        mapperPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.MAPPER_PATH), mapperPath.getText()));
         initSinceComBox();
     }
 

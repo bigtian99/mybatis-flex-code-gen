@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="club.bigtian.mf.plugin.windows.MybatisFlexSettingDialog">
   <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="48" y="54" width="1007" height="757"/>
+      <xy x="48" y="54" width="910" height="730"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -17,7 +17,7 @@
             <properties/>
             <border type="none" title="基本配置"/>
             <children>
-              <grid id="66a0a" layout-manager="GridLayoutManager" row-count="6" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="66a0a" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints border-constraint="South"/>
                 <properties/>
@@ -25,7 +25,7 @@
                 <children>
                   <grid id="24cc7" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
                     <constraints>
-                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties/>
                     <border type="none" title="三方框架注解"/>
@@ -225,7 +225,7 @@
                   </grid>
                   <grid id="1e0b3" layout-manager="BorderLayout" hgap="0" vgap="0">
                     <constraints>
-                      <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties/>
                     <border type="etched" title="默认模版配置"/>
@@ -448,15 +448,6 @@
                         </children>
                       </grid>
                     </children>
-                  </grid>
-                  <grid id="769c3" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-                    <margin top="0" left="0" bottom="0" right="0"/>
-                    <constraints>
-                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties/>
-                    <border type="none"/>
-                    <children/>
                   </grid>
                   <grid id="45cc6" layout-manager="GridLayoutManager" row-count="1" column-count="13" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                     <margin top="0" left="0" bottom="0" right="0"/>

@@ -5,6 +5,7 @@ import club.bigtian.mf.plugin.core.render.ModuleComBoxRender;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -95,13 +96,17 @@ public class Modules {
                     PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
                     LOG.assertTrue(psiDirectory != null);
                     PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
-                    if (aPackage != null) {
+                    if (aPackage != null ) {
                         moduleMap.put(aPackage.getName(), aPackage.getQualifiedName());
                     }
                 }
                 return true;
             });
-            modulePackageMap.put(module.getName(), moduleMap);
+            String name = module.getName();
+            if (name.contains(".")) {
+                name = StrUtil.subBefore(name, ".", false);
+            }
+            modulePackageMap.put(name, moduleMap);
         }
     }
 
