@@ -44,6 +44,10 @@ public class ColumnInfo {
      * 是否必填
      */
     private boolean notNull;
+    /**
+     * 是否逻辑删除
+     */
+    private boolean logicDelete;
 
     public boolean isNotNull() {
         return notNull;
@@ -118,14 +122,27 @@ public class ColumnInfo {
     }
 
 
+    public boolean isLogicDelete() {
+        return logicDelete;
+    }
+
+    public void setLogicDelete(boolean logicDelete) {
+        this.logicDelete = logicDelete;
+    }
+
     @Override
     public String toString() {
         return "ColumnInfo{" +
                 "name='" + name + '\'' +
+                ", fieldName='" + fieldName + '\'' +
+                ", fieldType='" + fieldType + '\'' +
                 ", type='" + type + '\'' +
                 ", comment='" + comment + '\'' +
-                ", isPrimaryKey=" + primaryKey +
+                ", primaryKey=" + primaryKey +
                 ", isAutoIncrement=" + isAutoIncrement +
+                ", methodName='" + methodName + '\'' +
+                ", notNull=" + notNull +
+                ", logicDelete=" + logicDelete +
                 '}';
     }
 }

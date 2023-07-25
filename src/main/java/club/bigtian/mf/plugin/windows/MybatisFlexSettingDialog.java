@@ -65,6 +65,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JButton restBtn;
     private JCheckBox swagger3CheckBox;
     private JButton returnBtn;
+    private com.intellij.ui.components.fields.ExpandableTextField logicTF;
     private Project project;
 
     public MybatisFlexSettingDialog(Project project) {
@@ -215,6 +216,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         cacheCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.CACHE));
         overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
         swagger3CheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER3));
+        logicTF.setText(Template.getConfigData(MybatisFlexConstant.LOGIC_DELETE_FIELD));
         initSinceComBox();
     }
 
@@ -281,6 +283,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setCache(cacheCheckBox.isSelected());
         config.setSwagger3(swagger3CheckBox.isSelected());
         config.setOverrideCheckBox(overrideCheckBox.isSelected());
+        config.setLogicDeleteField(logicTF.getText());
         return config;
     }
 

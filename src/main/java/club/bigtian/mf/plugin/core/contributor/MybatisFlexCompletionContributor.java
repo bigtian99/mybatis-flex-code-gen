@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.core.contributor;
 import club.bigtian.mf.plugin.core.util.KtFileUtil;
 import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.codeInsight.completion.CompletionContributor;
@@ -148,6 +149,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
         if (importSet.contains(importStaticStatement.getText())) {
             return;
         }
+
         psiJavaFile.getImportList().add(importStaticStatement);
     }
 
@@ -248,6 +250,9 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
             return null;
         }
         VirtualFile[] children = file.getChildren();
+        if (ArrayUtil.isEmpty(children)) {
+            return null;
+        }
         for (VirtualFile child : children) {
             if (child.getName().startsWith("generated")) {
                 return child;

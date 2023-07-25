@@ -42,7 +42,6 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     private static final Logger LOG = Logger.getInstance(MybatisFlexDocumentChangeHandler.class);
     private final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
     private ScheduledFuture<?> scheduledFuture;
-    FileDocumentManager fileDocumentManager = FileDocumentManager.getInstance();
 
 
     public MybatisFlexDocumentChangeHandler() {
@@ -57,9 +56,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         EditorFactoryListener.super.editorCreated(event);
         Editor editor = event.getEditor();
         Document document = editor.getDocument();
-        // if (getPsiJavaFile(editor)) {
         document.addDocumentListener(this);
-        // }
     }
 
     /**
@@ -76,6 +73,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         }
         PsiManager psiManager = PsiManager.getInstance(Objects.requireNonNull(editor.getProject()));
         PsiFile psiFile = psiManager.findFile(currentFile);
+
         // 支持java和kotlin
         if (!(psiFile instanceof PsiJavaFile) && !(psiFile instanceof KtFile)) {
             return false;
@@ -95,9 +93,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         EditorFactoryListener.super.editorReleased(event);
         Editor editor = event.getEditor();
         Document document = editor.getDocument();
-        // if (getPsiJavaFile(editor)) {
         document.removeDocumentListener(this);
-        // }
     }
 
     @Override
@@ -106,6 +102,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         if ((StrUtil.isBlank(newFragment) && StrUtil.isBlank(event.getOldFragment()))) {
             return;
         }
+
         EditorFactory.getInstance().editors(event.getDocument()).findAny().ifPresent(editor -> {
             boolean flag = checkFile(editor);
             if (flag) {
@@ -139,7 +136,6 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         });
     }
 
-
     private void compile(@NotNull DocumentEvent event) {
         EditorFactory.getInstance().editors(event.getDocument()).findFirst().ifPresent(editor -> {
             Project project = editor.getProject();
@@ -164,7 +160,6 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         }
         HashSet<String> elementSet = new HashSet<>();
         PsiClass[] classes = psiJavaFile.getClasses();
-        Project project = psiJavaFile.getProject();
 
         for (PsiClass psiClass : classes) {
             HashSet<Object> fieldSet = new HashSet<>();
@@ -176,35 +171,30 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             }
             PsiAnnotation annotation = psiClass.getAnnotation("lombok.Data");
             for (PsiMethod psiMethod : psiClass.getMethods()) {
-                for (PsiAnnotation psiAnnotation : psiMethod.getAnnotations()) {
-
-                }
                 // 解决用户cv方法，导致编译错误
                 String text = psiMethod.getText();
                 for (PsiAnnotation psiMethodAnnotation : psiMethod.getAnnotations()) {
                     text = text.replace(psiMethodAnnotation.getText(), "").trim();
                 }
                 PsiCodeBlock body = psiMethod.getBody();
+                assert body != null;
                 text = text.replace(body.getText(), "").trim();
                 if (elementSet.contains(text)) {
                     return true;
                 } else {
                     elementSet.add(text);
                 }
-
+                //TODO 注解必填项不填，导致编译错误
                 //get/set方法
                 if (ObjectUtil.isNull(annotation) && (psiMethod.getName().startsWith("get") || psiMethod.getName().startsWith("set"))) {
                     // 解决用户修改字段后，get/set没有及时更新，导致编译报错
-
                     if (psiMethod.getName().startsWith("get")) {
-                        assert body != null;
                         String bodyText = body.getText();
                         String aReturn = StrUtil.subBetween(bodyText, "return ", ";").trim();
                         if (!fieldSet.contains(aReturn)) {
                             return true;
                         }
                     } else if (psiMethod.getName().startsWith("set")) {
-                        assert body != null;
                         String bodyText = body.getText();
                         String aReturn = StrUtil.subBetween(bodyText, "this.", "=").trim();
                         if (!fieldSet.contains(aReturn)) {

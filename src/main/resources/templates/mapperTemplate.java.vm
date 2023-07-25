@@ -1,6 +1,8 @@
 package $config.mapperPackage;
 
+#if($config.modelPackage.length() > 0)
 import ${config.modelPackage}.${modelName};
+#end
 import com.mybatisflex.core.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
