@@ -66,13 +66,21 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JCheckBox swagger3CheckBox;
     private JButton returnBtn;
     private com.intellij.ui.components.fields.ExpandableTextField logicTF;
+    private JTextField contrPath;
+    private JTextField servicePath;
+    private JTextField implPath;
+    private JTextField domainPath;
+    private JTextField xmlPath;
+    private JTextField mapperPath;
     private Project project;
 
     public MybatisFlexSettingDialog(Project project) {
         this.project = project;
         setContentPane(contentPane);
         setModal(true);
-        setSize(new Dimension(1000, 973));
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+        setSize(screenSize);
         getRootPane().setDefaultButton(buttonOK);
         DialogUtil.centerShow(this);
         buttonOK.addActionListener(new ActionListener() {
@@ -217,6 +225,12 @@ public class MybatisFlexSettingDialog extends JDialog {
         overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
         swagger3CheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER3));
         logicTF.setText(Template.getConfigData(MybatisFlexConstant.LOGIC_DELETE_FIELD));
+        contrPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.CONTR_PATH),contrPath.getText()));
+        servicePath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.SERVICE_PATH),servicePath.getText()));
+        implPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.IMPL_PATH),implPath.getText()));
+        domainPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.DOMAIN_PATH),domainPath.getText()));
+        xmlPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.XML_PATH),xmlPath.getText()));
+        mapperPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.MAPPER_PATH),mapperPath.getText()));
         initSinceComBox();
     }
 
@@ -284,6 +298,12 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setSwagger3(swagger3CheckBox.isSelected());
         config.setOverrideCheckBox(overrideCheckBox.isSelected());
         config.setLogicDeleteField(logicTF.getText());
+        config.setContrPath(contrPath.getText());
+        config.setServicePath(servicePath.getText());
+        config.setImplPath(implPath.getText());
+        config.setDomainPath(domainPath.getText());
+        config.setXmlPath(xmlPath.getText());
+        config.setMapperPath(mapperPath.getText());
         return config;
     }
 

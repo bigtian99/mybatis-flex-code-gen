@@ -265,6 +265,16 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         sinceComBox.setSelectedIndex(sinceComBox.getItemCount() > 2 ? 1 : 0);
         sinceComBox.revalidate();
         sinceComBox.repaint();
+        int idx = sinceComBox.getSelectedIndex();
+        if (idx == 0) {
+            MybatisFlexConfig configData = getConfigData();
+            controllerPath.setText(Modules.getPackagePath(cotrollerCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getContrPath(), "controller")));
+            modelPackagePath.setText(Modules.getPackagePath(modelCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getDomainPath(), "domain")));
+            serviceIntefacePath.setText(Modules.getPackagePath(serviceInteCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getServicePath(), "service")));
+            serviceImpPath.setText(Modules.getPackagePath(serviceImplComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getImplPath(), "impl")));
+            mapperPackagePath.setText(Modules.getPackagePath(mapperComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getMapperPath(), "mapper")));
+            mapperXmlPath.setText(Modules.getPackagePath(xmlComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getXmlPath(), "mappers")));
+        }
     }
 
     /**

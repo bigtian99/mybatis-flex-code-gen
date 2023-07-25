@@ -176,6 +176,14 @@ public class MybatisFlexConfig {
      */
     private String logicDeleteField;
 
+
+    private String contrPath;
+    private String servicePath;
+    private String implPath;
+    private String domainPath;
+    private String xmlPath;
+    private String mapperPath;
+
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
         data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, MybatisFlexConstant.CONTROLLER));
@@ -546,5 +554,53 @@ public class MybatisFlexConfig {
 
     public void setLogicDeleteField(String logicDeleteField) {
         this.logicDeleteField = logicDeleteField;
+    }
+
+    public String getContrPath() {
+        return contrPath;
+    }
+
+    public void setContrPath(String contrPath) {
+        this.contrPath = contrPath;
+    }
+
+    public String getServicePath() {
+        return servicePath;
+    }
+
+    public void setServicePath(String servicePath) {
+        this.servicePath = servicePath;
+    }
+
+    public String getImplPath() {
+        return implPath;
+    }
+
+    public void setImplPath(String implPath) {
+        this.implPath = implPath;
+    }
+
+    public String getDomainPath() {
+        return domainPath;
+    }
+
+    public void setDomainPath(String domainPath) {
+        this.domainPath = domainPath;
+    }
+
+    public String getXmlPath() {
+        return xmlPath;
+    }
+
+    public void setXmlPath(String xmlPath) {
+        this.xmlPath = xmlPath;
+    }
+
+    public String getMapperPath() {
+        return mapperPath;
+    }
+
+    public void setMapperPath(String mapperPath) {
+        this.mapperPath = mapperPath;
     }
 }

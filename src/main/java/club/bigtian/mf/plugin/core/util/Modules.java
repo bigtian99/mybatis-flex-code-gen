@@ -2,22 +2,23 @@ package club.bigtian.mf.plugin.core.util;
 
 import club.bigtian.mf.plugin.core.filter.FilterComboBoxModel;
 import club.bigtian.mf.plugin.core.render.ModuleComBoxRender;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.FileIndex;
 import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.*;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import javax.swing.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -28,8 +29,26 @@ import java.util.stream.Collectors;
  * @date 2023/06/22
  */
 public class Modules {
+    private static final Logger LOG = Logger.getInstance(Modules.class);
     private static Map<String, Module> moduleMap;
+    private static Map<String, Map<String, String>> modulePackageMap;
     private static Boolean isManvenProject;
+
+    /**
+     * 得到包路径
+     *
+     * @param moduleName  模块名称
+     * @param packageName 系统配置包名
+     * @return {@code String}
+     */
+    public static String getPackagePath(String moduleName, String packageName) {
+        Map<String, String> moduleMap = modulePackageMap.get(moduleName);
+        if (CollUtil.isEmpty(moduleMap)) {
+            NotificationUtils.notifyError("模块不存在!", "", ProjectUtils.getCurrentProject());
+            throw new RuntimeException("模块不存在");
+        }
+        return moduleMap.getOrDefault(packageName, "");
+    }
 
     /**
      * 获取模块
@@ -39,9 +58,15 @@ public class Modules {
      */
     public static void addModulesItem(Project project, List<JComboBox> modulesComboxs) {
         Module[] modules = ModuleManager.getInstance(project).getModules();
+        if (ArrayUtil.isEmpty(modules)) {
+            NotificationUtils.notifyError("目录层级有误!", "", project);
+            return;
+        }
+
         boolean isManvenProject = isManvenProject(modules[0]);
         for (JComboBox modulesCombox : modulesComboxs) {
             modulesCombox.setRenderer(new ModuleComBoxRender());
+
             moduleMap = Arrays.stream(modules)
                     .filter(el -> {
                         if (isManvenProject) {
@@ -54,6 +79,29 @@ public class Modules {
             FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().collect(Collectors.toList()));
             modulesCombox.setModel(model);
             modulesCombox.setSelectedIndex(0);
+        }
+        getModulePackages();
+    }
+
+    public static void getModulePackages() {
+        modulePackageMap = new HashMap<>();
+        Project project = ProjectUtils.getCurrentProject();
+        for (Module module : moduleMap.values()) {
+            Map<String, String> moduleMap = new HashMap<>();
+            PsiManager psiManager = PsiManager.getInstance(project);
+            FileIndex fileIndex = module != null ? ModuleRootManager.getInstance(module).getFileIndex() : ProjectRootManager.getInstance(project).getFileIndex();
+            fileIndex.iterateContent(fileOrDir -> {
+                if (fileOrDir.isDirectory() && (fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.SOURCES) || fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.RESOURCES))) {
+                    PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
+                    LOG.assertTrue(psiDirectory != null);
+                    PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
+                    if (aPackage != null) {
+                        moduleMap.put(aPackage.getName(), aPackage.getQualifiedName());
+                    }
+                }
+                return true;
+            });
+            modulePackageMap.put(module.getName(), moduleMap);
         }
     }
 

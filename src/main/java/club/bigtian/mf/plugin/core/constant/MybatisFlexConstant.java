@@ -55,4 +55,11 @@ public class MybatisFlexConstant {
     public static final String SERVICE = "Service";
     public static final String SERVICE_IMPL = "ServiceImpl";
     public static final String MAPPER = "Mapper";
+
+    public static final String CONTR_PATH = "controllerPath";
+    public static final String SERVICE_PATH = "servicePath";
+    public static final String IMPL_PATH = "implPath";
+    public static final String DOMAIN_PATH = "domainPath";
+    public static final String XML_PATH = "xmlPath";
+    public static final String MAPPER_PATH = "mapperPath";
 }
