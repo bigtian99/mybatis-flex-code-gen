@@ -14,14 +14,17 @@ import com.intellij.database.psi.DbDataSourceImpl;
 import com.intellij.database.psi.DbElement;
 import com.intellij.database.psi.DbTableImpl;
 import com.intellij.database.util.JdbcUtil;
-import com.intellij.database.view.DatabaseView;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataKey;
 import com.intellij.util.containers.JBIterable;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class TableUtils {
@@ -34,8 +37,13 @@ public class TableUtils {
      * @return {@code List<TableInfo>}
      */
     public static List<String> getSelectedTableName(AnActionEvent actionEvent) {
-        return Arrays.stream(Objects.requireNonNull(actionEvent.getData(DatabaseView.DATABASE_NODES)))
-                .map(el -> ((DasObject) el).getName()).collect(Collectors.toList());
+        DataKey<Object[]> databaseNodes = DataKey.create("DATABASE_NODES");
+        Object[] data = actionEvent.getData(databaseNodes);
+        return Arrays.stream(data).map(item -> {
+            DasTable dasTable = (DasTable) item;
+            return dasTable.getName();
+        }).collect(Collectors.toList());
+
     }
 
     /**
