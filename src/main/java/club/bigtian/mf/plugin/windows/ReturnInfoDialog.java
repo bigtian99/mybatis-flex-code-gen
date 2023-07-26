@@ -4,6 +4,7 @@ import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
+import club.bigtian.mf.plugin.core.render.MethodComboBoxRenderer;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.TreeClassChooser;
@@ -18,8 +19,6 @@ import com.intellij.psi.PsiParameter;
 import com.intellij.psi.search.GlobalSearchScope;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -59,7 +58,7 @@ public class ReturnInfoDialog extends JDialog {
                 onCancel();
             }
         });
-        methodComBox.setRenderer(new CustomComboBoxRenderer());
+        methodComBox.setRenderer(new MethodComboBoxRenderer());
         methodComBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -174,39 +173,3 @@ public class ReturnInfoDialog extends JDialog {
     }
 }
 
-class CustomComboBoxRenderer extends JLabel implements ListCellRenderer {
-    private JLabel rowEndLabel;
-    private JLabel label;
-
-    public CustomComboBoxRenderer() {
-        setOpaque(true);
-        setLayout(new BorderLayout());
-        label = new JLabel();
-        label.setPreferredSize(new Dimension(130, label.getHeight()));
-        rowEndLabel = new JLabel();
-        rowEndLabel.setForeground(Color.GRAY);
-        add(label, BorderLayout.WEST);
-        add(rowEndLabel, BorderLayout.EAST);
-        rowEndLabel.setBorder(new EmptyBorder(0, 0, 0, 50));
-        rowEndLabel.setPreferredSize(new Dimension(130, rowEndLabel.getHeight()));
-    }
-
-
-    @Override
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        if (ObjectUtil.isNull(value)) {
-            return this;
-        }
-        String valueString = value.toString();
-        label.setText(StrUtil.subBefore(valueString, "(", false));
-        rowEndLabel.setText(StrUtil.subBetween(valueString, "(", ")"));
-        if (isSelected) {
-            setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
-        } else {
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
-        }
-        return this;
-    }
-}
