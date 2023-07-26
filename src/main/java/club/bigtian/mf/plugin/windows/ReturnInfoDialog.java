@@ -13,12 +13,17 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.search.GlobalSearchScope;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringJoiner;
 
 public class ReturnInfoDialog extends JDialog {
@@ -32,6 +37,8 @@ public class ReturnInfoDialog extends JDialog {
     private JRadioButton staticRadio;
     private JCheckBox genericityCheckBox;
 
+    private Map<String, Boolean> staticMethodMap;
+
     public ReturnInfoDialog() {
         setContentPane(contentPane);
         setModal(true);
@@ -40,7 +47,7 @@ public class ReturnInfoDialog extends JDialog {
         DialogUtil.centerShow(this);
         setTitle("统一返回信息配置");
 
-
+        staticMethodMap = new HashMap<>();
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onOK();
@@ -50,6 +57,20 @@ public class ReturnInfoDialog extends JDialog {
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
+            }
+        });
+        methodComBox.setRenderer(new CustomComboBoxRenderer());
+        methodComBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Boolean flag = staticMethodMap.get(methodComBox.getSelectedItem());
+                if (ObjectUtil.defaultIfNull(flag, false)) {
+                    staticRadio.setSelected(true);
+                    newRadio.setSelected(false);
+                } else {
+                    newRadio.setSelected(true);
+                    staticRadio.setSelected(false);
+                }
             }
         });
 
@@ -91,7 +112,7 @@ public class ReturnInfoDialog extends JDialog {
     private void addMethodComBoxItem(PsiClass psiClass) {
         methodComBox.removeAllItems();
         Arrays.stream(psiClass.getMethods())
-                .filter(el -> !el.getName().startsWith("set"))
+                .filter(el -> !el.getName().startsWith("set")&&!el.getName().startsWith("get"))
                 .forEach(method -> {
                     String name = method.getName();
                     StringJoiner joiner = new StringJoiner(",");
@@ -107,7 +128,10 @@ public class ReturnInfoDialog extends JDialog {
                         }
                         joiner.add(canonicalText + " " + parameter.getName());
                     }
-                    methodComBox.addItem(name + "(" + joiner.toString() + ")");
+                    name = name + "(" + joiner.toString() + ")";
+                    methodComBox.addItem(name);
+                    boolean flag = method.getModifierList().hasModifierProperty(PsiModifier.STATIC);
+                    staticMethodMap.put(name, flag);
                 });
         methodComBox.revalidate();
         methodComBox.repaint();
@@ -125,11 +149,11 @@ public class ReturnInfoDialog extends JDialog {
         }
         genericityCheckBox.setSelected(config.isGenericity());
         if (MybatisFlexConstant.STRING.equals(config.getResultType())) {
-            staticRadio.setSelected(true);
-            newRadio.setSelected(false);
-        } else {
             newRadio.setSelected(true);
             staticRadio.setSelected(false);
+        } else {
+            staticRadio.setSelected(true);
+            newRadio.setSelected(false);
         }
     }
 
@@ -147,5 +171,42 @@ public class ReturnInfoDialog extends JDialog {
     private void onCancel() {
         // add your code here if necessary
         dispose();
+    }
+}
+
+class CustomComboBoxRenderer extends JLabel implements ListCellRenderer {
+    private JLabel rowEndLabel;
+    private JLabel label;
+
+    public CustomComboBoxRenderer() {
+        setOpaque(true);
+        setLayout(new BorderLayout());
+        label = new JLabel();
+        label.setPreferredSize(new Dimension(130, label.getHeight()));
+        rowEndLabel = new JLabel();
+        rowEndLabel.setForeground(Color.GRAY);
+        add(label, BorderLayout.WEST);
+        add(rowEndLabel, BorderLayout.EAST);
+        rowEndLabel.setBorder(new EmptyBorder(0, 0, 0, 50));
+        rowEndLabel.setPreferredSize(new Dimension(130, rowEndLabel.getHeight()));
+    }
+
+
+    @Override
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        if (ObjectUtil.isNull(value)) {
+            return this;
+        }
+        String valueString = value.toString();
+        label.setText(StrUtil.subBefore(valueString, "(", false));
+        rowEndLabel.setText(StrUtil.subBetween(valueString, "(", ")"));
+        if (isSelected) {
+            setBackground(list.getSelectionBackground());
+            setForeground(list.getSelectionForeground());
+        } else {
+            setBackground(list.getBackground());
+            setForeground(list.getForeground());
+        }
+        return this;
     }
 }

@@ -90,7 +90,8 @@ public class PackageChooserDialogCustom extends PackageChooser {
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
                 super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
                 this.setIcon(PlatformIcons.PACKAGE_ICON);
-                if (value instanceof DefaultMutableTreeNode node) {
+                if (value instanceof DefaultMutableTreeNode ) {
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
                     Object object = node.getUserObject();
                     if (object instanceof PsiPackage) {
                         String name = ((PsiPackage) object).getName();

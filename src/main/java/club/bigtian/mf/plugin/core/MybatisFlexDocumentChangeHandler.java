@@ -79,10 +79,12 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             return false;
         }
         Set<String> importSet = new HashSet<>();
-        if (psiFile instanceof KtFile ktFile) {
+        if (psiFile instanceof KtFile) {
+            KtFile ktFile = (KtFile) psiFile;
             importSet = KtFileUtil.getImportSet(ktFile);
         }
-        if (psiFile instanceof PsiJavaFile psiJavaFile) {
+        if (psiFile instanceof PsiJavaFile) {
+            PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
             importSet = PsiJavaFileUtil.getImportSet(psiJavaFile);
         }
         return !importSet.contains("import com.mybatisflex.annotation.Table;");
@@ -103,7 +105,9 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             return;
         }
 
-        EditorFactory.getInstance().editors(event.getDocument()).findAny().ifPresent(editor -> {
+
+        Document document = event.getDocument();
+        EditorFactory.getInstance().editors(document).findAny().ifPresent(editor -> {
             boolean flag = checkFile(editor);
             if (flag) {
                 return;

@@ -14,6 +14,7 @@ import com.intellij.database.psi.DbDataSourceImpl;
 import com.intellij.database.psi.DbElement;
 import com.intellij.database.psi.DbTableImpl;
 import com.intellij.database.util.JdbcUtil;
+import com.intellij.database.view.DatabaseView;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.util.containers.JBIterable;
@@ -22,8 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.Types;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.intellij.database.view.DatabaseView.DATABASE_NODES;
 
 public class TableUtils {
 
@@ -35,7 +34,7 @@ public class TableUtils {
      * @return {@code List<TableInfo>}
      */
     public static List<String> getSelectedTableName(AnActionEvent actionEvent) {
-        return Arrays.stream(Objects.requireNonNull(actionEvent.getData(DATABASE_NODES)))
+        return Arrays.stream(Objects.requireNonNull(actionEvent.getData(DatabaseView.DATABASE_NODES)))
                 .map(el -> ((DasObject) el).getName()).collect(Collectors.toList());
     }
 
@@ -143,26 +142,57 @@ public class TableUtils {
      * @return {@code Class<?>}
      */
     public static Class<?> convert(int sqlType) {
-        return switch (sqlType) {
-            case Types.BIT -> Boolean.class;
-            case Types.TINYINT -> Byte.class;
-            case Types.SMALLINT -> Short.class;
-            case Types.INTEGER -> Integer.class;
-            case Types.BIGINT -> Long.class;
-            case Types.FLOAT, Types.REAL -> Float.class;
-            case Types.DOUBLE -> Double.class;
-            case Types.NUMERIC, Types.DECIMAL -> java.math.BigDecimal.class;
-            case Types.CHAR, Types.NCHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR ->
-                    String.class;
-            case Types.TIME, Types.TIMESTAMP, Types.DATE -> Date.class;
-            case Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY -> Byte[].class;
-            case Types.CLOB, Types.NCLOB, Types.BLOB -> java.sql.Blob.class;
-            case Types.ARRAY -> java.sql.Array.class;
-            case Types.STRUCT -> java.sql.Struct.class;
-            case Types.REF -> java.sql.Ref.class;
-            case Types.SQLXML -> java.sql.SQLXML.class;
-            default -> Object.class;
-        };
+        switch (sqlType) {
+            case Types.BIT:
+                return Boolean.class;
+            case Types.TINYINT:
+                return Byte.class;
+            case Types.SMALLINT:
+                return Short.class;
+            case Types.INTEGER:
+                return Integer.class;
+            case Types.BIGINT:
+                return Long.class;
+            case Types.FLOAT:
+            case Types.REAL:
+                return Float.class;
+            case Types.DOUBLE:
+                return Double.class;
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+                return java.math.BigDecimal.class;
+            case Types.CHAR:
+            case Types.NCHAR:
+            case Types.VARCHAR:
+            case Types.NVARCHAR:
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
+                return String.class;
+            case Types.TIME:
+//                return java.sql.Time.class;
+            case Types.TIMESTAMP:
+//                return java.sql.Timestamp.class;
+            case Types.DATE:
+                return Date.class;
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+                return Byte[].class;
+            case Types.CLOB:
+            case Types.NCLOB:
+            case Types.BLOB:
+                return java.sql.Blob.class;
+            case Types.ARRAY:
+                return java.sql.Array.class;
+            case Types.STRUCT:
+                return java.sql.Struct.class;
+            case Types.REF:
+                return java.sql.Ref.class;
+            case Types.SQLXML:
+                return java.sql.SQLXML.class;
+            default:
+                return Object.class;
+        }
     }
 
     @NotNull

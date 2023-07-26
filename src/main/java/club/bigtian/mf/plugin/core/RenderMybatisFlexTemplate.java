@@ -81,7 +81,8 @@ public class RenderMybatisFlexTemplate {
                     // 如果勾选了覆盖，则删除原有文件
                     if (config.isOverrideCheckBox()) {
                         for (PsiElement psiFile : list) {
-                            if (psiFile instanceof PsiFile file) {
+                            if (psiFile instanceof PsiFile ) {
+                                PsiFile file = (PsiFile) psiFile;
                                 PsiFile directoryFile = directory.findFile(file.getName());
                                 if (ObjectUtil.isNotNull(directoryFile)) {
                                     directoryFile.delete();
@@ -139,7 +140,6 @@ public class RenderMybatisFlexTemplate {
     /**
      * 渲染模板
      *
-     * @param project        项目
      * @param templates      模板
      * @param context        上下文
      * @param className      类名

@@ -33,11 +33,14 @@
     <change-notes><![CDATA[
     <h3>1.4.3-RELEASE</h3>
     <ul>
-    <li>1、【新增】支持 APT 提示（java/Kotlin）</li>
-    <li>2、【优化】支持 IDEA2020.2往上版本</li>
-    <li>3、【优化】清理部分过时 API </li>
-    <li>4、【优化】优化 APT 编译</li>
-    <li>5、【修复】修复项目没有 TableDef 会导致IDEA 自身提示没有</li>
+    <li>【新增】支持 APT 提示（java/Kotlin）</li>
+    <li>【新增】路径自动匹配（需要在设置里面配置，会匹配以配置结束的包名，java和resources下面不能有一样的、否则会覆盖）</li>
+    <li>【新增】增加逻辑删除配置</li>
+    <li>【优化】支持 IDEA2020.2往上版本</li>
+    <li>【优化】提供严格模式切换，支持生成单个文件</li>
+    <li>【优化】清理部分过时 API </li>
+    <li>【优化】优化 APT 编译</li>
+    <li>【修复】修复项目没有 TableDef 会导致IDEA 自身提示没有</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
@@ -46,7 +49,6 @@
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.java</depends>
     <depends>org.jetbrains.kotlin</depends>
-
     <depends>com.intellij.database</depends>
 
     <!-- Extension points defined by the plugin.
@@ -58,7 +60,12 @@
         <editorFactoryListener implementation="club.bigtian.mf.plugin.core.MybatisFlexDocumentChangeHandler"/>
         <completion.contributor language="kotlin" implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexCompletionContributor" />
         <completion.contributor language="JAVA" implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexCompletionContributor" />
-
+<!--        <localInspection-->
+<!--                language="JAVA"-->
+<!--                displayName="My Custom Inspection"-->
+<!--                implementationClass="club.bigtian.mf.plugin.core.contributor.MyCustomInspection"-->
+<!--                groupPath="Java"-->
+<!--                enabledByDefault="true" groupKey="MyCustomGroup"/>-->
     </extensions>
 
     <actions>
@@ -82,4 +89,5 @@
     </actions>
 
     <idea-version since-build="202.*"/>
+<!--    <resource-bundle/>-->
 </idea-plugin>

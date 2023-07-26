@@ -55,7 +55,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
         assert currentFile != null;
         getDependenciesTableDef(currentFile, project, tableDefMap);
         // 移除重复的元素
-        removeRepetitionElement(currentFile, tableDefMap);
+        removeRepetitionElement(currentFile, tableDefMap, result);
         if (CollUtil.isEmpty(tableDefMap)) {
             return;
         }
@@ -108,7 +108,6 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
     private void addCodeTip(@NotNull CompletionResultSet result, Map<String, String> tableDefMap, VirtualFile currentFile, Project project, Document document) {
         // 获取忽略大小写的结果集
         CompletionResultSet completionResultSet = result.caseInsensitive();
-
         for (Map.Entry<String, String> entry : tableDefMap.entrySet()) {
             // 添加补全提示
             LookupElement lookupElement = LookupElementBuilder.create(entry.getKey())
@@ -122,9 +121,11 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
                         PsiFile file = psiManager.findFile(currentFile);
                         // 导入import
                         WriteCommandAction.runWriteCommandAction(project, () -> {
-                            if (file instanceof PsiJavaFile psiJavaFile) {
+                            if (file instanceof PsiJavaFile) {
+                                PsiJavaFile psiJavaFile = (PsiJavaFile) file;
                                 javaImport(psiJavaFile, psiClass, entry.getKey());
-                            } else if (file instanceof KtFile ktFile) {
+                            } else if (file instanceof KtFile) {
+                                KtFile ktFile = (KtFile) file;
                                 ktImport(ktFile, psiClass, entry.getKey(), document);
                             }
 
@@ -149,7 +150,6 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
         if (importSet.contains(importStaticStatement.getText())) {
             return;
         }
-
         psiJavaFile.getImportList().add(importStaticStatement);
     }
 
@@ -178,10 +178,17 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
      *
      * @param currentFile 当前编辑的文件
      * @param tableDefMap 补全提示的map
+     * @param result
      */
-    private void removeRepetitionElement(VirtualFile currentFile, Map<String, String> tableDefMap) {
+    private void removeRepetitionElement(VirtualFile currentFile, Map<String, String> tableDefMap, @NotNull CompletionResultSet result) {
         // 当文件导入过一次后，就不再提示，因为 idea 自带的就会提示了；
         Set<String> importSet = getFileImport(currentFile);
+        String prefix = result.getPrefixMatcher().getPrefix();
+        for (String key : tableDefMap.keySet()) {
+            if (!StrUtil.startWithIgnoreCase(key, prefix) || StrUtil.isBlank(prefix)) {
+                tableDefMap.remove(key);
+            }
+        }
         for (String importExp : importSet) {
             tableDefMap.remove(importExp);
         }
@@ -190,9 +197,11 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
     private Set<String> getFileImport(VirtualFile currentFile) {
         Set<String> importSet = new HashSet<>();
         PsiFile file = psiManager.findFile(currentFile);
-        if (file instanceof PsiJavaFile javaFile) {
+        if (file instanceof PsiJavaFile) {
+            PsiJavaFile javaFile = (PsiJavaFile) file;
             importSet = PsiJavaFileUtil.getImportSet(javaFile);
-        } else if (file instanceof KtFile ktFile) {
+        } else if (file instanceof KtFile) {
+            KtFile ktFile = (KtFile) file;
             importSet = KtFileUtil.getImportSet(ktFile);
         }
         return importSet.stream()
