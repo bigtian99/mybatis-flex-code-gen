@@ -113,8 +113,7 @@ public class MyBatisLogManager implements Disposable {
         RunContentManager.getInstance(project).showRunContent(MyBatisLogExecutor.getInstance(),
                 descriptor);
 
-        // ExecutionManager.getInstance(project).getContentManager().showRunContent(MyBatisLogExecutor.getInstance(),
-        //         descriptor);
+
 
         getToolWindow().activate(null);
     }
@@ -176,7 +175,6 @@ public class MyBatisLogManager implements Disposable {
             }
         }, new DefaultExecutionResult(), layoutUi);
         descriptor.setExecutionId(System.nanoTime());
-// Add this line to disable the close buttoncreateInstance
         return descriptor;
     }
 
@@ -309,9 +307,6 @@ public class MyBatisLogManager implements Disposable {
 
         RunContentManager.getInstance(project).removeRunContent(MyBatisLogExecutor.getInstance(),
                 descriptor);
-        // ExecutionManager.getInstance(project).getContentManager().removeRunContent(MyBatisLogExecutor.getInstance(),
-        //         descriptor);
-
     }
 
     private ConsoleViewImpl createConsoleView() {

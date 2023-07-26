@@ -5,6 +5,7 @@ import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompilerManager;
@@ -15,6 +16,7 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -31,7 +33,7 @@ import java.util.Set;
 /**
  * @author bigtian
  */
-public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener {
+public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener , Disposable {
     private static final Logger LOG = Logger.getInstance(MybatisFlexDocumentChangeHandler.class);
     private static final Key<Boolean> CHANGE = Key.create("change");
     private static final Key<Boolean> LISTENER = Key.create("listener");
@@ -39,7 +41,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     public MybatisFlexDocumentChangeHandler() {
         super();
         // 所有的文档监听
-        EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this);
+        EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this, this);
         Document document;
         for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
             document = editor.getDocument();
@@ -149,5 +151,11 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         VirtualFile currentFile = VirtualFileUtils.getVirtualFile(editor.getDocument());
         LOG.warn("编译文件: " + currentFile.getName());
         compilerManager.compile(new VirtualFile[]{currentFile}, null);
+    }
+
+
+    @Override
+    public void dispose() {
+        Disposer.dispose(this);
     }
 }
