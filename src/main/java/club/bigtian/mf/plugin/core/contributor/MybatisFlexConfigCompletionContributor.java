@@ -115,7 +115,7 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
                                 context.getEditor().getCaretModel().moveToOffset(tailOffset + key.length() + 3);
                             }
                         })
-                        .withIcon(Icons.MY_BATIS);
+                        .withIcon(Icons.FLEX);
                 completionResultSet.addElement(lookupElement);
             });
 
