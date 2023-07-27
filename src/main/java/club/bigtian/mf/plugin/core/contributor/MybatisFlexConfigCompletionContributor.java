@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.core.contributor;
 
+import club.bigtian.mf.plugin.core.icons.Icons;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
 import club.bigtian.mf.plugin.entity.MybatisFlexConfgInfo;
 import cn.hutool.core.util.ObjectUtil;
@@ -9,7 +10,7 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.icons.AllIcons.Nodes;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -18,9 +19,11 @@ import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * mybatis-flex.config 补全提示
@@ -30,7 +33,7 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
     PsiElementFactory elementFactory;
     JavaPsiFacade psiFacade;
     PsiManager psiManager;
-    public static Map<String, MybatisFlexConfgInfo> CONFIG_MAP = new HashMap();
+    public static Map<String, MybatisFlexConfgInfo> CONFIG_MAP = new ConcurrentHashMap<>();
 
     static {
         CONFIG_MAP.put("processor.enable=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "全局启用apt开关", true));
@@ -54,12 +57,22 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
     @Override
     public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
         Editor editor = parameters.getEditor();
-        VirtualFile file = VirtualFileUtils.getVirtualFile(editor.getDocument());
+        Document document = editor.getDocument();
+        VirtualFile file = VirtualFileUtils.getVirtualFile(document);
         boolean flag = file.getName().equals("mybatis-flex.config");
         // 如果不是 mybatis-flex.config 文件，直接返回
         if (!flag) {
             return;
         }
+        List<String> existConfigList = new ArrayList<>();
+        String text = document.getText();
+        for (String configKey : CONFIG_MAP.keySet()) {
+            if (text.contains(configKey)) {
+                existConfigList.add(configKey);
+            }
+        }
+
+
         Project project = parameters.getPosition().getProject();
         if (ObjectUtil.isNull(elementFactory)) {
             elementFactory = JavaPsiFacade.getElementFactory(project);
@@ -68,16 +81,17 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
         }
 
         // 添加代码提示
-        addCodeTip(result);
+        addCodeTip(result, existConfigList);
     }
 
 
     /**
      * 添加代码提示
      *
-     * @param result 结果
+     * @param result          结果
+     * @param existConfigList
      */
-    private void addCodeTip(@NotNull CompletionResultSet result) {
+    private void addCodeTip(@NotNull CompletionResultSet result, List<String> existConfigList) {
         // 获取忽略大小写的结果集
         CompletionResultSet completionResultSet = result.caseInsensitive();
         String prefix = completionResultSet.getPrefixMatcher().getPrefix();
@@ -85,19 +99,23 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
             return;
         }
         for (Map.Entry<String, MybatisFlexConfgInfo> entry : CONFIG_MAP.entrySet()) {
+            String key = entry.getKey();
+            if (existConfigList.contains(key)) {
+                continue;
+            }
             MybatisFlexConfgInfo confgInfo = entry.getValue();
             confgInfo.getValue().forEach(el -> {
                 // 添加补全提示
-                LookupElement lookupElement = LookupElementBuilder.create(entry.getKey() + el)
+                LookupElement lookupElement = LookupElementBuilder.create(key + el)
                         .withTypeText(confgInfo.getDescription(), true)
                         .withInsertHandler((context, item) -> {
                             int tailOffset = context.getTailOffset();
                             context.getDocument().insertString(tailOffset, " # " + confgInfo.getDescription());
                             if (confgInfo.getValue().size() > 1) {
-                                context.getEditor().getCaretModel().moveToOffset(tailOffset + entry.getKey().length() + 3);
+                                context.getEditor().getCaretModel().moveToOffset(tailOffset + key.length() + 3);
                             }
                         })
-                        .withIcon(Nodes.Field);
+                        .withIcon(Icons.MY_BATIS);
                 completionResultSet.addElement(lookupElement);
             });
 

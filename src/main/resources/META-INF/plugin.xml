@@ -63,11 +63,14 @@
         <completion.contributor language="any"
                                 implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexConfigCompletionContributor"/>
 
+        <fileIconProvider implementation="club.bigtian.mf.plugin.core.type.MybatisFlexConfigFileType"/>
+
     </extensions>
 
     <actions>
         <action id="MyBatisFlex_TableAction" class="club.bigtian.mf.plugin.action.flex.TableAction"
                 icon="/icons/icon.png"
+
                 text="mybatis flex code generate" description="用于选择database中的table从而进行代码生成">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
@@ -83,10 +86,10 @@
         <!--                text="MavenSearchAction" description="MavenSearchAction">-->
         <!--            <add-to-group group-id="GenerateGroup" anchor="before" />-->
         <!--        </action>-->
-<!--        <action id="PreviewSqlAction" class="club.bigtian.mf.plugin.action.flex.PreviewSqlAction"-->
-<!--                text="PreviewSqlAction" description="PreviewSqlAction">-->
-<!--            <add-to-group group-id="GenerateGroup" anchor="first"/>-->
-<!--        </action>-->
+        <!--        <action id="PreviewSqlAction" class="club.bigtian.mf.plugin.action.flex.PreviewSqlAction"-->
+        <!--                text="PreviewSqlAction" description="PreviewSqlAction">-->
+        <!--            <add-to-group group-id="GenerateGroup" anchor="first"/>-->
+        <!--        </action>-->
     </actions>
 
     <idea-version since-build="202.*"/>
