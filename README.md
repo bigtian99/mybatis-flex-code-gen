@@ -33,3 +33,9 @@
 1、APT自动编译
 
 2、APT内容提示
+
+### 五、视频演示
+
+1 、[基础演示](https://www.bilibili.com/video/BV1yV411g7Yd/?vd_source=b6f434af852a6a39fcd34fc2de5cf431)
+
+2 、[新增功能演示](https://www.bilibili.com/video/BV1hj411d7Rq/?vd_source=b6f434af852a6a39fcd34fc2de5cf431)

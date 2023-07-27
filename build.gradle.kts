@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.mybatisflex.plugin"
-version = "1.4.3-RELEASE"
+version = "1.4.4-RELEASE"
 
 repositories {
     maven {
@@ -19,8 +19,8 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-//    version.set("2022.2.5")
-    version.set("2020.3.4")
+    version.set("2022.2.5")
+//    version.set("2020.3.3")
     type.set("IU") // Target IDE Platform
     plugins.set(listOf("com.intellij.java", "org.jetbrains.kotlin", "IntelliLang", "com.intellij.database"))
 }
@@ -30,8 +30,8 @@ dependencies {
     implementation("cn.hutool:hutool-core:5.8.20")
 }
 java {
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks {

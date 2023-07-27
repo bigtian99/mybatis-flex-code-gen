@@ -65,16 +65,17 @@ public class Modules {
         }
 
         boolean isManvenProject = isManvenProject(modules[0]);
+        PsiManager psiManager = PsiManager.getInstance(project);
         for (JComboBox modulesCombox : modulesComboxs) {
             modulesCombox.setRenderer(new ModuleComBoxRender());
 
             moduleMap = Arrays.stream(modules)
-                    .filter(el -> {
+                    .filter(module -> {
                         if (isManvenProject) {
-                            return true;
+                            return ArrayUtil.isNotEmpty(ModuleRootManager.getInstance(module).getSourceRoots());
                         }
                         // 非maven项目只显示main模块,只有main模块才有java目录
-                        return el.getName().contains(".main");
+                        return module.getName().contains(".main");
                     })
                     .collect(Collectors.toMap(el -> el.getName().split("\\.")[0], module -> module));
             FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().collect(Collectors.toList()));
@@ -96,7 +97,7 @@ public class Modules {
                     PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
                     LOG.assertTrue(psiDirectory != null);
                     PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
-                    if (aPackage != null ) {
+                    if (aPackage != null) {
                         moduleMap.put(aPackage.getName(), aPackage.getQualifiedName());
                     }
                 }

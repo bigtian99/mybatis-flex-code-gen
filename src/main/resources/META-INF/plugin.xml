@@ -4,7 +4,7 @@
     <id>com.mybatisflex.bigtian</id>
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>MybatisFlex-helpler</name>
+    <name>Mybatis-Flex-Helper</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="7990497@qq.com" url="http://blog.bigtian.club/mybatisFlex_Helper/">时间淡忘一切</vendor>
@@ -13,34 +13,29 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    <img src="https://plugins.jetbrains.com/files/22165/preview_817e467d-b8ff-42a1-b565-41891a0abaeb"/>
-    <h3>MybatisFlex-Helper plugin Features:</h3>
+    <a href="https://mybatis-flex.com/">MyBatis-Flex 官网</a>
+    <h3>Features:</h3>
     <ul>
-    <li>1、The resulting APT file supports hints</li>
-    <li>2、Code templates are highly customizable</li>
-    <li>3、APT automatic compilation</li>
-    <li>4、Share template-related configurations</li>
+    <li>The resulting APT file supports hints</li>
+    <li>Code templates are highly customizable</li>
+    <li>APT automatic compilation</li>
+    <li>Share template-related configurations</li>
+    <li>Automatically identify the packet path</li>
     </ul>
 
     <ul>
-    <li>1、APT文件支持代码提示</li>
-    <li>2、代码模版高度自定义</li>
-    <li>3、APT自动编译</li>
-    <li>4、模板相关配置分享</li>
+    <li>APT文件支持代码提示</li>
+    <li>代码模版高度自定义</li>
+    <li>APT自动编译</li>
+    <li>模板相关配置分享</li>
+    <li>自动识别包路径</li>
     </ul>
     ]]></description>
 
     <change-notes><![CDATA[
-    <h3>1.4.3-RELEASE</h3>
+    <h3>1.4.4-RELEASE</h3>
     <ul>
-    <li>【新增】支持 APT 提示（java/Kotlin）</li>
-    <li>【新增】路径自动匹配（需要在设置里面配置，会匹配以配置结束的包名，java和resources下面不能有一样的、否则会覆盖）</li>
-    <li>【新增】增加逻辑删除配置</li>
-    <li>【优化】支持 IDEA2020.2往上版本</li>
-    <li>【优化】提供严格模式切换，支持生成单个文件</li>
-    <li>【优化】清理部分过时 API </li>
-    <li>【优化】优化 APT 编译</li>
-    <li>【修复】修复项目没有 TableDef 会导致IDEA 自身提示没有</li>
+    <li>【优化】多模块开发过滤掉没有用的父级项目</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
@@ -83,6 +78,10 @@
         <!--                text="MavenSearchAction" description="MavenSearchAction">-->
         <!--            <add-to-group group-id="GenerateGroup" anchor="before" />-->
         <!--        </action>-->
+<!--        <action id="PreviewSqlAction" class="club.bigtian.mf.plugin.action.flex.PreviewSqlAction"-->
+<!--                text="PreviewSqlAction" description="PreviewSqlAction">-->
+<!--            <add-to-group group-id="GenerateGroup" anchor="first"/>-->
+<!--        </action>-->
     </actions>
 
     <idea-version since-build="202.*"/>
