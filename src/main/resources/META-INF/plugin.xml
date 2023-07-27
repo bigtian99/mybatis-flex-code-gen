@@ -35,6 +35,8 @@
     <change-notes><![CDATA[
     <h3>1.4.4-RELEASE</h3>
     <ul>
+    <li>【新增】mybatis-flex.config 配置提示</li>
+    <li>【优化】mybatis-flex.config icon 调整</li>
     <li>【优化】多模块开发过滤掉没有用的父级项目</li>
     <li>【优化】生成代码之后自动编译</li>
     </ul>

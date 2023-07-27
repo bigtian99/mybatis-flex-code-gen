@@ -4,20 +4,15 @@ import java.util.List;
 
 public class MybatisFlexConfgInfo {
 
-
     private List<String> value;
 
     private String description;
 
-    private boolean moveCaret;
 
-    public MybatisFlexConfgInfo(List<String> value, String description, boolean moveCaret) {
+    public MybatisFlexConfgInfo(List<String> value, String description) {
         this.value = value;
         this.description = description;
-        this.moveCaret = moveCaret;
     }
-
-
 
     public List<String> getValue() {
         return value;
@@ -35,11 +30,5 @@ public class MybatisFlexConfgInfo {
         this.description = description;
     }
 
-    public boolean isMoveCaret() {
-        return moveCaret;
-    }
 
-    public void setMoveCaret(boolean moveCaret) {
-        this.moveCaret = moveCaret;
-    }
 }

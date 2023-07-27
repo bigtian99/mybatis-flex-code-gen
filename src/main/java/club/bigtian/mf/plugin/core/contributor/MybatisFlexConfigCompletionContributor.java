@@ -36,21 +36,21 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
     public static Map<String, MybatisFlexConfgInfo> CONFIG_MAP = new ConcurrentHashMap<>();
 
     static {
-        CONFIG_MAP.put("processor.enable=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "全局启用apt开关", true));
-        CONFIG_MAP.put("processor.stopBubbling=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "是否停止向上级合并配", true));
-        CONFIG_MAP.put("processor.genPath=", new MybatisFlexConfgInfo(Arrays.asList(""), "APT 代码生成路径", false));
-        CONFIG_MAP.put("processor.charset=", new MybatisFlexConfgInfo(Arrays.asList(""), "APT 代码生成文件字符集", false));
-        CONFIG_MAP.put("processor.allInTables.enable=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "是否所有的类都生成在 Tables 类里", true));
-        CONFIG_MAP.put("processor.allInTables.package=", new MybatisFlexConfgInfo(Arrays.asList(""), "Tables 包名", false));
-        CONFIG_MAP.put("processor.allInTables.className=", new MybatisFlexConfgInfo(Arrays.asList(""), "Tables 类名", false));
-        CONFIG_MAP.put("processor.mapper.generateEnable=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "开启 Mapper 自动生成", true));
-        CONFIG_MAP.put("processor.mapper.annotation=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "开启 @Mapper 注解", true));
-        CONFIG_MAP.put("processor.mapper.baseClass=", new MybatisFlexConfgInfo(Arrays.asList(""), "自定义 Mapper 的父类", false));
-        CONFIG_MAP.put("processor.mapper.package=", new MybatisFlexConfgInfo(Arrays.asList(""), "自定义 Mapper 生成的包名", false));
-        CONFIG_MAP.put("processor.tableDef.propertiesNameStyle=", new MybatisFlexConfgInfo(Arrays.asList("upperCase", "lowerCase", "upperCamelCase", "lowerCamelCase"), "生成辅助类的字段风格", false));
-        CONFIG_MAP.put("processor.tableDef.instanceSuffix=", new MybatisFlexConfgInfo(Arrays.asList(""), "生成的表对应的变量后缀", false));
-        CONFIG_MAP.put("processor.tableDef.classSuffix=", new MybatisFlexConfgInfo(Arrays.asList(""), "生成的 TableDef 类的后缀", false));
-        CONFIG_MAP.put("processor.tableDef.ignoreEntitySuffixes=", new MybatisFlexConfgInfo(Arrays.asList(""), "过滤 Entity 后缀", false));
+        CONFIG_MAP.put("processor.enable=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "全局启用apt开关"));
+        CONFIG_MAP.put("processor.stopBubbling=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "是否停止向上级合并配"));
+        CONFIG_MAP.put("processor.genPath=", new MybatisFlexConfgInfo(Arrays.asList(""), "APT 代码生成路径"));
+        CONFIG_MAP.put("processor.charset=", new MybatisFlexConfgInfo(Arrays.asList(""), "APT 代码生成文件字符集"));
+        CONFIG_MAP.put("processor.allInTables.enable=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "是否所有的类都生成在 Tables 类里"));
+        CONFIG_MAP.put("processor.allInTables.package=", new MybatisFlexConfgInfo(Arrays.asList(""), "Tables 包名"));
+        CONFIG_MAP.put("processor.allInTables.className=", new MybatisFlexConfgInfo(Arrays.asList(""), "Tables 类名"));
+        CONFIG_MAP.put("processor.mapper.generateEnable=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "开启 Mapper 自动生成"));
+        CONFIG_MAP.put("processor.mapper.annotation=", new MybatisFlexConfgInfo(Arrays.asList("true", "false"), "开启 @Mapper 注解"));
+        CONFIG_MAP.put("processor.mapper.baseClass=", new MybatisFlexConfgInfo(Arrays.asList(""), "自定义 Mapper 的父类"));
+        CONFIG_MAP.put("processor.mapper.package=", new MybatisFlexConfgInfo(Arrays.asList(""), "自定义 Mapper 生成的包名"));
+        CONFIG_MAP.put("processor.tableDef.propertiesNameStyle=", new MybatisFlexConfgInfo(Arrays.asList("upperCase", "lowerCase", "upperCamelCase", "lowerCamelCase"), "生成辅助类的字段风格"));
+        CONFIG_MAP.put("processor.tableDef.instanceSuffix=", new MybatisFlexConfgInfo(Arrays.asList(""), "生成的表对应的变量后缀"));
+        CONFIG_MAP.put("processor.tableDef.classSuffix=", new MybatisFlexConfgInfo(Arrays.asList(""), "生成的 TableDef 类的后缀"));
+        CONFIG_MAP.put("processor.tableDef.ignoreEntitySuffixes=", new MybatisFlexConfgInfo(Arrays.asList(""), "过滤 Entity 后缀"));
     }
 
 
@@ -107,7 +107,7 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
             confgInfo.getValue().forEach(el -> {
                 // 添加补全提示
                 LookupElement lookupElement = LookupElementBuilder.create(key + el)
-                        .withTypeText(confgInfo.getDescription(), true)
+                        .withTypeText(confgInfo.getDescription())
                         .withInsertHandler((context, item) -> {
                             int tailOffset = context.getTailOffset();
                             context.getDocument().insertString(tailOffset, " # " + confgInfo.getDescription());
