@@ -59,6 +59,10 @@
         <completion.contributor language="JAVA"
                                 implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexCompletionContributor"/>
 
+
+        <completion.contributor language="any"
+                                implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexConfigCompletionContributor"/>
+
     </extensions>
 
     <actions>
