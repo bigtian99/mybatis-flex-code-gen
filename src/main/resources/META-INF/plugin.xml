@@ -92,6 +92,11 @@
         <!--                text="PreviewSqlAction" description="PreviewSqlAction">-->
         <!--            <add-to-group group-id="GenerateGroup" anchor="first"/>-->
         <!--        </action>-->
+        <action id="AutoCompile" class="club.bigtian.mf.plugin.action.flex.AutoCompileAction" text="AutoCompile"
+                description="AutoCompile">
+            <add-to-group group-id="GenerateGroup" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="meta W"/>
+        </action>
     </actions>
 
     <idea-version since-build="202.*"/>

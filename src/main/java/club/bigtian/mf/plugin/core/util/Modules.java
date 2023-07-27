@@ -15,7 +15,10 @@ import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaDirectoryService;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiPackage;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import javax.swing.*;
@@ -46,9 +49,13 @@ public class Modules {
         Map<String, String> moduleMap = modulePackageMap.get(moduleName);
         if (CollUtil.isEmpty(moduleMap)) {
             NotificationUtils.notifyError("模块不存在!", "", ProjectUtils.getCurrentProject());
-            throw new RuntimeException("模块不存在");
+            throw new RuntimeException(StrUtil.format("模块不存在:{}", moduleName));
         }
         return moduleMap.getOrDefault(packageName, "");
+    }
+
+    public static Module[] getModule(Project project) {
+        return ModuleManager.getInstance(project).getModules();
     }
 
     /**
@@ -65,7 +72,6 @@ public class Modules {
         }
 
         boolean isManvenProject = isManvenProject(modules[0]);
-        PsiManager psiManager = PsiManager.getInstance(project);
         for (JComboBox modulesCombox : modulesComboxs) {
             modulesCombox.setRenderer(new ModuleComBoxRender());
 
@@ -77,7 +83,10 @@ public class Modules {
                         // 非maven项目只显示main模块,只有main模块才有java目录
                         return module.getName().contains(".main");
                     })
-                    .collect(Collectors.toMap(el -> el.getName().split("\\.")[0], module -> module));
+                    .collect(Collectors.toMap(el -> {
+                        String[] strArr = el.getName().split("\\.");
+                        return strArr[strArr.length - 2];
+                    }, module -> module));
             FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().collect(Collectors.toList()));
             modulesCombox.setModel(model);
             modulesCombox.setSelectedIndex(0);
