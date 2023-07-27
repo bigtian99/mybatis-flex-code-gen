@@ -36,6 +36,7 @@
     <h3>1.4.4-RELEASE</h3>
     <ul>
     <li>【优化】多模块开发过滤掉没有用的父级项目</li>
+    <li>【优化】生成代码之后自动编译</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.

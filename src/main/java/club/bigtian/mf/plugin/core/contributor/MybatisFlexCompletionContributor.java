@@ -111,7 +111,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
         for (Map.Entry<String, String> entry : tableDefMap.entrySet()) {
             // 添加补全提示
             LookupElement lookupElement = LookupElementBuilder.create(entry.getKey())
-                    .withTypeText(StrUtil.subAfter(entry.getValue(), ".", true) + "(MybatisFlex-Hepler)", true)
+                    .withTypeText(StrUtil.subAfter(entry.getValue(), ".", true) + "(MybatisFlex-Helpler)", true)
                     .withInsertHandler((context, item) -> {
                         // 选中后的处理事件
                         PsiClass psiClass = psiFacade.findClass(entry.getValue(), GlobalSearchScope.projectScope(project));

@@ -1,10 +1,7 @@
 package club.bigtian.mf.plugin.core;
 
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
-import club.bigtian.mf.plugin.core.util.CodeReformat;
-import club.bigtian.mf.plugin.core.util.Modules;
-import club.bigtian.mf.plugin.core.util.TableCore;
-import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
+import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.util.ObjectUtil;
@@ -81,7 +78,7 @@ public class RenderMybatisFlexTemplate {
                     // 如果勾选了覆盖，则删除原有文件
                     if (config.isOverrideCheckBox()) {
                         for (PsiElement psiFile : list) {
-                            if (psiFile instanceof PsiFile ) {
+                            if (psiFile instanceof PsiFile) {
                                 PsiFile file = (PsiFile) psiFile;
                                 PsiFile directoryFile = directory.findFile(file.getName());
                                 if (ObjectUtil.isNotNull(directoryFile)) {
@@ -110,7 +107,8 @@ public class RenderMybatisFlexTemplate {
                 });
             }
         });
-
+        //生成代码之后，重新构建
+        CompilerManagerUtil.make(Modules.getModule(config.getModelModule()));
     }
 
     private static void logicDelete(List<TableInfo> selectedTableInfo, MybatisFlexConfig config) {
