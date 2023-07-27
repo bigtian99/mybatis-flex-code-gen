@@ -12,6 +12,9 @@ import lombok.NoArgsConstructor;
 #if($config.builder)
 import lombok.Builder;
 #end
+#if($config.accessors)
+import lombok.experimental.Accessors;
+#end
 #if($config.swagger)
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -33,6 +36,9 @@ import $classImport;
  * @author $author
  * @since $since
  */
+#if($config.accessors)
+@Accessors(chain = true)
+#end
 #if($config.data)
 @Data
 #end

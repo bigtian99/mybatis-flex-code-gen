@@ -18,7 +18,7 @@ public class CompilerManagerUtil {
     public static void compile(VirtualFile[] files, CompileStatusNotification notification) {
         CompilerManager compilerManager = getCompilerManager();
         compilerManager.compile(files, notification);
-        LOG.error("编译完成");
+        LOG.info("编译完成");
     }
 
     /**
@@ -27,7 +27,7 @@ public class CompilerManagerUtil {
     public static void rebuild() {
         CompilerManager compilerManager = getCompilerManager();
         compilerManager.rebuild(null);
-        LOG.error("编译完成");
+        LOG.info("编译完成");
     }
 
     private static CompilerManager getCompilerManager() {

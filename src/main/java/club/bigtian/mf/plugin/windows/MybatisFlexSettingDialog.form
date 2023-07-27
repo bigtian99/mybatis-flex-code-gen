@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="club.bigtian.mf.plugin.windows.MybatisFlexSettingDialog">
   <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="48" y="54" width="910" height="730"/>
+      <xy x="48" y="54" width="995" height="735"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -56,6 +56,12 @@
                         <properties>
                           <name value="noArgsConstructor"/>
                           <text value="@NoArgsConstructor"/>
+                        </properties>
+                      </component>
+                      <component id="b2061" class="javax.swing.JCheckBox" binding="accessorsCheckBox">
+                        <constraints/>
+                        <properties>
+                          <text value="@Accessors"/>
                         </properties>
                       </component>
                       <component id="2ef51" class="javax.swing.JCheckBox" binding="swaggerCheckBox">

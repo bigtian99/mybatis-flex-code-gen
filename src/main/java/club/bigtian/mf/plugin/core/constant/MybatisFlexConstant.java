@@ -17,6 +17,7 @@ public class MybatisFlexConstant {
     public static final String MAPPER_TEMPLATE = "mapperTemplate.java";
     public static final String XML_TEMPLATE = "xmlTemplate.xml";
     public static final String LOMBOK_BUILDER = "builder";
+    public static final String LOMBOK_ACCESSORS = "accessors";
     public static final String LOMBOK_DATA = "data";
     public static final String LOMBOK_ALL_ARGS_CONSTRUCTOR = "allArgsConstructor";
     public static final String LOMBOK_NO_ARGS_CONSTRUCTOR = "noArgsConstructor";

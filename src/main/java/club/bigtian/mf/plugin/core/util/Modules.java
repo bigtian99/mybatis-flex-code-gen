@@ -84,8 +84,12 @@ public class Modules {
                         return module.getName().contains(".main");
                     })
                     .collect(Collectors.toMap(el -> {
-                        String[] strArr = el.getName().split("\\.");
-                        return strArr[strArr.length - 2];
+                        String name = el.getName();
+                        if(name.contains(".")){
+                            String[] strArr = name.split("\\.");
+                            return strArr[strArr.length - 2];
+                        }
+                        return name;
                     }, module -> module));
             FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().collect(Collectors.toList()));
             modulesCombox.setModel(model);
@@ -114,7 +118,8 @@ public class Modules {
             });
             String name = module.getName();
             if (name.contains(".")) {
-                name = StrUtil.subBefore(name, ".", false);
+                String[] strArr =name.split("\\.");
+                name = strArr[strArr.length - 2];
             }
             modulePackageMap.put(name, moduleMap);
         }
