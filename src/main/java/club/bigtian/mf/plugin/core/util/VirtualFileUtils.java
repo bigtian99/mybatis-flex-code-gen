@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
@@ -23,6 +24,11 @@ public class VirtualFileUtils {
     public static PsiFile getPsiFile(Project project, VirtualFile virtualFile) {
         PsiManager psiManager = PsiManager.getInstance(project);
         return psiManager.findFile(virtualFile);
+    }
+
+    public static PsiFile getPsiFile(Document document) {
+
+        return PsiDocumentManager.getInstance(ProjectUtils.getCurrentProject()).getPsiFile(document);
     }
 
     public static VirtualFile getVirtualFile(Document document) {

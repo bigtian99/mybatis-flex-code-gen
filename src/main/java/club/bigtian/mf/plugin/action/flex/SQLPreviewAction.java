@@ -1,9 +1,10 @@
 package club.bigtian.mf.plugin.action.flex;
 
+import club.bigtian.mf.plugin.core.function.SimpleFunction;
 import club.bigtian.mf.plugin.core.log.MyBatisLogExecutor;
 import club.bigtian.mf.plugin.core.util.CodeReformat;
 import club.bigtian.mf.plugin.core.util.CompilerManagerUtil;
-import club.bigtian.mf.plugin.core.util.NotificationUtils;
+import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.windows.SQLPreviewDialog;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -17,9 +18,6 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.ide.highlighter.JavaFileType;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -30,23 +28,17 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 
-public class SQLPreviewAction extends AnAction {
+public class SQLPreviewAction {
 
     private static final Logger LOG = Logger.getInstance(SQLPreviewAction.class);
 
-    @Override
-    public void actionPerformed(AnActionEvent event) {
-        Project project = event.getProject();
-        PsiJavaFile psiFile = (PsiJavaFile) event.getData(CommonDataKeys.PSI_FILE);
-        // 获取选中代码片段的文本
-        String selectedText = event.getData(CommonDataKeys.EDITOR).getSelectionModel().getSelectedText();
-        if (!selectedText.contains("QueryWrapper")) {
-            NotificationUtils.notifyError("请选择QueryWrapper代码片段", "警告");
-            return;
-        }
+    SimpleFunction function;
+    public void preview(String selectedText, PsiJavaFile psiFile, SimpleFunction function) {
+        this.function = function;
         String variable = StrUtil.subBetween(selectedText, "QueryWrapper ", " =");
         selectedText += StrUtil.format("\nSystem.out.println({}.toSQL());", variable);
         String text = "public class MybatisFlexSqlPreview {\n    public static void main(String[] args) {" + selectedText + "\n}\n}";
+        Project project = ProjectUtils.getCurrentProject();
         String packageName = psiFile.getPackageName();
         PsiJavaFile psiJavaFile = (PsiJavaFile) PsiFileFactory.getInstance(project).createFileFromText("MybatisFlexSqlPreview.java", JavaFileType.INSTANCE, text);
         psiJavaFile.setPackageName(psiFile.getPackageName());
@@ -71,7 +63,7 @@ public class SQLPreviewAction extends AnAction {
     }
 
 
-    private static void showSql(Project project, String packageName, VirtualFile virtualFile) {
+    private  void showSql(Project project, String packageName, VirtualFile virtualFile) {
         CompilerManagerUtil.compile(new VirtualFile[]{virtualFile}, (b, i, i1, compileContext) -> {
             try {
                 // 执行配置
@@ -99,6 +91,7 @@ public class SQLPreviewAction extends AnAction {
                         public void onTextAvailable(ProcessEvent event1, Key outputType) {
                             if (ProcessOutputTypes.STDOUT.equals(outputType)) {
                                 new SQLPreviewDialog(event1.getText(), virtualFile).setVisible(true);
+                                function.apply();
                             } else if (ProcessOutputTypes.STDERR.equals(outputType)) {
                                 System.out.println(event1.getText());
                             }
