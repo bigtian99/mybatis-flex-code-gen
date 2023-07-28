@@ -1,9 +1,6 @@
 package club.bigtian.mf.plugin.core;
 
-import club.bigtian.mf.plugin.core.util.CompilerManagerUtil;
-import club.bigtian.mf.plugin.core.util.KtFileUtil;
-import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
-import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
+import club.bigtian.mf.plugin.core.util.*;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.Disposable;
@@ -43,7 +40,10 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         // 所有的文档监听
         EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this, this);
         Document document;
+
         for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
+            ProjectUtils.setCurrentProject(editor.getProject());
+
             document = editor.getDocument();
             document.putUserData(LISTENER, true);
             editor.addEditorMouseListener(new EditorMouseListener() {
@@ -80,6 +80,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             document.putUserData(LISTENER, true);
             document.addDocumentListener(this);
         }
+        ProjectUtils.setCurrentProject(editor.getProject());
     }
 
     private void executeCompile(Editor editor) {

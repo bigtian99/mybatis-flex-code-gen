@@ -12,7 +12,7 @@ import javax.swing.*;
  * 
  * @author huangxingguang
  */
-class MyBatisLogExecutor extends Executor {
+public class MyBatisLogExecutor extends Executor {
 
     public static final String TOOL_WINDOW_ID = "MyBatis Log";
 
