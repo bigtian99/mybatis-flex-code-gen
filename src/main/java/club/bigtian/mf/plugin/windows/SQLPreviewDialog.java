@@ -5,6 +5,9 @@ import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.NotificationUtils;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import cn.hutool.core.swing.clipboard.ClipboardUtil;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiJavaFile;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -20,7 +23,7 @@ public class SQLPreviewDialog extends JDialog {
     private static final BasicFormatter FORMATTER = new BasicFormatter();
     private String sql;
 
-    public SQLPreviewDialog(String sql) {
+    public SQLPreviewDialog(String sql, PsiJavaFile psiFile) {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -55,6 +58,15 @@ public class SQLPreviewDialog extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
+            PsiClass[] classes = psiFile.getClasses();
+            for (PsiClass psiClass : classes) {
+                if (psiClass.getName().contains("MybatisFlexSqlPreview")) {
+                    psiClass.delete();
+                }
+            }
+        });
     }
 
     private void onOK() {
