@@ -38,6 +38,7 @@
     <li>【新增】mybatis-flex.config 配置提示</li>
     <li>【新增】自动生成 APT 文件（解决 mvn clean 之后无法编译）</li>
     <li>【新增】Lombok链式调用注解@Accessors </li>
+    <li>【新增】SQL 预览（QueryWrapper） </li>
     <li>【优化】生成代码后自动生成 APT 文件</li>
     <li>【优化】mybatis-flex.config icon 调整</li>
     <li>【优化】多模块开发过滤掉没有用的父级项目</li>
@@ -80,7 +81,7 @@
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
 
-        <action id="com.starxg.mybatislog.action.MyBatisLogAction"
+        <action id="club.bigtian.mf.plugin.action.log.MyBatisLogAction"
                 class="club.bigtian.mf.plugin.action.log.MyBatisLogAction"
                 text="MyBatis Log Plugin" description="MyBatis log plugin free" icon="/icons/icon.png">
             <add-to-group group-id="ToolsMenu" anchor="last"/>

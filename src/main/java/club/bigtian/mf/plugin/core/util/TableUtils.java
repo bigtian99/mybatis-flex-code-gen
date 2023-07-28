@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.core.util;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.database.dialects.DatabaseDialectEx;
@@ -39,6 +40,9 @@ public class TableUtils {
     public static List<String> getSelectedTableName(AnActionEvent actionEvent) {
         DataKey<Object[]> databaseNodes = DataKey.create("DATABASE_NODES");
         Object[] data = actionEvent.getData(databaseNodes);
+        if (ArrayUtil.isEmpty(data)) {
+            return new ArrayList<>();
+        }
         return Arrays.stream(data).map(item -> {
             DasTable dasTable = (DasTable) item;
             return dasTable.getName();

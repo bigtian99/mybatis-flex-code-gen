@@ -6,11 +6,11 @@ import club.bigtian.mf.plugin.core.util.NotificationUtils;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import cn.hutool.core.swing.clipboard.ClipboardUtil;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiJavaFile;
+import com.intellij.openapi.vfs.VirtualFile;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.IOException;
 
 /**
  * sql预览窗口
@@ -23,7 +23,7 @@ public class SQLPreviewDialog extends JDialog {
     private static final BasicFormatter FORMATTER = new BasicFormatter();
     private String sql;
 
-    public SQLPreviewDialog(String sql, PsiJavaFile psiFile) {
+    public SQLPreviewDialog(String sql, VirtualFile virtualFile) {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -58,20 +58,19 @@ public class SQLPreviewDialog extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
+//        psiFile.delete();
         WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
-            PsiClass[] classes = psiFile.getClasses();
-            for (PsiClass psiClass : classes) {
-                if (psiClass.getName().contains("MybatisFlexSqlPreview")) {
-                    psiClass.delete();
-                }
+            try {
+                virtualFile.delete(this);
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
             }
         });
     }
 
     private void onOK() {
         ClipboardUtil.setStr(sql);
-        NotificationUtils.notifySuccess("🎉SQL copied to clipboard.🎉", ProjectUtils.getCurrentProject());
+        NotificationUtils.notifySuccess("🎉SQL copied to clipboard.🎉");
         dispose();
     }
 
