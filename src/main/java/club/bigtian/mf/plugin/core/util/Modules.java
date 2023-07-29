@@ -15,7 +15,10 @@ import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaDirectoryService;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiPackage;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import javax.swing.*;
@@ -46,9 +49,13 @@ public class Modules {
         Map<String, String> moduleMap = modulePackageMap.get(moduleName);
         if (CollUtil.isEmpty(moduleMap)) {
             NotificationUtils.notifyError("模块不存在!", "", ProjectUtils.getCurrentProject());
-            throw new RuntimeException("模块不存在");
+            throw new RuntimeException(StrUtil.format("模块不存在:{}", moduleName));
         }
         return moduleMap.getOrDefault(packageName, "");
+    }
+
+    public static Module[] getModule(Project project) {
+        return ModuleManager.getInstance(project).getModules();
     }
 
     /**
@@ -69,14 +76,21 @@ public class Modules {
             modulesCombox.setRenderer(new ModuleComBoxRender());
 
             moduleMap = Arrays.stream(modules)
-                    .filter(el -> {
+                    .filter(module -> {
                         if (isManvenProject) {
-                            return true;
+                            return ArrayUtil.isNotEmpty(ModuleRootManager.getInstance(module).getSourceRoots());
                         }
                         // 非maven项目只显示main模块,只有main模块才有java目录
-                        return el.getName().contains(".main");
+                        return module.getName().contains(".main");
                     })
-                    .collect(Collectors.toMap(el -> el.getName().split("\\.")[0], module -> module));
+                    .collect(Collectors.toMap(el -> {
+                        String name = el.getName();
+                        if(name.contains(".")){
+                            String[] strArr = name.split("\\.");
+                            return strArr[strArr.length - 2];
+                        }
+                        return name;
+                    }, module -> module));
             FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().collect(Collectors.toList()));
             modulesCombox.setModel(model);
             modulesCombox.setSelectedIndex(0);
@@ -96,7 +110,7 @@ public class Modules {
                     PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
                     LOG.assertTrue(psiDirectory != null);
                     PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
-                    if (aPackage != null ) {
+                    if (aPackage != null) {
                         moduleMap.put(aPackage.getName(), aPackage.getQualifiedName());
                     }
                 }
@@ -104,7 +118,8 @@ public class Modules {
             });
             String name = module.getName();
             if (name.contains(".")) {
-                name = StrUtil.subBefore(name, ".", false);
+                String[] strArr =name.split("\\.");
+                name = strArr[strArr.length - 2];
             }
             modulePackageMap.put(name, moduleMap);
         }

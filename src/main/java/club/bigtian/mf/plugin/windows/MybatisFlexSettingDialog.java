@@ -72,6 +72,8 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JTextField domainPath;
     private JTextField xmlPath;
     private JTextField mapperPath;
+    private JCheckBox accessorsCheckBox;
+    private JTabbedPane tabbedPane2;
     private Project project;
 
     public MybatisFlexSettingDialog(Project project) {
@@ -231,6 +233,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         domainPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.DOMAIN_PATH), domainPath.getText()));
         xmlPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.XML_PATH), xmlPath.getText()));
         mapperPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.MAPPER_PATH), mapperPath.getText()));
+        accessorsCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ACCESSORS));
         initSinceComBox();
     }
 
@@ -304,6 +307,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setDomainPath(domainPath.getText());
         config.setXmlPath(xmlPath.getText());
         config.setMapperPath(mapperPath.getText());
+        config.setAccessors(accessorsCheckBox.isSelected());
         return config;
     }
 

@@ -184,6 +184,8 @@ public class MybatisFlexConfig {
     private String xmlPath;
     private String mapperPath;
 
+    private boolean accessors;
+
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
         data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, MybatisFlexConstant.CONTROLLER));
@@ -602,5 +604,13 @@ public class MybatisFlexConfig {
 
     public void setMapperPath(String mapperPath) {
         this.mapperPath = mapperPath;
+    }
+
+    public boolean getAccessors() {
+        return accessors;
+    }
+
+    public void setAccessors(boolean accessors) {
+        this.accessors = accessors;
     }
 }

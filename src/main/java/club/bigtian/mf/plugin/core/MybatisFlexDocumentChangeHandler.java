@@ -1,14 +1,11 @@
 package club.bigtian.mf.plugin.core;
 
-import club.bigtian.mf.plugin.core.util.KtFileUtil;
-import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
-import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
+import club.bigtian.mf.plugin.core.util.*;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -33,7 +30,7 @@ import java.util.Set;
 /**
  * @author bigtian
  */
-public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener , Disposable {
+public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable {
     private static final Logger LOG = Logger.getInstance(MybatisFlexDocumentChangeHandler.class);
     private static final Key<Boolean> CHANGE = Key.create("change");
     private static final Key<Boolean> LISTENER = Key.create("listener");
@@ -43,7 +40,10 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         // 所有的文档监听
         EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this, this);
         Document document;
+
         for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
+            ProjectUtils.setCurrentProject(editor.getProject());
+
             document = editor.getDocument();
             document.putUserData(LISTENER, true);
             editor.addEditorMouseListener(new EditorMouseListener() {
@@ -58,7 +58,6 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     @Override
     public void editorReleased(@NotNull EditorFactoryEvent event) {
         Editor editor = event.getEditor();
-
         Document document = editor.getDocument();
         if (Boolean.TRUE.equals(document.getUserData(LISTENER))) {
             document.putUserData(LISTENER, false);
@@ -81,6 +80,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             document.putUserData(LISTENER, true);
             document.addDocumentListener(this);
         }
+        ProjectUtils.setCurrentProject(editor.getProject());
     }
 
     private void executeCompile(Editor editor) {
@@ -146,11 +146,8 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     }
 
     private void compile(@NotNull Editor editor) {
-        Project project = editor.getProject();
-        CompilerManager compilerManager = CompilerManager.getInstance(project);
         VirtualFile currentFile = VirtualFileUtils.getVirtualFile(editor.getDocument());
-        LOG.warn("编译文件: " + currentFile.getName());
-        compilerManager.compile(new VirtualFile[]{currentFile}, null);
+        CompilerManagerUtil.compile(new VirtualFile[]{currentFile}, null);
     }
 
 
