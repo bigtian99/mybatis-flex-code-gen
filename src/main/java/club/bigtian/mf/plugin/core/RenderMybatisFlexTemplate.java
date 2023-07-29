@@ -17,7 +17,10 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.log.NullLogChute;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.StringWriter;
@@ -37,6 +40,8 @@ public class RenderMybatisFlexTemplate {
     public static void assembleData(List<TableInfo> selectedTableInfo, MybatisFlexConfig config, @Nullable Project project) {
 
         VelocityEngine velocityEngine = new VelocityEngine();
+        //修复因velocity.log拒绝访问，导致Velocity初始化失败
+        velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM, new NullLogChute());
         VelocityContext context = new VelocityContext();
         HashMap<PsiDirectory, List<PsiElement>> templateMap = new HashMap<>();
         Map<String, String> templates = new ConcurrentHashMap<>(config.getTemplates());
