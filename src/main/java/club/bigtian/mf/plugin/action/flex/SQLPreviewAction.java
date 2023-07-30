@@ -1,6 +1,7 @@
 package club.bigtian.mf.plugin.action.flex;
 
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
+import club.bigtian.mf.plugin.core.function.ManyFunction;
 import club.bigtian.mf.plugin.core.function.SimpleFunction;
 import club.bigtian.mf.plugin.core.log.MyBatisLogExecutor;
 import club.bigtian.mf.plugin.core.util.*;
@@ -35,8 +36,8 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SQLPreviewAction extends AnAction {
 
@@ -53,9 +54,17 @@ public class SQLPreviewAction extends AnAction {
                     "        globalConfig.setConfiguration(configuration);\n" +
                     "        FlexGlobalConfig.setConfig(\"mybatisFlex\", globalConfig, true);\n" +
                     "        configuration.addMapper({}.class);\n";
+    private static final String TEMPLATE = "" +
+            "        {} baseMapper = Mappers.ofMapperClass({}.class);\n" +
+            "        Field field = ReflectUtil.getField(ServiceImpl.class, \"mapper\");\n" +
+            "        ReflectUtil.setFieldValue({}, field, baseMapper);";
+
+    private static final List<String> SERVICE_IMPORT_LIST = Arrays.asList("cn.hutool.core.util.ReflectUtil",
+            "com.mybatisflex.core.mybatis.Mappers",
+            "java.lang.reflect.Field", "com.mybatisflex.spring.service.impl.ServiceImpl");
     private static final Logger LOG = Logger.getInstance(SQLPreviewAction.class);
-    public static final String SYSTEM_OUT_PRINTLN_TO_SQL = "\nSystem.out.println({}.toSQL());";
-    public static final String CLASS_TEMPLATE = "public class MybatisFlexSqlPreview {\n    public static void main(String[] args) { {}\n}\n}";
+    private static final String SYSTEM_OUT_PRINTLN_TO_SQL = "\nSystem.out.println({}.toSQL());";
+    private static final String CLASS_TEMPLATE = "public class MybatisFlexSqlPreview {\n    public static void main(String[] args) { {}\n}\n}";
 
     private PsiClass entityClass;
     PsiMethod constructorMethod;
@@ -68,8 +77,10 @@ public class SQLPreviewAction extends AnAction {
                 if (flag) {
                     selectedText = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, StrUtil.subBefore(selectedText, ";", false));
                 } else {
-                    String queryWrapper = ObjectUtil.defaultIfNull(StrUtil.subBetween(selectedText, "QueryWrapper", "="), StrUtil.subBefore(selectedText, ";", true)).trim();
-                    selectedText += StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, queryWrapper);
+                    if (selectedText.contains("=")) {
+                        selectedText = StrUtil.subAfter(selectedText, "=", false);
+                    }
+                    selectedText = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, StrUtil.subBefore(selectedText, ";", true).trim());
                 }
             } else {
                 // 处理链式调用
@@ -128,24 +139,26 @@ public class SQLPreviewAction extends AnAction {
             text = StrUtil.subAfter(text, "=", false);
         }
         //update/remove就截取舍弃
-        if (StrUtil.containsAny(text, "update()", "remove()")) {
+        if (StrUtil.containsAny(text, "update()", "remove()", "list")) {
             text = StrUtil.subBefore(text, ".", true);
         }
-        text = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, text);
         Map<String, String> qualifiedNameImportMap = PsiJavaFileUtil.getQualifiedNameImportMap(psiJavaFile);
 
-        if (text.contains("queryChain()")) {
-            return getAutowiredField(psiJavaFile, text, true, qualifiedNameImportMap);
-        }
-        String val = StrUtil.subBetween(text, "of(", ")");
-//        //获取类型
-        if (val.startsWith("Mappers")) {
-            val = StrUtil.subBetween(val, "(", ".class");
+        String val = null;
+        String print = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, text);
+        boolean flag = text.contains("queryChain()");
+        AtomicReference<String> variableReference = new AtomicReference<>();
+        if (flag) {
+            AtomicReference<String> atomicReference = new AtomicReference<>();
+            text = "\n" + getImplText(psiJavaFile, text, qualifiedNameImportMap, (entityClass, variableTem) -> {
+                atomicReference.set(entityClass);
+                variableReference.set(variableTem);
+            });
+            val = atomicReference.get();
         } else {
-            val = StrUtil.subBefore(val, ".class", false);
+            val = getOfValue(text, qualifiedNameImportMap);
+            text = "";
         }
-        entityClass = PsiJavaFileUtil.getPsiClass(qualifiedNameImportMap.get(val));
-
         Collection<PsiClass> implementors =
                 PsiJavaFileUtil.getSonPsiClass(MybatisFlexConstant.MYBATISFLEX_CORE_BASE_MAPPER,
                         GlobalSearchScope.allScope(ProjectUtils.getCurrentProject()));
@@ -171,22 +184,42 @@ public class SQLPreviewAction extends AnAction {
         }
         PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
 
+
+        if (flag) {
+            text += StrUtil.format(TEMPLATE, val, val, variableReference.get());
+            //导入新的
+
+            list.addAll(SERVICE_IMPORT_LIST);
+        }
         //添加import
         WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
             for (String impor : list) {
                 psiJavaFile.getImportList().add(instance.createImportStatement(PsiJavaFileUtil.getPsiClass(impor)));
             }
-            boolean hashConstructor = isHasConstructor(entityClass);
-            if (!hashConstructor) {
-                constructorMethod = instance.createMethodFromText(StrUtil.format("public {}(){}", entityClass.getName(), "{}"), null);
-                entityClass.add(constructorMethod);
+            if (ObjectUtil.isNotNull(entityClass)) {
+                boolean hashConstructor = isHasConstructor(entityClass);
+                if (!hashConstructor) {
+                    constructorMethod = instance.createMethodFromText(StrUtil.format("public {}(){}", entityClass.getName(), "{}"), null);
+                    entityClass.add(constructorMethod);
+                }
             }
         });
-
         //添加Mapper
-        text = StrUtil.format(COMMON_CODE, val) + text;
+        text = StrUtil.format(COMMON_CODE, val) + text + print;
 
         return text;
+    }
+
+    private String getOfValue(String text, Map<String, String> qualifiedNameImportMap) {
+        String val = StrUtil.subBetween(text, "of(", ")");
+//        //获取类型
+        if (val.startsWith("Mappers")) {
+            val = StrUtil.subBetween(val, "(", ".class");
+        } else {
+            val = StrUtil.subBefore(val, ".class", false);
+        }
+        entityClass = PsiJavaFileUtil.getPsiClass(qualifiedNameImportMap.get(val));
+        return val;
     }
 
     private boolean isHasConstructor(PsiClass entityClass) {
@@ -212,7 +245,7 @@ public class SQLPreviewAction extends AnAction {
     }
 
 
-    public String getAutowiredField(PsiJavaFile psiJavaFile, String selectedText, boolean isQueryChain, Map<String, String> qualifiedNameImportMap) {
+    public String getImplText(PsiJavaFile psiJavaFile, String selectedText, Map<String, String> qualifiedNameImportMap, ManyFunction<String> consumer) {
         Project project = psiJavaFile.getProject();
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
         for (PsiClass psiClass : psiJavaFile.getClasses()) {
@@ -233,25 +266,25 @@ public class SQLPreviewAction extends AnAction {
                     Collection<PsiClass> implementors = PsiJavaFileUtil.getSonPsiClass(qualifiedName, GlobalSearchScope.allScope(project));
                     if (CollUtil.isEmpty(implementors)) {
                         LOG.error(StrUtil.format("未找到实现类:{}", qualifiedName));
-                        if (!isQueryChain) {
-                            return className;
-                        }
                         continue;
                     }
                     PsiClass sonPsiClass = implementors.iterator().next();
+                    String genericity = PsiJavaFileUtil.getGenericity(sonPsiClass);
                     String name = sonPsiClass.getName();
+                    consumer.applay(genericity, StrUtil.subAfter(text, " ", true));
+
                     if (text.contains(field.getName())) {
                         WriteCommandAction.runWriteCommandAction(project, () -> {
                             psiJavaFile.getImportList().add(elementFactory.createImportStatement(sonPsiClass));
                         });
-                        selectedText = StrUtil.format("{}=new {}();\n", text, name) + selectedText;
+                        selectedText = StrUtil.format("{}=new {}();\n", text, name);
                     }
-
                 }
             }
         }
         return selectedText;
     }
+
 
     private void showSql(Project project, String packageName, VirtualFile virtualFile) {
         ArrayList<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
@@ -265,8 +298,10 @@ public class SQLPreviewAction extends AnAction {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
                             virtualFile.delete(this);
-                            removeNoArgsConstructor(entityClass);
-                        } catch (IOException e) {
+                            if (ObjectUtil.isNotNull(entityClass)) {
+                                removeNoArgsConstructor(entityClass);
+                            }
+                        } catch (Exception e) {
                             System.out.println(e.getMessage());
                         }
                     });

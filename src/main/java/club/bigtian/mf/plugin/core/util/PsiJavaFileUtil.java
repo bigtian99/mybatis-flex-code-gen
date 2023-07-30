@@ -61,4 +61,13 @@ public class PsiJavaFileUtil {
         PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
         return instance.createImportStatement(psiClass);
     }
+
+    public static String getGenericity(PsiClass psiClass) {
+        String text = psiClass.getText();
+        String genericity = StrUtil.subBetween(text, "<", ">");
+        if (genericity.contains(",")) {
+            genericity = StrUtil.subAfter(genericity, ",", true).trim();
+        }
+        return genericity;
+    }
 }
