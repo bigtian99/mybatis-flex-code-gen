@@ -3,10 +3,7 @@ package club.bigtian.mf.plugin.action.flex;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.function.SimpleFunction;
 import club.bigtian.mf.plugin.core.log.MyBatisLogExecutor;
-import club.bigtian.mf.plugin.core.util.CodeReformat;
-import club.bigtian.mf.plugin.core.util.CompilerManagerUtil;
-import club.bigtian.mf.plugin.core.util.ProjectUtils;
-import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
+import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.windows.SQLPreviewDialog;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -57,6 +54,9 @@ public class SQLPreviewAction extends AnAction {
     private static final Logger LOG = Logger.getInstance(SQLPreviewAction.class);
     public static final String SYSTEM_OUT_PRINTLN_TO_SQL = "\nSystem.out.println({}.toSQL());";
     public static final String CLASS_TEMPLATE = "public class MybatisFlexSqlPreview {\n    public static void main(String[] args) { {}\n}\n}";
+
+    private PsiClass entityClass;
+    PsiMethod constructorMethod;
 
 
     public void preview(String selectedText, PsiJavaFile psiFile, SimpleFunction function) {
@@ -130,9 +130,10 @@ public class SQLPreviewAction extends AnAction {
             text = StrUtil.subBefore(text, ".", true);
         }
         text = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, text);
+        Map<String, String> qualifiedNameImportMap = PsiJavaFileUtil.getQualifiedNameImportMap(psiJavaFile);
 
         if (text.contains("queryChain()")) {
-            return getAutowiredField(psiJavaFile, text, true);
+            return getAutowiredField(psiJavaFile, text, true, qualifiedNameImportMap);
         }
         String val = StrUtil.subBetween(text, "of(", ")");
 //        //获取类型
@@ -141,6 +142,7 @@ public class SQLPreviewAction extends AnAction {
         } else {
             val = StrUtil.subBefore(val, ".class", false);
         }
+        entityClass = PsiJavaFileUtil.getPsiClass(qualifiedNameImportMap.get(val));
 
         Collection<PsiClass> implementors =
                 PsiJavaFileUtil.getSonPsiClass(MybatisFlexConstant.MYBATISFLEX_CORE_BASE_MAPPER,
@@ -160,16 +162,22 @@ public class SQLPreviewAction extends AnAction {
                 }
             }
         }
-        PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
 
         ArrayList<String> list = new ArrayList<>(IMPORT_LIST);
         if (StrUtil.isNotBlank(qualifiedName)) {
             list.add(qualifiedName);
         }
+        PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
+
         //添加import
         WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
             for (String impor : list) {
                 psiJavaFile.getImportList().add(instance.createImportStatement(PsiJavaFileUtil.getPsiClass(impor)));
+            }
+            boolean hashConstructor = isHasConstructor(entityClass);
+            if (!hashConstructor) {
+                constructorMethod = instance.createMethodFromText(StrUtil.format("public {}(){}", entityClass.getName(), "{}"), null);
+                entityClass.add(constructorMethod);
             }
         });
 
@@ -179,11 +187,32 @@ public class SQLPreviewAction extends AnAction {
         return text;
     }
 
+    private boolean isHasConstructor(PsiClass entityClass) {
+        boolean hashConstructor = false;
+        PsiMethod[] constructors = entityClass.getConstructors();
+        for (PsiMethod constructor : constructors) {
+            if (constructor.getText().startsWith("public") && constructor.getParameters().length == 0) {
+                hashConstructor = true;
+                break;
+            }
+        }
+        return hashConstructor;
+    }
 
-    public String getAutowiredField(PsiJavaFile psiJavaFile, String selectedText, boolean isQueryChain) {
+    private void removeNoArgsConstructor(PsiClass entityClass) {
+        PsiMethod[] constructors = entityClass.getConstructors();
+        for (PsiMethod constructor : constructors) {
+            if (constructor.getText().startsWith("public") && constructor.getParameters().length == 0) {
+                constructor.delete();
+                break;
+            }
+        }
+    }
+
+
+    public String getAutowiredField(PsiJavaFile psiJavaFile, String selectedText, boolean isQueryChain, Map<String, String> qualifiedNameImportMap) {
         Project project = psiJavaFile.getProject();
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
-        Map<String, String> qualifiedNameImportMap = PsiJavaFileUtil.getQualifiedNameImportMap(psiJavaFile);
         for (PsiClass psiClass : psiJavaFile.getClasses()) {
             PsiField[] allFields = psiClass.getAllFields();
             for (PsiField field : allFields) {
@@ -223,11 +252,17 @@ public class SQLPreviewAction extends AnAction {
     }
 
     private void showSql(Project project, String packageName, VirtualFile virtualFile) {
-        CompilerManagerUtil.compile(new VirtualFile[]{virtualFile}, (b, i, i1, compileContext) -> {
+        ArrayList<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
+        if (ObjectUtil.isNotNull(entityClass)) {
+            virtualFiles.add(entityClass.getContainingFile().getVirtualFile());
+        }
+        virtualFiles.add(virtualFile);
+        CompilerManagerUtil.compile(virtualFiles.toArray(new VirtualFile[0]), (b, i, i1, compileContext) -> {
             try {
                 WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
                     try {
                         virtualFile.delete(this);
+                        removeNoArgsConstructor(entityClass);
                     } catch (IOException e) {
                         System.out.println(e.getMessage());
                     }
@@ -260,8 +295,11 @@ public class SQLPreviewAction extends AnAction {
                                     new SQLPreviewDialog(event1.getText()).setVisible(true);
                                 }
                             } else if (ProcessOutputTypes.STDERR.equals(outputType)) {
-                                System.out.println(event1.getText());
-                                LOG.error("sql获取失败，请检查该类方法是否本身就存在错误");
+
+                                String text = event1.getText();
+                                if (text.startsWith("Exception in")) {
+                                    NotificationUtils.notifyError((StrUtil.subAfter(text, ":", true)),"Mybatis-Flex system tips");
+                                }
                             }
                         }
                     });

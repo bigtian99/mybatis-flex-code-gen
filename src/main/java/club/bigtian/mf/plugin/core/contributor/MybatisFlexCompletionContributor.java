@@ -196,13 +196,17 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
 
     private Set<String> getFileImport(VirtualFile currentFile) {
         Set<String> importSet = new HashSet<>();
-        PsiFile file = psiManager.findFile(currentFile);
-        if (file instanceof PsiJavaFile) {
-            PsiJavaFile javaFile = (PsiJavaFile) file;
-            importSet = PsiJavaFileUtil.getImportSet(javaFile);
-        } else if (file instanceof KtFile) {
-            KtFile ktFile = (KtFile) file;
-            importSet = KtFileUtil.getImportSet(ktFile);
+        try {
+            PsiFile file = psiManager.findFile(currentFile);
+            if (file instanceof PsiJavaFile) {
+                PsiJavaFile javaFile = (PsiJavaFile) file;
+                importSet = PsiJavaFileUtil.getImportSet(javaFile);
+            } else if (file instanceof KtFile) {
+                KtFile ktFile = (KtFile) file;
+                importSet = KtFileUtil.getImportSet(ktFile);
+            }
+        } catch (Exception e) {
+
         }
         return importSet.stream()
                 .map(el -> {
