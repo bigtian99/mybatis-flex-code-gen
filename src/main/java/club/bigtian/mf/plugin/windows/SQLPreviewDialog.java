@@ -3,14 +3,10 @@ package club.bigtian.mf.plugin.windows;
 import club.bigtian.mf.plugin.core.util.BasicFormatter;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.NotificationUtils;
-import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import cn.hutool.core.swing.clipboard.ClipboardUtil;
-import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.vfs.VirtualFile;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.io.IOException;
 
 /**
  * sql预览窗口
@@ -23,7 +19,7 @@ public class SQLPreviewDialog extends JDialog {
     private static final BasicFormatter FORMATTER = new BasicFormatter();
     private String sql;
 
-    public SQLPreviewDialog(String sql, VirtualFile virtualFile) {
+    public SQLPreviewDialog(String sql ) {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -58,14 +54,6 @@ public class SQLPreviewDialog extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-//        psiFile.delete();
-        WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
-            try {
-                virtualFile.delete(this);
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        });
     }
 
     private void onOK() {

@@ -1,14 +1,14 @@
 package club.bigtian.mf.plugin.core.util;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.intellij.psi.PsiImportList;
-import com.intellij.psi.PsiImportStatementBase;
-import com.intellij.psi.PsiJavaFile;
+import cn.hutool.core.util.StrUtil;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.SearchScope;
+import com.intellij.psi.search.searches.ClassInheritorsSearch;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PsiJavaFileUtil {
@@ -21,5 +21,44 @@ public class PsiJavaFileUtil {
         return Arrays.stream(Objects.requireNonNull(importList).getAllImportStatements())
                 .map(PsiImportStatementBase::getText)
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * 得到限定名称导入map
+     *
+     * @param psiJavaFile psi java文件
+     * @return {@code Map<String, String>}
+     */
+    public static Map<String, String> getQualifiedNameImportMap(PsiJavaFile psiJavaFile) {
+        Map<String, String> map = new HashMap<>();
+        getImportSet(psiJavaFile)
+                .forEach(el -> {
+                    String qualifiedName = el.replace("import", "").replace(";", "").trim();
+                    map.put(StrUtil.subAfter(qualifiedName, ".", true), qualifiedName);
+                });
+        return map;
+    }
+
+    /**
+     * 获取子类
+     *
+     * @param qualifiedName 限定名
+     * @param searchScope   搜索范围
+     * @return {@code Collection<PsiClass>}
+     */
+    public static Collection<PsiClass> getSonPsiClass(String qualifiedName, SearchScope searchScope) {
+        PsiClass clazz = getPsiClass(qualifiedName);
+        return ClassInheritorsSearch.search(clazz, searchScope, true).findAll();
+    }
+
+    public static PsiClass getPsiClass(String qualifiedName) {
+        Project project = ProjectUtils.getCurrentProject();
+        JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
+        return psiFacade.findClass(qualifiedName, GlobalSearchScope.allScope(project));
+    }
+
+    public static PsiImportStatement createImportStatement(PsiClass psiClass) {
+        PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
+        return instance.createImportStatement(psiClass);
     }
 }
