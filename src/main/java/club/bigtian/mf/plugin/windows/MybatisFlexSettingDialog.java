@@ -73,6 +73,8 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JTextField xmlPath;
     private JTextField mapperPath;
     private JCheckBox accessorsCheckBox;
+    private JTabbedPane tabbedPane2;
+    private JCheckBox activeRecordCheckBox;
     private Project project;
 
     public MybatisFlexSettingDialog(Project project) {
@@ -80,8 +82,9 @@ public class MybatisFlexSettingDialog extends JDialog {
         setContentPane(contentPane);
         setModal(true);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        screenSize.setSize(screenSize.getWidth() * 0.8, screenSize.getHeight() * 0.8);
+        screenSize.setSize(screenSize.getWidth() * 0.8, screenSize.getHeight() * 0.7);
         setSize(screenSize);
+        setMinimumSize(new Dimension(700,500));
         getRootPane().setDefaultButton(buttonOK);
         DialogUtil.centerShow(this);
         buttonOK.addActionListener(new ActionListener() {
@@ -233,6 +236,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         xmlPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.XML_PATH), xmlPath.getText()));
         mapperPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.MAPPER_PATH), mapperPath.getText()));
         accessorsCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ACCESSORS));
+        activeRecordCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
         initSinceComBox();
     }
 
@@ -307,6 +311,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setXmlPath(xmlPath.getText());
         config.setMapperPath(mapperPath.getText());
         config.setAccessors(accessorsCheckBox.isSelected());
+        config.setActiveRecord(activeRecordCheckBox.isSelected());
         return config;
     }
 

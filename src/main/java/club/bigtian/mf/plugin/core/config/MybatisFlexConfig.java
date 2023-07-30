@@ -186,6 +186,11 @@ public class MybatisFlexConfig {
 
     private boolean accessors;
 
+    /**
+     * ar模式
+     */
+    private boolean activeRecord;
+
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
         data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, MybatisFlexConstant.CONTROLLER));
@@ -612,5 +617,17 @@ public class MybatisFlexConfig {
 
     public void setAccessors(boolean accessors) {
         this.accessors = accessors;
+    }
+
+    public boolean isAccessors() {
+        return accessors;
+    }
+
+    public boolean isActiveRecord() {
+        return activeRecord;
+    }
+
+    public void setActiveRecord(boolean activeRecord) {
+        this.activeRecord = activeRecord;
     }
 }

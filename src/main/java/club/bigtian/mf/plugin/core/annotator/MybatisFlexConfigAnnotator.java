@@ -29,12 +29,12 @@ public class MybatisFlexConfigAnnotator implements Annotator {
 
         String text = element.getText();
 
-        if ( StrUtil.containsAny(text, "QueryWrapper","UpdateChain", "QueryChain", "queryChain()")
-                && text.endsWith(";") && !iconMap.containsKey(lineNumber)) {
+        if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")
+                && text.endsWith(";") && !text.startsWith("import") && !iconMap.containsKey(lineNumber)) {
             String matchText = StrUtil.subBetween(text, "(", ")");
             //如果是括号里面的则不显示icon
-            if (matchText != null){
-                if (StrUtil.containsAny(matchText, "QueryWrapper","UpdateChain", "QueryChain", "queryChain()")) {
+            if (matchText != null) {
+                if (StrUtil.containsAny(matchText, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")) {
                     return;
                 }
             }

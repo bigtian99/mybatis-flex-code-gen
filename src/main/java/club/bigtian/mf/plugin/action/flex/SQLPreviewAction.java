@@ -21,6 +21,8 @@ import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -259,14 +261,16 @@ public class SQLPreviewAction extends AnAction {
         virtualFiles.add(virtualFile);
         CompilerManagerUtil.compile(virtualFiles.toArray(new VirtualFile[0]), (b, i, i1, compileContext) -> {
             try {
-                WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
-                    try {
-                        virtualFile.delete(this);
-                        removeNoArgsConstructor(entityClass);
-                    } catch (IOException e) {
-                        System.out.println(e.getMessage());
-                    }
-                });
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                        try {
+                            virtualFile.delete(this);
+                            removeNoArgsConstructor(entityClass);
+                        } catch (IOException e) {
+                            System.out.println(e.getMessage());
+                        }
+                    });
+                }, ModalityState.defaultModalityState());
                 // 执行配置
                 ProgramRunner runner = ProgramRunner.PROGRAM_RUNNER_EP.getExtensions()[0];
                 Executor instance = MyBatisLogExecutor.getInstance();
@@ -298,7 +302,7 @@ public class SQLPreviewAction extends AnAction {
 
                                 String text = event1.getText();
                                 if (text.startsWith("Exception in")) {
-                                    NotificationUtils.notifyError((StrUtil.subAfter(text, ":", true)),"Mybatis-Flex system tips");
+                                    NotificationUtils.notifyError((StrUtil.subAfter(text, ":", true)), "Mybatis-Flex system tips");
                                 }
                             }
                         }
