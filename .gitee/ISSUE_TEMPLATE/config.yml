@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+    - name: Mybatis-Flex-Hepler
+      url: http://blog.bigtian.club/mybatisFlex_Helper/
+      about: 提供插件的基本功能使用、介绍和常见问题解答
+    - name: 视频教程
+      url: https://www.bilibili.com/video/BV1yV411g7Yd/
+      about: 提供插件的基本功能使用、介绍演示
