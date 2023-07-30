@@ -1,6 +1,7 @@
 package club.bigtian.mf.plugin.core.annotator;
 
 import club.bigtian.mf.plugin.core.render.SqlPreviewIconRenderer;
+import cn.hutool.core.util.StrUtil;
 import com.intellij.lang.annotation.AnnotationBuilder;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
@@ -27,16 +28,25 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         }
 
         String text = element.getText();
-        if (text.startsWith("QueryWrapper") && text.endsWith(";") && !iconMap.keySet().contains(lineNumber)) {
+
+        if ( StrUtil.containsAny(text, "QueryWrapper","UpdateChain", "QueryChain", "queryChain()")
+                && text.endsWith(";") && !iconMap.containsKey(lineNumber)) {
+            String matchText = StrUtil.subBetween(text, "(", ")");
+            //如果是括号里面的则不显示icon
+            if (matchText != null){
+                if (StrUtil.containsAny(matchText, "QueryWrapper","UpdateChain", "QueryChain", "queryChain()")) {
+                    return;
+                }
+            }
+
             iconMap.put(lineNumber, text);
             // 创建图标注解
             AnnotationBuilder annotationBuilder = holder.newSilentAnnotation(HighlightSeverity.INFORMATION);
-            annotationBuilder.gutterIconRenderer(new SqlPreviewIconRenderer(lineNumber, (PsiJavaFile) element.getContainingFile(),iconMap));
+            annotationBuilder.gutterIconRenderer(new SqlPreviewIconRenderer(lineNumber, (PsiJavaFile) element.getContainingFile(), iconMap));
             annotationBuilder.create();
 
         }
     }
-
 
 
 }

@@ -73,7 +73,6 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JTextField xmlPath;
     private JTextField mapperPath;
     private JCheckBox accessorsCheckBox;
-    private JTabbedPane tabbedPane2;
     private Project project;
 
     public MybatisFlexSettingDialog(Project project) {
