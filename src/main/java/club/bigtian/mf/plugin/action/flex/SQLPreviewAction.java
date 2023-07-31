@@ -72,23 +72,13 @@ public class SQLPreviewAction extends AnAction {
 
     public void preview(String selectedText, PsiJavaFile psiFile, SimpleFunction function) {
         try {
-            boolean flag = StrUtil.containsAny(selectedText, "QueryChain.create", "UpdateChain.create");
-            if (selectedText.contains("QueryWrapper") || flag) {
-                if (flag) {
-                    selectedText = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, StrUtil.subBefore(selectedText, ";", false));
-                } else {
-                    if (selectedText.contains("=")) {
-                        selectedText = StrUtil.subAfter(selectedText, "=", false);
-                    }
-                    selectedText = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, StrUtil.subBefore(selectedText, ";", true).trim());
-                }
+            if (selectedText.contains("QueryWrapper")) {
+                selectedText = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, selectedText);
             } else {
                 // 处理链式调用
-                selectedText = chain(StrUtil.subBefore(selectedText, ";", true), psiFile);
+                selectedText = chain(selectedText, psiFile);
             }
-
             createFile(psiFile, StrUtil.format(CLASS_TEMPLATE, selectedText), psiFile.getPackageName());
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -138,8 +128,9 @@ public class SQLPreviewAction extends AnAction {
         if (text.contains("=")) {
             text = StrUtil.subAfter(text, "=", false);
         }
+        //TODO 待优化
         //update/remove就截取舍弃
-        if (StrUtil.containsAny(text, "update()", "remove()", "list")) {
+        if (StrUtil.containsAny(text, "update()", "remove()", "list","exists")) {
             text = StrUtil.subBefore(text, ".", true);
         }
         Map<String, String> qualifiedNameImportMap = PsiJavaFileUtil.getQualifiedNameImportMap(psiJavaFile);
@@ -165,14 +156,16 @@ public class SQLPreviewAction extends AnAction {
         Iterator<PsiClass> iterator = implementors.iterator();
         String qualifiedName = "";
         //判断是不是对应的mapper
-        while (iterator.hasNext()) {
-            PsiClass next = iterator.next();
-            for (PsiClassType superType : next.getSuperTypes()) {
-                for (PsiType parameter : superType.getParameters()) {
-                    if (parameter.getCanonicalText().endsWith(val)) {
-                        val = next.getName();
-                        qualifiedName = next.getQualifiedName();
-                        break;
+        if (StrUtil.isNotBlank(val)) {
+            while (iterator.hasNext()) {
+                PsiClass next = iterator.next();
+                for (PsiClassType superType : next.getSuperTypes()) {
+                    for (PsiType parameter : superType.getParameters()) {
+                        if (parameter.getCanonicalText().endsWith(val)) {
+                            val = next.getName();
+                            qualifiedName = next.getQualifiedName();
+                            break;
+                        }
                     }
                 }
             }
@@ -204,19 +197,34 @@ public class SQLPreviewAction extends AnAction {
                 }
             }
         });
-        //添加Mapper
-        text = StrUtil.format(COMMON_CODE, val) + text + print;
+        if (StrUtil.isNotBlank(val)) {
+            //添加Mapper
+            text = StrUtil.format(COMMON_CODE, val) + text + print;
+
+        } else {
+            text += print;
+        }
 
         return text;
     }
 
     private String getOfValue(String text, Map<String, String> qualifiedNameImportMap) {
-        String val = StrUtil.subBetween(text, "of(", ")");
-//        //获取类型
+        String val = "";
+        if (text.contains("of(")) {
+            val = StrUtil.subBetween(text, "of(", ")");
+        } else if (text.contains("create(")) {
+            if (text.contains("create()")) {
+                return null;
+            }
+            val = StrUtil.subBetween(text, "create(", ")");
+        } else {
+            return null;
+//        //获取类
+        }
         if (val.startsWith("Mappers")) {
             val = StrUtil.subBetween(val, "(", ".class");
         } else {
-            val = StrUtil.subBefore(val, ".class", false);
+            val = StrUtil.subBefore(val, ".", false);
         }
         entityClass = PsiJavaFileUtil.getPsiClass(qualifiedNameImportMap.get(val));
         return val;
@@ -297,7 +305,7 @@ public class SQLPreviewAction extends AnAction {
                 ApplicationManager.getApplication().invokeLater(() -> {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
-                            virtualFile.delete(this);
+//                            virtualFile.delete(this);
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);
                             }

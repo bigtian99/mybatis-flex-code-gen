@@ -26,18 +26,21 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
         int offset = element.getTextOffset();
         int lineNumber = document.getLineNumber(offset) + 1;
-        //只有是
+        //判断是不是 mybatis-flex 的项目
         PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryWrapper");
-        if (lineNumber == 0 || ObjectUtil.isNull(psiClass)) {
+        String text = element.getText();
+        if (lineNumber == 0 || ObjectUtil.isNull(psiClass) || text.startsWith("import")||iconMap.containsKey(lineNumber)) {
             return;
         }
 
-        String text = element.getText();
         if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")
-                && text.endsWith(";") && !text.startsWith("import") && !iconMap.containsKey(lineNumber)) {
+                && text.endsWith(";") ) {
+            if (text.contains("=")) {
+                text = StrUtil.subAfter(text, "=", false).trim();
+            }
             String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
             //如果是括号里面的则不显示icon
-            if (matchText != null) {
+            if (matchText != null&&!StrUtil.startWithAny(text,"QueryWrapper","QueryChain","UpdateChain")) {
                 if (matchText.startsWith("\"") || text.startsWith("//")) {
                     return;
                 }
@@ -48,14 +51,11 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                             break;
                         }
                     }
-
                 } else {
                     text = matchText;
                 }
-
             }
-
-            iconMap.put(lineNumber, text);
+            iconMap.put(lineNumber, StrUtil.subBefore(text, ";", true));
             // 创建图标注解
             AnnotationBuilder annotationBuilder = holder.newSilentAnnotation(HighlightSeverity.INFORMATION);
             annotationBuilder.gutterIconRenderer(new SqlPreviewIconRenderer(lineNumber, (PsiJavaFile) element.getContainingFile(), iconMap));
