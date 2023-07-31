@@ -35,6 +35,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MybatisFlexCodeGenerateDialog extends JDialog {
+    public static final String SINCE_CONFIG = "---请选择配置---";
+    public static final String SINCE_CONFIG_ADD = "添加配置";
     private JPanel contentPane;
     private JButton generateBtn;
     private JButton cancelBtn;
@@ -152,7 +154,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             if (ObjectUtil.isNull(selectedItem)) {
                 return;
             }
-            if (selectedItem.toString().equals("添加配置")) {
+            if (selectedItem.toString().equals(SINCE_CONFIG_ADD)) {
                 sinceComBox.hidePopup();
                 Messages.InputDialog dialog = new Messages.InputDialog("请输入配置名称", "配置名称", Messages.getQuestionIcon(), "", new InputValidatorImpl());
                 dialog.show();
@@ -167,7 +169,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             }
             String key = selectedItem.toString();
             MybatisFlexConfig config = MybatisFlexPluginConfigData.getConfig(key);
-            sinceFlag = !"---请选择配置---".equals(selectedItem.toString());
+            sinceFlag = !SINCE_CONFIG.equals(selectedItem.toString());
             initConfigData(config);
         });
         initSinceComBox(null);
@@ -306,9 +308,9 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         sinceComBox.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value.toString().equals("添加配置")) {
+                if (SINCE_CONFIG_ADD.equals(value.toString())) {
                     setIcon(AllIcons.General.Add);
-                } else {
+                }else {
                     setIcon(null); // 清除图标
                 }
                 setText(value.toString());
@@ -316,11 +318,11 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             }
         });
         sinceComBox.removeAllItems();
-        sinceComBox.addItem("---请选择配置---");
+        sinceComBox.addItem(SINCE_CONFIG);
         for (String item : list) {
             sinceComBox.insertItemAt(item, 1);
         }
-        sinceComBox.addItem("添加配置");
+        sinceComBox.addItem(SINCE_CONFIG_ADD);
         if (ObjectUtil.isNull(idx)) {
             sinceComBox.setSelectedIndex(sinceComBox.getItemCount() > 2 ? 1 : 0);
         } else {
@@ -422,7 +424,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         boolean flag = checkTableInfo(selectedTableInfo);
         if (flag) {
             String since = sinceComBox.getSelectedItem().toString();
-            if (!"---请选择配置---".equals(since)) {
+            if (!SINCE_CONFIG.equals(since)) {
                 MybatisFlexConfig configData = getConfigData();
                 MybatisFlexPluginConfigData.removeSinceConfig(since);
                 MybatisFlexPluginConfigData.configSince(since, configData);
