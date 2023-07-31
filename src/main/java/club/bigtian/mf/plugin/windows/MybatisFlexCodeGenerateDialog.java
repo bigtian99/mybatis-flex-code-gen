@@ -129,12 +129,19 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         });
 
         settingLabel.addActionListener(e -> {
+            Set<String> sinces = MybatisFlexPluginConfigData.getSinceMap().keySet();
             MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project);
             dialog.show();
             sinceFlag = true;
             //避免用户配置后，直接点击设置界面，再回来导致配置丢失
             MybatisFlexConfig configData = getConfigData();
-            initSinceComBox(sinceComBox.getSelectedIndex());
+            Set<String> sinceSet = MybatisFlexPluginConfigData.getSinceMap().keySet();
+
+            if (sinces.size() > sinceSet.size()) {
+                initSinceComBox(0);
+            } else {
+                initSinceComBox(CollUtil.isEmpty(list) ? null : sinceComBox.getSelectedIndex());
+            }
             //再次设置是因为initSinceComBox最终会把sinceFlag设置为false
             sinceFlag = true;
             initConfigData(configData);
@@ -314,9 +321,9 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             sinceComBox.insertItemAt(item, 1);
         }
         sinceComBox.addItem("添加配置");
-        if(ObjectUtil.isNull(idx)){
+        if (ObjectUtil.isNull(idx)) {
             sinceComBox.setSelectedIndex(sinceComBox.getItemCount() > 2 ? 1 : 0);
-        }else{
+        } else {
             sinceComBox.setSelectedIndex(idx);
         }
         sinceComBox.revalidate();
@@ -414,6 +421,13 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         }
         boolean flag = checkTableInfo(selectedTableInfo);
         if (flag) {
+            String since = sinceComBox.getSelectedItem().toString();
+            if (!"---请选择配置---".equals(since)) {
+                MybatisFlexConfig configData = getConfigData();
+                MybatisFlexPluginConfigData.removeSinceConfig(since);
+                MybatisFlexPluginConfigData.configSince(since, configData);
+            }
+
             startGenCode(selectedTableInfo);
         }
     }
