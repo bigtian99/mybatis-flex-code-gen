@@ -31,6 +31,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         if (lineNumber == 0 || ObjectUtil.isNull(psiClass)) {
             return;
         }
+
         String text = element.getText();
         if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")
                 && text.endsWith(";") && !text.startsWith("import") && !iconMap.containsKey(lineNumber)) {
