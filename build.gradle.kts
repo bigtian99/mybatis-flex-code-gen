@@ -1,6 +1,3 @@
-import org.gradle.internal.impldep.org.bouncycastle.cms.RecipientId.password
-import org.gradle.internal.impldep.org.eclipse.jgit.lib.ObjectChecker.type
-
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.0"
@@ -8,7 +5,7 @@ plugins {
 }
 
 group = "com.mybatisflex.plugin"
-version = "1.4.4-RELEASE"
+version = "1.4.5-RELEASE"
 
 repositories {
     maven {
