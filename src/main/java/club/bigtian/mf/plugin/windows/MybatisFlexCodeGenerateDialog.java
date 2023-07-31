@@ -77,6 +77,8 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
 
     Map<String, TableInfo> tableInfoMap;
 
+    private boolean sinceFlag;
+
 
     public MybatisFlexCodeGenerateDialog(AnActionEvent actionEvent) {
         this.actionEvent = actionEvent;
@@ -129,7 +131,13 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         settingLabel.addActionListener(e -> {
             MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project);
             dialog.show();
-            initSinceComBox();
+            sinceFlag = true;
+            //避免用户配置后，直接点击设置界面，再回来导致配置丢失
+            MybatisFlexConfig configData = getConfigData();
+            initSinceComBox(sinceComBox.getSelectedIndex());
+            //再次设置是因为initSinceComBox最终会把sinceFlag设置为false
+            sinceFlag = true;
+            initConfigData(configData);
         });
 
         sinceComBox.addActionListener(e -> {
@@ -137,12 +145,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             if (ObjectUtil.isNull(selectedItem)) {
                 return;
             }
-            boolean flag = selectedItem.toString().equals("添加配置");
-            if (!flag) {
-                String key = selectedItem.toString();
-                MybatisFlexConfig config = MybatisFlexPluginConfigData.getConfig(key);
-                initConfigData(config);
-            } else if (flag) {
+            if (selectedItem.toString().equals("添加配置")) {
                 sinceComBox.hidePopup();
                 Messages.InputDialog dialog = new Messages.InputDialog("请输入配置名称", "配置名称", Messages.getQuestionIcon(), "", new InputValidatorImpl());
                 dialog.show();
@@ -152,11 +155,16 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 }
                 MybatisFlexPluginConfigData.configSince(configName, getConfigData());
                 NotificationUtils.notifySuccess("保存成功", project);
-                initSinceComBox();
-
+                initSinceComBox(null);
+                return;
             }
+            String key = selectedItem.toString();
+            MybatisFlexConfig config = MybatisFlexPluginConfigData.getConfig(key);
+            sinceFlag = !"---请选择配置---".equals(selectedItem.toString());
+            initConfigData(config);
         });
-        initSinceComBox();
+        initSinceComBox(null);
+        initPackagePath();
 
         tableList.addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) {
@@ -222,26 +230,45 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         strictComBox.addChangeListener(e -> generateBtn.setEnabled(!strictComBox.isSelected()));
 
         cotrollerCombox.addActionListener(e -> {
+            if (sinceFlag) {
+                return;
+            }
             MybatisFlexConfig configData = getConfigData();
             controllerPath.setText(Modules.getPackagePath(cotrollerCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getContrPath(), "controller")));
         });
         modelCombox.addActionListener(e -> {
+            if (sinceFlag) {
+                return;
+            }
             MybatisFlexConfig configData = getConfigData();
             modelPackagePath.setText(Modules.getPackagePath(modelCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getDomainPath(), "domain")));
         });
         serviceInteCombox.addActionListener(e -> {
+            if (sinceFlag) {
+                return;
+            }
             MybatisFlexConfig configData = getConfigData();
             serviceIntefacePath.setText(Modules.getPackagePath(serviceInteCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getServicePath(), "service")));
         });
         serviceImplComBox.addActionListener(e -> {
+            if (sinceFlag) {
+                return;
+            }
             MybatisFlexConfig configData = getConfigData();
             serviceImpPath.setText(Modules.getPackagePath(serviceImplComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getImplPath(), "impl")));
         });
         mapperComBox.addActionListener(e -> {
+            if (sinceFlag) {
+                return;
+            }
             MybatisFlexConfig configData = getConfigData();
             mapperPackagePath.setText(Modules.getPackagePath(mapperComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getMapperPath(), "mapper")));
         });
         xmlComBox.addActionListener(e -> {
+            if (sinceFlag) {
+                sinceFlag = false;
+                return;
+            }
             MybatisFlexConfig configData = getConfigData();
             mapperXmlPath.setText(Modules.getPackagePath(xmlComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getXmlPath(), "mappers")));
         });
@@ -267,7 +294,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         }
     }
 
-    public void initSinceComBox() {
+    public void initSinceComBox(Integer idx) {
         Set<String> list = MybatisFlexPluginConfigData.getSinceMap().keySet();
         sinceComBox.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -287,9 +314,16 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             sinceComBox.insertItemAt(item, 1);
         }
         sinceComBox.addItem("添加配置");
-        sinceComBox.setSelectedIndex(sinceComBox.getItemCount() > 2 ? 1 : 0);
+        if(ObjectUtil.isNull(idx)){
+            sinceComBox.setSelectedIndex(sinceComBox.getItemCount() > 2 ? 1 : 0);
+        }else{
+            sinceComBox.setSelectedIndex(idx);
+        }
         sinceComBox.revalidate();
         sinceComBox.repaint();
+    }
+
+    private void initPackagePath() {
         int idx = sinceComBox.getSelectedIndex();
         if (idx == 0) {
             MybatisFlexConfig configData = getConfigData();
@@ -448,31 +482,44 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         String controllerModule = config.getControllerModule();
         if (StrUtil.isNotEmpty(controllerModule)) {
             cotrollerCombox.setSelectedItem(controllerModule);
-        }
-        mapperPackagePath.setText(config.getMapperPackage());
-        String mapperModule = config.getMapperModule();
-        if (StrUtil.isNotEmpty(mapperModule)) {
-            mapperComBox.setSelectedItem(mapperModule);
-        }
-        mapperXmlPath.setText(config.getXmlPackage());
-        String xmlModule = config.getXmlModule();
-        if (StrUtil.isNotEmpty(xmlModule)) {
-            xmlComBox.setSelectedItem(xmlModule);
-        }
-        modelPackagePath.setText(config.getModelPackage());
-        String modelModule = config.getModelModule();
-        if (StrUtil.isNotEmpty(modelModule)) {
-            modelCombox.setSelectedItem(modelModule);
+        } else {
+            cotrollerCombox.setSelectedIndex(0);
         }
         serviceIntefacePath.setText(config.getInterfacePackage());
         String interfaceModule = config.getInterfaceModule();
         if (StrUtil.isNotEmpty(interfaceModule)) {
             serviceInteCombox.setSelectedItem(interfaceModule);
+        } else {
+            serviceInteCombox.setSelectedIndex(0);
         }
         serviceImpPath.setText(config.getImplPackage());
         String implModule = config.getImplModule();
         if (StrUtil.isNotEmpty(implModule)) {
             serviceImplComBox.setSelectedItem(implModule);
+        } else {
+            serviceImplComBox.setSelectedIndex(0);
+        }
+        modelPackagePath.setText(config.getModelPackage());
+        String modelModule = config.getModelModule();
+        if (StrUtil.isNotEmpty(modelModule)) {
+            modelCombox.setSelectedItem(modelModule);
+        } else {
+            modelCombox.setSelectedIndex(0);
+        }
+
+        mapperPackagePath.setText(config.getMapperPackage());
+        String mapperModule = config.getMapperModule();
+        if (StrUtil.isNotEmpty(mapperModule)) {
+            mapperComBox.setSelectedItem(mapperModule);
+        } else {
+            mapperComBox.setSelectedIndex(0);
+        }
+        mapperXmlPath.setText(config.getXmlPackage());
+        String xmlModule = config.getXmlModule();
+        if (StrUtil.isNotEmpty(xmlModule)) {
+            xmlComBox.setSelectedItem(xmlModule);
+        } else {
+            xmlComBox.setSelectedIndex(0);
         }
         syncCheckBox.setSelected(config.isSync());
         for (JComboBox jComboBox : list) {
