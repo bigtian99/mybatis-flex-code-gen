@@ -170,14 +170,11 @@ public class SQLPreviewAction extends AnAction {
                 }
             }
         }
-
         ArrayList<String> list = new ArrayList<>(IMPORT_LIST);
         if (StrUtil.isNotBlank(qualifiedName)) {
             list.add(qualifiedName);
         }
         PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
-
-
         if (flag) {
             text += StrUtil.format(TEMPLATE, val, val, variableReference.get());
             //导入新的
@@ -305,7 +302,7 @@ public class SQLPreviewAction extends AnAction {
                 ApplicationManager.getApplication().invokeLater(() -> {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
-//                            virtualFile.delete(this);
+                            virtualFile.delete(this);
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);
                             }
