@@ -56,6 +56,11 @@ public class PsiJavaFileUtil {
         JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
         return psiFacade.findClass(qualifiedName, GlobalSearchScope.allScope(project));
     }
+    public static PsiClass getPsiClass(String qualifiedName,GlobalSearchScope scope) {
+        Project project = ProjectUtils.getCurrentProject();
+        JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
+        return psiFacade.findClass(qualifiedName,scope);
+    }
 
     public static PsiImportStatement createImportStatement(PsiClass psiClass) {
         PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());

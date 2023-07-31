@@ -1,12 +1,15 @@
 package club.bigtian.mf.plugin.core.annotator;
 
 import club.bigtian.mf.plugin.core.render.SqlPreviewIconRenderer;
+import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.lang.annotation.AnnotationBuilder;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.Document;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaFile;
@@ -23,18 +26,18 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
         int offset = element.getTextOffset();
         int lineNumber = document.getLineNumber(offset) + 1;
-        if (lineNumber == 0) {
+        //只有是
+        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryWrapper");
+        if (lineNumber == 0 || ObjectUtil.isNull(psiClass)) {
             return;
         }
-
         String text = element.getText();
-
         if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")
                 && text.endsWith(";") && !text.startsWith("import") && !iconMap.containsKey(lineNumber)) {
             String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
             //如果是括号里面的则不显示icon
             if (matchText != null) {
-                if (matchText.startsWith("\"")||text.startsWith("//")) {
+                if (matchText.startsWith("\"") || text.startsWith("//")) {
                     return;
                 }
                 if (matchText.contains(",")) {
