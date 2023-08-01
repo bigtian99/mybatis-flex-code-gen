@@ -130,7 +130,7 @@ public class SQLPreviewAction extends AnAction {
         }
         //TODO 待优化
         //update/remove就截取舍弃
-        if (StrUtil.containsAny(text, "update()", "remove()", "list","exists")) {
+        if (StrUtil.containsAny(text, "update()", "remove()", "list", "exists")) {
             text = StrUtil.subBefore(text, ".", true);
         }
         Map<String, String> qualifiedNameImportMap = PsiJavaFileUtil.getQualifiedNameImportMap(psiJavaFile);
@@ -139,6 +139,7 @@ public class SQLPreviewAction extends AnAction {
         String print = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, text);
         boolean flag = text.contains("queryChain()");
         AtomicReference<String> variableReference = new AtomicReference<>();
+        String ofValue = null;
         if (flag) {
             AtomicReference<String> atomicReference = new AtomicReference<>();
             text = "\n" + getImplText(psiJavaFile, text, qualifiedNameImportMap, (entityClass, variableTem) -> {
@@ -147,7 +148,10 @@ public class SQLPreviewAction extends AnAction {
             });
             val = atomicReference.get();
         } else {
-            val = getOfValue(text, qualifiedNameImportMap);
+            ofValue = getOfValue(text, qualifiedNameImportMap, psiJavaFile);
+            if (!ofValue.contains(":")) {
+                val = ofValue;
+            }
             text = "";
         }
         Collection<PsiClass> implementors =
@@ -171,6 +175,13 @@ public class SQLPreviewAction extends AnAction {
             }
         }
         ArrayList<String> list = new ArrayList<>(IMPORT_LIST);
+        if(ofValue.contains(":")){
+            String[] valueArr = ofValue.split(":");
+            qualifiedName =valueArr[1];
+            val = valueArr[0];
+            print= print.replace("(this)",StrUtil.format("(Mappers.ofMapperClass({}.class))",val));
+            list.add("com.mybatisflex.core.mybatis.Mappers");
+        }
         if (StrUtil.isNotBlank(qualifiedName)) {
             list.add(qualifiedName);
         }
@@ -178,7 +189,6 @@ public class SQLPreviewAction extends AnAction {
         if (flag) {
             text += StrUtil.format(TEMPLATE, val, val, variableReference.get());
             //导入新的
-
             list.addAll(SERVICE_IMPORT_LIST);
         }
         //添加import
@@ -205,7 +215,7 @@ public class SQLPreviewAction extends AnAction {
         return text;
     }
 
-    private String getOfValue(String text, Map<String, String> qualifiedNameImportMap) {
+    private String getOfValue(String text, Map<String, String> qualifiedNameImportMap, PsiJavaFile psiJavaFile) {
         String val = "";
         if (text.contains("of(")) {
             val = StrUtil.subBetween(text, "of(", ")");
@@ -218,12 +228,21 @@ public class SQLPreviewAction extends AnAction {
             return null;
 //        //获取类
         }
+        String entityName=null;
+
         if (val.startsWith("Mappers")) {
             val = StrUtil.subBetween(val, "(", ".class");
+
+        } else if ("this".equals(val)) {
+            PsiClass psiClass = psiJavaFile.getClasses()[0];
+            entityName=StrUtil.subBetween(psiClass.getText(),"BaseMapper<",">");
+            val=  psiClass.getName() + ":" +psiClass.getQualifiedName();
         } else {
             val = StrUtil.subBefore(val, ".", false);
         }
-        entityClass = PsiJavaFileUtil.getPsiClass(qualifiedNameImportMap.get(val));
+
+        entityClass = PsiJavaFileUtil.getPsiClass(qualifiedNameImportMap.get(ObjectUtil.defaultIfNull(entityName,val)));
+
         return val;
     }
 
@@ -302,7 +321,7 @@ public class SQLPreviewAction extends AnAction {
                 ApplicationManager.getApplication().invokeLater(() -> {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
-                            virtualFile.delete(this);
+//                            virtualFile.delete(this);
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);
                             }

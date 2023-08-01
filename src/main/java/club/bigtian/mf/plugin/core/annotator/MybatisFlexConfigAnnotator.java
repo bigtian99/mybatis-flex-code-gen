@@ -24,6 +24,9 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     public void annotate(PsiElement element, AnnotationHolder holder) {
         // 获取当前行号
         Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
+        if(ObjectUtil.isNull(document)){
+            return ;
+        }
         int offset = element.getTextOffset();
         int lineNumber = document.getLineNumber(offset) + 1;
         //判断是不是 mybatis-flex 的项目

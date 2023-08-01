@@ -1,6 +1,8 @@
 package club.bigtian.mf.plugin.core.util;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
@@ -16,6 +18,7 @@ import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class VirtualFileUtils {
     private static Map<String, PsiDirectory> PSI_DIRECTORY_MAP = new HashMap<>();
@@ -96,7 +99,15 @@ public class VirtualFileUtils {
      */
     public static PsiDirectory getPsiDirectory(Module module, String packageName, String key) {
         Set javaResourceRootTypes = StrUtil.isEmpty(key) ? JavaModuleSourceRootTypes.RESOURCES : JavaModuleSourceRootTypes.SOURCES;
-        return PSI_DIRECTORY_MAP.getOrDefault(packageName, createSubDirectory(module, javaResourceRootTypes, packageName));
+        PsiDirectory psiDirectory = PSI_DIRECTORY_MAP.get(packageName);
+        if (ObjectUtil.isNull(psiDirectory)) {
+            AtomicReference<PsiDirectory> subPsiDirectory = new AtomicReference<>();
+            WriteCommandAction.runWriteCommandAction(module.getProject(), () -> {
+                subPsiDirectory.set(createSubDirectory(module, javaResourceRootTypes, packageName));
+            });
+            return subPsiDirectory.get();
+        }
+        return psiDirectory;
     }
 
     public static PsiDirectory createSubDirectory(Module module, Set javaResourceRootTypes, String packageName) {
