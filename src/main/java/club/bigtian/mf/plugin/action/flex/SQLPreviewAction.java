@@ -22,7 +22,6 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -129,11 +128,11 @@ public class SQLPreviewAction extends AnAction {
         if (text.contains("=")) {
             text = StrUtil.subAfter(text, "=", false);
         }
-        // TODO 待优化
-        // update/remove就截取舍弃
-        if (StrUtil.containsAny(text, "update()", "remove()", "list", "exists")) {
-            text = StrUtil.subBefore(text, ".", true);
-        }
+        // // TODO 待优化
+        // // update/remove就截取舍弃
+        // if (StrUtil.containsAny(text, "update()", "remove()", "list", "exists")) {
+        //     text = StrUtil.subBefore(text, ".", true);
+        // }
         Map<String, String> qualifiedNameImportMap = PsiJavaFileUtil.getQualifiedNameImportMap(psiJavaFile);
 
         String val = null;
@@ -180,7 +179,7 @@ public class SQLPreviewAction extends AnAction {
             }
         }
         ArrayList<String> list = new ArrayList<>(IMPORT_LIST);
-        if (ObjectUtil.isNotNull(ofValue)&&ofValue.contains(":")) {
+        if (ObjectUtil.isNotNull(ofValue) && ofValue.contains(":")) {
             String[] valueArr = ofValue.split(":");
             qualifiedName = valueArr[1];
             val = valueArr[0];
@@ -275,7 +274,7 @@ public class SQLPreviewAction extends AnAction {
 
 
     public String getImplText(PsiJavaFile psiJavaFile, String selectedText, Map<String, String> qualifiedNameImportMap, ManyFunction<String> consumer) {
-        String temVal=null;
+        String temVal = null;
         Project project = psiJavaFile.getProject();
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
         for (PsiClass psiClass : psiJavaFile.getClasses()) {
@@ -284,14 +283,14 @@ public class SQLPreviewAction extends AnAction {
 
                 if (selectedText.contains(field.getName())) {
                     String text = field.getText();
-                    if(text.contains("=")){
+                    if (text.contains("=")) {
                         text = StrUtil.subBefore(text, "=", true);
                     }
-                    if(text.contains("\n")){
+                    if (text.contains("\n")) {
                         String[] split = text.split("\n");
-                        text = split[split.length-1];
+                        text = split[split.length - 1];
                     }
-                     text = text.replace(";", "").trim();
+                    text = text.replace(";", "").trim();
                     while (!Character.isUpperCase(text.charAt(0))) {
                         text = StrUtil.subAfter(text, " ", false);
                     }
@@ -333,7 +332,7 @@ public class SQLPreviewAction extends AnAction {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
                             if (!MybatisFlexSettingDialog.insideSchemaFlag) {
-                                virtualFile.delete(this);
+                                // virtualFile.delete(this);
                             }
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);
@@ -390,9 +389,21 @@ public class SQLPreviewAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        String selectedText = e.getData(CommonDataKeys.EDITOR).getSelectionModel().getSelectedText();
-        PsiJavaFile psiFile = (PsiJavaFile) e.getData(CommonDataKeys.PSI_FILE);
-        preview(selectedText, psiFile, () -> {
-        });
+        // String selectedText = e.getData(CommonDataKeys.EDITOR).getSelectionModel().getSelectedText();
+        // PsiJavaFile psiFile = (PsiJavaFile) e.getData(CommonDataKeys.PSI_FILE);
+        // preview(selectedText, psiFile, () -> {
+        // });
+        Set<String> functionSet = new HashSet<>();
+        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryChain");
+        Arrays.stream(psiClass.getMethods())
+                .forEach(psiMethod -> {
+                    PsiType returnType = psiMethod.getReturnType();
+                    if (ObjectUtil.isNotNull(returnType)) {
+                        if (!returnType.getCanonicalText().startsWith("com.mybatisflex.core")) {
+                            functionSet.add(psiMethod.getName());
+                        }
+                    }
+                });
+        functionSet.forEach(System.out::println);
     }
 }
