@@ -2,6 +2,8 @@ package club.bigtian.mf.plugin.core.render;
 
 import club.bigtian.mf.plugin.action.flex.SQLPreviewAction;
 import club.bigtian.mf.plugin.core.icons.Icons;
+import club.bigtian.mf.plugin.core.util.NotificationUtils;
+import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
@@ -38,6 +40,12 @@ public class SqlPreviewIconRenderer extends GutterIconRenderer {
 
                 if (isEnabled) { // 检查按钮是否启用
                     String selectedText = iconMap.get(lineNumber);
+                    String lastMethod = StrUtil.subAfter(selectedText, selectedText.contains("join(") ? "join(" : "Join(", true);
+                    // 如果最后一个方法是join则报错
+                    if (StrUtil.isNotBlank(lastMethod) && !lastMethod.contains(").")) {
+                        NotificationUtils.notifyError("不支持join方法作为语句的结束", "错误");
+                        return;
+                    }
                     isEnabled = false; // 点击后禁用按钮
                     new SQLPreviewAction().preview(selectedText, psiFile, () -> {
                         // 在SQLPreviewAction完成所有逻辑后，再启用按钮

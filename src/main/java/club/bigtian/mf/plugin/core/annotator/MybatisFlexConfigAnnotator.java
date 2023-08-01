@@ -117,6 +117,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 return StrUtil.subBefore(text, "." + method, true);
             }
         }
+
         return text;
     }
 
