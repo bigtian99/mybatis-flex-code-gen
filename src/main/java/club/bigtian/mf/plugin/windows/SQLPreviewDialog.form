@@ -67,7 +67,10 @@
               <component id="b199d" class="javax.swing.JTextArea" binding="sqlPreview">
                 <constraints/>
                 <properties>
-                  <foreground color="-5677595"/>
+                  <editable value="false"/>
+                  <enabled value="true"/>
+                  <foreground color="-2728527"/>
+                  <lineWrap value="true"/>
                 </properties>
               </component>
             </children>

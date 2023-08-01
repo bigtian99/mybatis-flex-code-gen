@@ -186,14 +186,26 @@ public class MybatisFlexConfig {
 
     private boolean accessors;
 
+    /**
+     * ar模式
+     */
+    private boolean activeRecord;
+
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
-        data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, MybatisFlexConstant.CONTROLLER));
-        data.put(MybatisFlexConstant.ENTITY, ObjectUtil.defaultIfBlank(modelSuffix, MybatisFlexConstant.ENTITY));
-        data.put(MybatisFlexConstant.SERVICE, ObjectUtil.defaultIfBlank(interfaceSuffix, MybatisFlexConstant.SERVICE));
-        data.put(MybatisFlexConstant.SERVICE_IMPL, ObjectUtil.defaultIfBlank(implSuffix, MybatisFlexConstant.SERVICE_IMPL));
-        data.put(MybatisFlexConstant.MAPPER, ObjectUtil.defaultIfBlank(mapperSuffix, MybatisFlexConstant.MAPPER));
-        data.put("", ObjectUtil.defaultIfBlank(mapperSuffix, MybatisFlexConstant.MAPPER));
+//        data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, MybatisFlexConstant.CONTROLLER));
+//        data.put(MybatisFlexConstant.ENTITY, ObjectUtil.defaultIfBlank(modelSuffix, MybatisFlexConstant.ENTITY));
+//        data.put(MybatisFlexConstant.SERVICE, ObjectUtil.defaultIfBlank(interfaceSuffix, MybatisFlexConstant.SERVICE));
+//        data.put(MybatisFlexConstant.SERVICE_IMPL, ObjectUtil.defaultIfBlank(implSuffix, MybatisFlexConstant.SERVICE_IMPL));
+//        data.put(MybatisFlexConstant.MAPPER, ObjectUtil.defaultIfBlank(mapperSuffix, MybatisFlexConstant.MAPPER));
+//        data.put("", ObjectUtil.defaultIfBlank(mapperSuffix, MybatisFlexConstant.MAPPER));
+
+        data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix,""));
+        data.put(MybatisFlexConstant.ENTITY, ObjectUtil.defaultIfBlank(modelSuffix,""));
+        data.put(MybatisFlexConstant.SERVICE, ObjectUtil.defaultIfBlank(interfaceSuffix,""));
+        data.put(MybatisFlexConstant.SERVICE_IMPL, ObjectUtil.defaultIfBlank(implSuffix,""));
+        data.put(MybatisFlexConstant.MAPPER, ObjectUtil.defaultIfBlank(mapperSuffix, ""));
+        data.put("", ObjectUtil.defaultIfBlank(mapperSuffix, ""));
         return data;
     }
 
@@ -612,5 +624,17 @@ public class MybatisFlexConfig {
 
     public void setAccessors(boolean accessors) {
         this.accessors = accessors;
+    }
+
+    public boolean isAccessors() {
+        return accessors;
+    }
+
+    public boolean isActiveRecord() {
+        return activeRecord;
+    }
+
+    public void setActiveRecord(boolean activeRecord) {
+        this.activeRecord = activeRecord;
     }
 }

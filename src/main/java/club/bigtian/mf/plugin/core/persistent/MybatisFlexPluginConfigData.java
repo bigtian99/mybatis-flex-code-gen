@@ -56,7 +56,8 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
 
     public static MybatisFlexConfig getConfig(String key) {
         LinkedHashMap<String, MybatisFlexConfig> currentProjectSinceMap = getCurrentProjectSinceMap();
-        return currentProjectSinceMap.getOrDefault(key, new MybatisFlexConfig());
+//        return currentProjectSinceMap.getOrDefault(key, new MybatisFlexConfig());
+        return currentProjectSinceMap.get(key);
     }
 
     public static Map<String, MybatisFlexConfig> getSinceMap() {

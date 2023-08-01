@@ -42,6 +42,21 @@ public class Template {
             config.setXmlTemplate(getTemplateContent(MybatisFlexConstant.XML_TEMPLATE));
         }
 
+        if (ObjectUtil.isNull(config.getControllerSuffix())) {
+            config.setControllerSuffix(MybatisFlexConstant.CONTROLLER);
+        }
+        if (ObjectUtil.isNull(config.getInterfaceSuffix())) {
+            config.setInterfaceSuffix(MybatisFlexConstant.SERVICE);
+        }
+        if (ObjectUtil.isNull(config.getImplSuffix())) {
+            config.setImplSuffix(MybatisFlexConstant.SERVICE_IMPL);
+        }
+        if (ObjectUtil.isNull(config.getModelSuffix())) {
+            config.setModelSuffix(MybatisFlexConstant.ENTITY);
+        }
+        if (ObjectUtil.isNull(config.getMapperSuffix())) {
+            config.setMapperSuffix(MybatisFlexConstant.MAPPER);
+        }
         return config;
     }
 
@@ -70,9 +85,8 @@ public class Template {
         return ObjectUtil.defaultIfNull(fieldValue, "").toString();
     }
 
-    public static String getSuffix(String property, String val) {
-        String fieldValue = getConfigData(property);
-        return ObjectUtil.defaultIfBlank(fieldValue, val).toString();
+    public static String getSuffix(String property) {
+        return getConfigData(property);
     }
 
     public static boolean getChecBoxConfig(String property) {

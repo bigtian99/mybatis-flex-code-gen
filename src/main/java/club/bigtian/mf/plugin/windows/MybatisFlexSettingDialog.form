@@ -15,223 +15,17 @@
           <grid id="307fc" layout-manager="BorderLayout" hgap="10" vgap="0">
             <constraints border-constraint="Center"/>
             <properties/>
-            <border type="none" title="基本配置"/>
+            <border type="none" title="常用配置"/>
             <children>
-              <grid id="66a0a" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="66a0a" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints border-constraint="South"/>
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <grid id="24cc7" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
-                    <constraints>
-                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties/>
-                    <border type="none" title="三方框架注解"/>
-                    <children>
-                      <component id="a5685" class="javax.swing.JCheckBox" binding="builderCheckBox" default-binding="true">
-                        <constraints/>
-                        <properties>
-                          <name value="builder"/>
-                          <text value="@Builder"/>
-                        </properties>
-                      </component>
-                      <component id="e0747" class="javax.swing.JCheckBox" binding="dataCheckBox" default-binding="true">
-                        <constraints/>
-                        <properties>
-                          <name value="data"/>
-                          <text value="@Data"/>
-                        </properties>
-                      </component>
-                      <component id="e03b9" class="javax.swing.JCheckBox" binding="allArgsConstructorCheckBox" default-binding="true">
-                        <constraints/>
-                        <properties>
-                          <name value="allArgsConstructor"/>
-                          <text value="@AllArgsConstructor"/>
-                        </properties>
-                      </component>
-                      <component id="af60b" class="javax.swing.JCheckBox" binding="noArgsConstructorCheckBox" default-binding="true">
-                        <constraints/>
-                        <properties>
-                          <name value="noArgsConstructor"/>
-                          <text value="@NoArgsConstructor"/>
-                        </properties>
-                      </component>
-                      <component id="b2061" class="javax.swing.JCheckBox" binding="accessorsCheckBox">
-                        <constraints/>
-                        <properties>
-                          <text value="@Accessors"/>
-                        </properties>
-                      </component>
-                      <component id="2ef51" class="javax.swing.JCheckBox" binding="swaggerCheckBox">
-                        <constraints/>
-                        <properties>
-                          <name value="swagger"/>
-                          <text value="Swagger2"/>
-                        </properties>
-                      </component>
-                      <component id="8bea7" class="javax.swing.JCheckBox" binding="swagger3CheckBox" default-binding="true">
-                        <constraints/>
-                        <properties>
-                          <name value="swagger3"/>
-                          <text value="Swagger3"/>
-                        </properties>
-                      </component>
-                    </children>
-                  </grid>
-                  <grid id="92ea4" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
-                    <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties/>
-                    <border type="etched" title="后缀自定义"/>
-                    <children>
-                      <component id="646a8" class="javax.swing.JLabel">
-                        <constraints/>
-                        <properties>
-                          <text value="controller:"/>
-                        </properties>
-                      </component>
-                      <component id="24508" class="javax.swing.JTextField" binding="controllerSuffix">
-                        <constraints/>
-                        <properties>
-                          <name value="controllerSuffix"/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="Controller"/>
-                        </properties>
-                      </component>
-                      <component id="c257e" class="javax.swing.JLabel">
-                        <constraints/>
-                        <properties>
-                          <text value="interface:"/>
-                        </properties>
-                      </component>
-                      <component id="b1f42" class="javax.swing.JTextField" binding="interfaceSuffix">
-                        <constraints/>
-                        <properties>
-                          <name value="interfaceSuffix"/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="Service"/>
-                        </properties>
-                      </component>
-                      <component id="31166" class="javax.swing.JLabel">
-                        <constraints/>
-                        <properties>
-                          <text value="impl:"/>
-                        </properties>
-                      </component>
-                      <component id="d476b" class="javax.swing.JTextField" binding="implSuffix">
-                        <constraints/>
-                        <properties>
-                          <name value="implSuffix"/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="ServiceImpl"/>
-                        </properties>
-                      </component>
-                      <component id="c4f2b" class="javax.swing.JLabel">
-                        <constraints/>
-                        <properties>
-                          <text value="model:"/>
-                        </properties>
-                      </component>
-                      <component id="f1bd" class="javax.swing.JTextField" binding="modelSuffix">
-                        <constraints/>
-                        <properties>
-                          <name value="modelSuffix"/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="Entity"/>
-                        </properties>
-                      </component>
-                      <component id="3368d" class="javax.swing.JLabel">
-                        <constraints/>
-                        <properties>
-                          <text value="mapper:"/>
-                        </properties>
-                      </component>
-                      <component id="41bfe" class="javax.swing.JTextField" binding="mapperSuffix">
-                        <constraints/>
-                        <properties>
-                          <name value="mapperSuffix"/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="Mapper"/>
-                        </properties>
-                      </component>
-                    </children>
-                  </grid>
-                  <grid id="40cfe" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
-                    <constraints>
-                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties/>
-                    <border type="etched" title="生成配置管理"/>
-                    <children>
-                      <component id="599a9" class="javax.swing.JCheckBox" binding="cacheCheckBox">
-                        <constraints/>
-                        <properties>
-                          <name value="cache"/>
-                          <text value="缓存方法"/>
-                        </properties>
-                      </component>
-                      <component id="ac59e" class="javax.swing.JCheckBox" binding="overrideCheckBox">
-                        <constraints/>
-                        <properties>
-                          <name value="overrideCheckBox"/>
-                          <text value="是否覆盖"/>
-                        </properties>
-                      </component>
-                      <component id="f94eb" class="javax.swing.JLabel">
-                        <constraints/>
-                        <properties>
-                          <text value="逻辑删除："/>
-                        </properties>
-                      </component>
-                      <component id="1e927" class="com.intellij.ui.components.fields.ExpandableTextField" binding="logicTF">
-                        <constraints/>
-                        <properties>
-                          <preferredSize width="166" height="30"/>
-                          <toolTipText value="多个以英文逗号分割"/>
-                        </properties>
-                      </component>
-                      <component id="94243" class="javax.swing.JLabel">
-                        <constraints/>
-                        <properties>
-                          <text value="生成配置："/>
-                        </properties>
-                      </component>
-                      <component id="91f96" class="javax.swing.JComboBox" binding="sinceConfigComBox">
-                        <constraints/>
-                        <properties>
-                          <lightWeightPopupEnabled value="true"/>
-                          <maximumRowCount value="10"/>
-                          <minimumSize width="200" height="30"/>
-                          <preferredSize width="200" height="30"/>
-                        </properties>
-                      </component>
-                      <component id="bfec" class="javax.swing.JButton" binding="del">
-                        <constraints/>
-                        <properties>
-                          <selected value="false"/>
-                          <text value="删除"/>
-                        </properties>
-                      </component>
-                      <component id="10feb" class="javax.swing.JButton" binding="clearAll">
-                        <constraints/>
-                        <properties>
-                          <text value="清空"/>
-                        </properties>
-                      </component>
-                      <component id="337a7" class="javax.swing.JButton" binding="returnBtn">
-                        <constraints/>
-                        <properties>
-                          <text value="统一返回"/>
-                        </properties>
-                      </component>
-                    </children>
-                  </grid>
                   <grid id="1e0b3" layout-manager="BorderLayout" hgap="0" vgap="0">
                     <constraints>
-                      <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties/>
                     <border type="etched" title="默认模版配置"/>
@@ -455,129 +249,372 @@
                       </grid>
                     </children>
                   </grid>
-                  <grid id="45cc6" layout-manager="GridLayoutManager" row-count="1" column-count="13" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-                    <margin top="0" left="0" bottom="0" right="0"/>
+                  <tabbedpane id="959cb" binding="tabbedPane2" default-binding="true">
                     <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <preferred-size width="200" height="200"/>
+                      </grid>
                     </constraints>
                     <properties/>
-                    <border type="etched" title="包名匹配"/>
+                    <border type="none" title="基本配置"/>
                     <children>
-                      <component id="122e6" class="javax.swing.JLabel">
+                      <grid id="f2926" layout-manager="BorderLayout" hgap="0" vgap="0">
                         <constraints>
-                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                          <tabbedpane title="包名匹配"/>
+                        </constraints>
+                        <properties/>
+                        <border type="etched"/>
+                        <children>
+                          <grid id="45cc6" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                            <constraints border-constraint="Center"/>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="122e6" class="javax.swing.JLabel" binding="insideSchema">
+                                <constraints/>
+                                <properties>
+                                  <text value="controller:"/>
+                                </properties>
+                              </component>
+                              <component id="48a75" class="javax.swing.JTextField" binding="contrPath">
+                                <constraints/>
+                                <properties>
+                                  <name value=""/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="controller"/>
+                                </properties>
+                              </component>
+                              <component id="ba7a8" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="interface:"/>
+                                </properties>
+                              </component>
+                              <component id="d76a1" class="javax.swing.JTextField" binding="servicePath">
+                                <constraints/>
+                                <properties>
+                                  <name value=""/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="service"/>
+                                </properties>
+                              </component>
+                              <component id="f5c0a" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="impl:"/>
+                                </properties>
+                              </component>
+                              <component id="ea2ea" class="javax.swing.JTextField" binding="implPath">
+                                <constraints/>
+                                <properties>
+                                  <name value="implSuffix"/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="impl"/>
+                                </properties>
+                              </component>
+                              <component id="ca00b" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="model:"/>
+                                </properties>
+                              </component>
+                              <component id="f5216" class="javax.swing.JTextField" binding="domainPath">
+                                <constraints/>
+                                <properties>
+                                  <name value="modelSuffix"/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="domain"/>
+                                </properties>
+                              </component>
+                              <component id="c722f" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="mapper:"/>
+                                </properties>
+                              </component>
+                              <component id="ec85b" class="javax.swing.JTextField" binding="mapperPath">
+                                <constraints/>
+                                <properties>
+                                  <name value="mapperSuffix"/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="mapper"/>
+                                </properties>
+                              </component>
+                              <component id="e5fcc" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="xml"/>
+                                </properties>
+                              </component>
+                              <component id="a5bba" class="javax.swing.JTextField" binding="xmlPath">
+                                <constraints/>
+                                <properties>
+                                  <name value="mapperSuffix"/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="mappers"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                        </children>
+                      </grid>
+                      <grid id="c5bbd" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                        <margin top="0" left="0" bottom="0" right="0"/>
+                        <constraints>
+                          <tabbedpane title="后缀自定义"/>
+                        </constraints>
+                        <properties/>
+                        <border type="etched"/>
+                        <children>
+                          <grid id="92ea4" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties/>
+                            <border type="none"/>
+                            <children>
+                              <component id="646a8" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="controller:"/>
+                                </properties>
+                              </component>
+                              <component id="24508" class="javax.swing.JTextField" binding="controllerSuffix">
+                                <constraints/>
+                                <properties>
+                                  <name value="controllerSuffix"/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="Controller"/>
+                                </properties>
+                              </component>
+                              <component id="c257e" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="interface:"/>
+                                </properties>
+                              </component>
+                              <component id="b1f42" class="javax.swing.JTextField" binding="interfaceSuffix">
+                                <constraints/>
+                                <properties>
+                                  <name value="interfaceSuffix"/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="Service"/>
+                                </properties>
+                              </component>
+                              <component id="31166" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="impl:"/>
+                                </properties>
+                              </component>
+                              <component id="d476b" class="javax.swing.JTextField" binding="implSuffix">
+                                <constraints/>
+                                <properties>
+                                  <name value="implSuffix"/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="ServiceImpl"/>
+                                </properties>
+                              </component>
+                              <component id="c4f2b" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="model:"/>
+                                </properties>
+                              </component>
+                              <component id="f1bd" class="javax.swing.JTextField" binding="modelSuffix">
+                                <constraints/>
+                                <properties>
+                                  <name value="modelSuffix"/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="Entity"/>
+                                </properties>
+                              </component>
+                              <component id="3368d" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="mapper:"/>
+                                </properties>
+                              </component>
+                              <component id="41bfe" class="javax.swing.JTextField" binding="mapperSuffix">
+                                <constraints/>
+                                <properties>
+                                  <name value="mapperSuffix"/>
+                                  <preferredSize width="130" height="30"/>
+                                  <text value="Mapper"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                        </children>
+                      </grid>
+                      <grid id="1fc0e" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                        <margin top="0" left="0" bottom="0" right="0"/>
+                        <constraints>
+                          <tabbedpane title="生成配置管理"/>
                         </constraints>
                         <properties>
-                          <text value="controller:"/>
+                          <preferredSize width="954" height="30"/>
                         </properties>
-                      </component>
-                      <hspacer id="ac7ab">
+                        <border type="none"/>
+                        <children>
+                          <grid id="40cfe" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties/>
+                            <border type="etched"/>
+                            <children>
+                              <component id="599a9" class="javax.swing.JCheckBox" binding="cacheCheckBox">
+                                <constraints/>
+                                <properties>
+                                  <name value="cache"/>
+                                  <text value="缓存方法"/>
+                                </properties>
+                              </component>
+                              <component id="ac59e" class="javax.swing.JCheckBox" binding="overrideCheckBox">
+                                <constraints/>
+                                <properties>
+                                  <name value="overrideCheckBox"/>
+                                  <text value="是否覆盖"/>
+                                </properties>
+                              </component>
+                              <component id="7801e" class="javax.swing.JCheckBox" binding="activeRecordCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <text value="Active Record"/>
+                                </properties>
+                              </component>
+                              <component id="f94eb" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="逻辑删除："/>
+                                </properties>
+                              </component>
+                              <component id="1e927" class="com.intellij.ui.components.fields.ExpandableTextField" binding="logicTF">
+                                <constraints/>
+                                <properties>
+                                  <preferredSize width="166" height="30"/>
+                                  <toolTipText value="多个以英文逗号分割"/>
+                                </properties>
+                              </component>
+                              <component id="94243" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="生成配置："/>
+                                </properties>
+                              </component>
+                              <component id="91f96" class="javax.swing.JComboBox" binding="sinceConfigComBox">
+                                <constraints/>
+                                <properties>
+                                  <lightWeightPopupEnabled value="true"/>
+                                  <maximumRowCount value="10"/>
+                                  <minimumSize width="200" height="30"/>
+                                  <preferredSize width="200" height="30"/>
+                                </properties>
+                              </component>
+                              <component id="bfec" class="javax.swing.JButton" binding="del">
+                                <constraints/>
+                                <properties>
+                                  <selected value="false"/>
+                                  <text value="删除"/>
+                                </properties>
+                              </component>
+                              <component id="10feb" class="javax.swing.JButton" binding="clearAll">
+                                <constraints/>
+                                <properties>
+                                  <text value="清空"/>
+                                </properties>
+                              </component>
+                              <component id="337a7" class="javax.swing.JButton" binding="returnBtn">
+                                <constraints/>
+                                <properties>
+                                  <text value="统一返回"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                        </children>
+                      </grid>
+                      <grid id="863ee" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                        <margin top="0" left="0" bottom="0" right="0"/>
                         <constraints>
-                          <grid row="0" column="12" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                          <tabbedpane title="注解"/>
                         </constraints>
-                      </hspacer>
-                      <component id="48a75" class="javax.swing.JTextField" binding="contrPath">
-                        <constraints>
-                          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <name value=""/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="controller"/>
-                        </properties>
-                      </component>
-                      <component id="ba7a8" class="javax.swing.JLabel">
-                        <constraints>
-                          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <text value="interface:"/>
-                        </properties>
-                      </component>
-                      <component id="d76a1" class="javax.swing.JTextField" binding="servicePath">
-                        <constraints>
-                          <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <name value=""/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="service"/>
-                        </properties>
-                      </component>
-                      <component id="f5c0a" class="javax.swing.JLabel">
-                        <constraints>
-                          <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <text value="impl:"/>
-                        </properties>
-                      </component>
-                      <component id="ea2ea" class="javax.swing.JTextField" binding="implPath">
-                        <constraints>
-                          <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <name value="implSuffix"/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="impl"/>
-                        </properties>
-                      </component>
-                      <component id="ca00b" class="javax.swing.JLabel">
-                        <constraints>
-                          <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <text value="model:"/>
-                        </properties>
-                      </component>
-                      <component id="f5216" class="javax.swing.JTextField" binding="domainPath">
-                        <constraints>
-                          <grid row="0" column="7" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <name value="modelSuffix"/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="domain"/>
-                        </properties>
-                      </component>
-                      <component id="c722f" class="javax.swing.JLabel">
-                        <constraints>
-                          <grid row="0" column="8" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <text value="mapper:"/>
-                        </properties>
-                      </component>
-                      <component id="ec85b" class="javax.swing.JTextField" binding="mapperPath">
-                        <constraints>
-                          <grid row="0" column="9" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <name value="mapperSuffix"/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="mapper"/>
-                        </properties>
-                      </component>
-                      <component id="e5fcc" class="javax.swing.JLabel">
-                        <constraints>
-                          <grid row="0" column="10" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <text value="xml"/>
-                        </properties>
-                      </component>
-                      <component id="a5bba" class="javax.swing.JTextField" binding="xmlPath">
-                        <constraints>
-                          <grid row="0" column="11" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <name value="mapperSuffix"/>
-                          <preferredSize width="130" height="30"/>
-                          <text value="mappers"/>
-                        </properties>
-                      </component>
+                        <properties/>
+                        <border type="etched"/>
+                        <children>
+                          <grid id="c642b" layout-manager="FlowLayout" hgap="5" vgap="-1" flow-align="0">
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <enabled value="true"/>
+                            </properties>
+                            <border type="etched" title="Lombok"/>
+                            <children>
+                              <component id="a5685" class="javax.swing.JCheckBox" binding="builderCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <name value="builder"/>
+                                  <text value="@Builder"/>
+                                </properties>
+                              </component>
+                              <component id="e0747" class="javax.swing.JCheckBox" binding="dataCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <name value="data"/>
+                                  <text value="@Data"/>
+                                </properties>
+                              </component>
+                              <component id="e03b9" class="javax.swing.JCheckBox" binding="allArgsConstructorCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <name value="allArgsConstructor"/>
+                                  <text value="@AllArgsConstructor"/>
+                                </properties>
+                              </component>
+                              <component id="af60b" class="javax.swing.JCheckBox" binding="noArgsConstructorCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <name value="noArgsConstructor"/>
+                                  <text value="@NoArgsConstructor"/>
+                                </properties>
+                              </component>
+                              <component id="b2061" class="javax.swing.JCheckBox" binding="accessorsCheckBox">
+                                <constraints/>
+                                <properties>
+                                  <text value="@Accessors"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                          <grid id="18ee6" layout-manager="FlowLayout" hgap="5" vgap="-1" flow-align="0">
+                            <constraints>
+                              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties/>
+                            <border type="etched" title="Swagger"/>
+                            <children>
+                              <component id="2ef51" class="javax.swing.JCheckBox" binding="swaggerCheckBox">
+                                <constraints/>
+                                <properties>
+                                  <name value="swagger"/>
+                                  <text value="Swagger2"/>
+                                </properties>
+                              </component>
+                              <component id="8bea7" class="javax.swing.JCheckBox" binding="swagger3CheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <name value="swagger3"/>
+                                  <text value="Swagger3"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                        </children>
+                      </grid>
                     </children>
-                  </grid>
+                  </tabbedpane>
                 </children>
               </grid>
               <grid id="d72cb" layout-manager="GridLayoutManager" row-count="1" column-count="9" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -649,6 +686,7 @@
                       <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
+                      <icon value="icons/export.png"/>
                       <text value="导出"/>
                     </properties>
                   </component>
@@ -657,6 +695,7 @@
                       <grid row="0" column="7" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
+                      <icon value="icons/import.png"/>
                       <text value="导入"/>
                     </properties>
                   </component>
@@ -665,6 +704,7 @@
                       <grid row="0" column="8" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
+                      <icon value="icons/reset.png"/>
                       <text value="重置"/>
                     </properties>
                   </component>

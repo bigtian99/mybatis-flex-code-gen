@@ -17,10 +17,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.log.NullLogChute;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.StringWriter;
@@ -41,7 +38,12 @@ public class RenderMybatisFlexTemplate {
 
         VelocityEngine velocityEngine = new VelocityEngine();
         //修复因velocity.log拒绝访问，导致Velocity初始化失败
-        velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM, new NullLogChute());
+//        高版本已经把这个方法废弃了，所以这里注释掉；优先支持高版本
+//        try {
+//            velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM, new NullLogChute());
+//        } catch (Exception e) {
+//            LOG.error("Velocity初始化失败；如果不影响生成，请忽略");
+//        }
         VelocityContext context = new VelocityContext();
         HashMap<PsiDirectory, List<PsiElement>> templateMap = new HashMap<>();
         Map<String, String> templates = new ConcurrentHashMap<>(config.getTemplates());

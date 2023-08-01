@@ -73,15 +73,22 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JTextField xmlPath;
     private JTextField mapperPath;
     private JCheckBox accessorsCheckBox;
+    private JTabbedPane tabbedPane2;
+    private JCheckBox activeRecordCheckBox;
+    private JLabel insideSchema;
     private Project project;
+
+    // 是否开启内部模式
+    public static boolean insideSchemaFlag = false;
 
     public MybatisFlexSettingDialog(Project project) {
         this.project = project;
         setContentPane(contentPane);
         setModal(true);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        screenSize.setSize(screenSize.getWidth() * 0.8, screenSize.getHeight() * 0.8);
+        screenSize.setSize(screenSize.getWidth() * 0.8, screenSize.getHeight() * 0.7);
         setSize(screenSize);
+        setMinimumSize(new Dimension(700, 500));
         getRootPane().setDefaultButton(buttonOK);
         DialogUtil.centerShow(this);
         buttonOK.addActionListener(new ActionListener() {
@@ -89,7 +96,17 @@ public class MybatisFlexSettingDialog extends JDialog {
                 onOK();
             }
         });
-
+        insideSchema.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int clickCount = e.getClickCount();
+                if (clickCount != 2) {
+                    return;
+                }
+                insideSchemaFlag = !insideSchemaFlag;
+                Messages.showInfoMessage(insideSchemaFlag ? "内部模式已开启" : "内部模式已关闭", "提示");
+            }
+        });
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
@@ -217,11 +234,13 @@ public class MybatisFlexSettingDialog extends JDialog {
         allArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ALL_ARGS_CONSTRUCTOR));
         noArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_NO_ARGS_CONSTRUCTOR));
         swaggerCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER));
-        controllerSuffix.setText(Template.getSuffix(MybatisFlexConstant.CONTROLLER_SUFFIX, controllerSuffix.getText()));
-        interfaceSuffix.setText(Template.getSuffix(MybatisFlexConstant.INTERFACE_SUFFIX, interfaceSuffix.getText()));
-        implSuffix.setText(Template.getSuffix(MybatisFlexConstant.IMPL_SUFFIX, implSuffix.getText()));
-        modelSuffix.setText(Template.getSuffix(MybatisFlexConstant.MODEL_SUFFIX, modelSuffix.getText()));
-        mapperSuffix.setText(Template.getSuffix(MybatisFlexConstant.MAPPER_SUFFIX, mapperSuffix.getText()));
+
+        controllerSuffix.setText(Template.getSuffix(MybatisFlexConstant.CONTROLLER_SUFFIX));
+        interfaceSuffix.setText(Template.getSuffix(MybatisFlexConstant.INTERFACE_SUFFIX));
+        implSuffix.setText(Template.getSuffix(MybatisFlexConstant.IMPL_SUFFIX));
+        modelSuffix.setText(Template.getSuffix(MybatisFlexConstant.MODEL_SUFFIX));
+        mapperSuffix.setText(Template.getSuffix(MybatisFlexConstant.MAPPER_SUFFIX));
+
         cacheCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.CACHE));
         overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
         swagger3CheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER3));
@@ -233,6 +252,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         xmlPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.XML_PATH), xmlPath.getText()));
         mapperPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.MAPPER_PATH), mapperPath.getText()));
         accessorsCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ACCESSORS));
+        activeRecordCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
         initSinceComBox();
     }
 
@@ -291,11 +311,14 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setAllArgsConstructor(allArgsConstructorCheckBox.isSelected());
         config.setNoArgsConstructor(noArgsConstructorCheckBox.isSelected());
         config.setSwagger(swaggerCheckBox.isSelected());
+
         config.setControllerSuffix(controllerSuffix.getText());
         config.setInterfaceSuffix(interfaceSuffix.getText());
         config.setImplSuffix(implSuffix.getText());
         config.setModelSuffix(modelSuffix.getText());
         config.setMapperSuffix(mapperSuffix.getText());
+
+
         config.setCache(cacheCheckBox.isSelected());
         config.setSwagger3(swagger3CheckBox.isSelected());
         config.setOverrideCheckBox(overrideCheckBox.isSelected());
@@ -307,6 +330,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setXmlPath(xmlPath.getText());
         config.setMapperPath(mapperPath.getText());
         config.setAccessors(accessorsCheckBox.isSelected());
+        config.setActiveRecord(activeRecordCheckBox.isSelected());
         return config;
     }
 
