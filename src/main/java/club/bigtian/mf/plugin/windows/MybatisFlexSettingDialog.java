@@ -75,7 +75,11 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JCheckBox accessorsCheckBox;
     private JTabbedPane tabbedPane2;
     private JCheckBox activeRecordCheckBox;
+    private JLabel insideSchema;
     private Project project;
+
+    // 是否开启内部模式
+    public static boolean insideSchemaFlag = false;
 
     public MybatisFlexSettingDialog(Project project) {
         this.project = project;
@@ -84,7 +88,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         screenSize.setSize(screenSize.getWidth() * 0.8, screenSize.getHeight() * 0.7);
         setSize(screenSize);
-        setMinimumSize(new Dimension(700,500));
+        setMinimumSize(new Dimension(700, 500));
         getRootPane().setDefaultButton(buttonOK);
         DialogUtil.centerShow(this);
         buttonOK.addActionListener(new ActionListener() {
@@ -92,7 +96,17 @@ public class MybatisFlexSettingDialog extends JDialog {
                 onOK();
             }
         });
-
+        insideSchema.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int clickCount = e.getClickCount();
+                if (clickCount != 2) {
+                    return;
+                }
+                insideSchemaFlag = !insideSchemaFlag;
+                Messages.showInfoMessage(insideSchemaFlag ? "内部模式已开启" : "内部模式已关闭", "提示");
+            }
+        });
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();

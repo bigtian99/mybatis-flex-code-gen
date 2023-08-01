@@ -40,6 +40,7 @@
     <ul>
     <li>【新增】代码生成支持Active Record</li>
     <li>【优化】插件设置界面优化</li>
+    <li>【优化】支持更多方式的SQL预览</li>
     <li>【修复】SQL预览图标在import也会显示</li>
     </ul>
     ]]></change-notes>

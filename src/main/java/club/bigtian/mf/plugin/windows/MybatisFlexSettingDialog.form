@@ -270,7 +270,7 @@
                             <properties/>
                             <border type="none"/>
                             <children>
-                              <component id="122e6" class="javax.swing.JLabel">
+                              <component id="122e6" class="javax.swing.JLabel" binding="insideSchema">
                                 <constraints/>
                                 <properties>
                                   <text value="controller:"/>

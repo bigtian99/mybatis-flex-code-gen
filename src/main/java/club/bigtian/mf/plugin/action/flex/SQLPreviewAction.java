@@ -5,6 +5,7 @@ import club.bigtian.mf.plugin.core.function.ManyFunction;
 import club.bigtian.mf.plugin.core.function.SimpleFunction;
 import club.bigtian.mf.plugin.core.log.MyBatisLogExecutor;
 import club.bigtian.mf.plugin.core.util.*;
+import club.bigtian.mf.plugin.windows.MybatisFlexSettingDialog;
 import club.bigtian.mf.plugin.windows.SQLPreviewDialog;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -128,8 +129,8 @@ public class SQLPreviewAction extends AnAction {
         if (text.contains("=")) {
             text = StrUtil.subAfter(text, "=", false);
         }
-        //TODO 待优化
-        //update/remove就截取舍弃
+        // TODO 待优化
+        // update/remove就截取舍弃
         if (StrUtil.containsAny(text, "update()", "remove()", "list", "exists")) {
             text = StrUtil.subBefore(text, ".", true);
         }
@@ -149,8 +150,12 @@ public class SQLPreviewAction extends AnAction {
             val = atomicReference.get();
         } else {
             ofValue = getOfValue(text, qualifiedNameImportMap, psiJavaFile);
-            if (!ofValue.contains(":")) {
-                val = ofValue;
+            if (ObjectUtil.isNotNull(ofValue)) {
+                if (!ofValue.contains(":")) {
+                    val = ofValue;
+                }
+            } else {
+                val = null;
             }
             text = "";
         }
@@ -159,7 +164,7 @@ public class SQLPreviewAction extends AnAction {
                         GlobalSearchScope.allScope(ProjectUtils.getCurrentProject()));
         Iterator<PsiClass> iterator = implementors.iterator();
         String qualifiedName = "";
-        //判断是不是对应的mapper
+        // 判断是不是对应的mapper
         if (StrUtil.isNotBlank(val)) {
             while (iterator.hasNext()) {
                 PsiClass next = iterator.next();
@@ -175,11 +180,11 @@ public class SQLPreviewAction extends AnAction {
             }
         }
         ArrayList<String> list = new ArrayList<>(IMPORT_LIST);
-        if(ofValue.contains(":")){
+        if (ObjectUtil.isNotNull(ofValue)&&ofValue.contains(":")) {
             String[] valueArr = ofValue.split(":");
-            qualifiedName =valueArr[1];
+            qualifiedName = valueArr[1];
             val = valueArr[0];
-            print= print.replace("(this)",StrUtil.format("(Mappers.ofMapperClass({}.class))",val));
+            print = print.replace("(this)", StrUtil.format("(Mappers.ofMapperClass({}.class))", val));
             list.add("com.mybatisflex.core.mybatis.Mappers");
         }
         if (StrUtil.isNotBlank(qualifiedName)) {
@@ -188,10 +193,10 @@ public class SQLPreviewAction extends AnAction {
         PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
         if (flag) {
             text += StrUtil.format(TEMPLATE, val, val, variableReference.get());
-            //导入新的
+            // 导入新的
             list.addAll(SERVICE_IMPORT_LIST);
         }
-        //添加import
+        // 添加import
         WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
             for (String impor : list) {
                 psiJavaFile.getImportList().add(instance.createImportStatement(PsiJavaFileUtil.getPsiClass(impor)));
@@ -205,7 +210,7 @@ public class SQLPreviewAction extends AnAction {
             }
         });
         if (StrUtil.isNotBlank(val)) {
-            //添加Mapper
+            // 添加Mapper
             text = StrUtil.format(COMMON_CODE, val) + text + print;
 
         } else {
@@ -228,20 +233,20 @@ public class SQLPreviewAction extends AnAction {
             return null;
 //        //获取类
         }
-        String entityName=null;
+        String entityName = null;
 
         if (val.startsWith("Mappers")) {
             val = StrUtil.subBetween(val, "(", ".class");
 
         } else if ("this".equals(val)) {
             PsiClass psiClass = psiJavaFile.getClasses()[0];
-            entityName=StrUtil.subBetween(psiClass.getText(),"BaseMapper<",">");
-            val=  psiClass.getName() + ":" +psiClass.getQualifiedName();
+            entityName = StrUtil.subBetween(psiClass.getText(), "BaseMapper<", ">");
+            val = psiClass.getName() + ":" + psiClass.getQualifiedName();
         } else {
             val = StrUtil.subBefore(val, ".", false);
         }
 
-        entityClass = PsiJavaFileUtil.getPsiClass(qualifiedNameImportMap.get(ObjectUtil.defaultIfNull(entityName,val)));
+        entityClass = PsiJavaFileUtil.getPsiClass(qualifiedNameImportMap.get(ObjectUtil.defaultIfNull(entityName, val)));
 
         return val;
     }
@@ -270,18 +275,24 @@ public class SQLPreviewAction extends AnAction {
 
 
     public String getImplText(PsiJavaFile psiJavaFile, String selectedText, Map<String, String> qualifiedNameImportMap, ManyFunction<String> consumer) {
+        String temVal=null;
         Project project = psiJavaFile.getProject();
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
         for (PsiClass psiClass : psiJavaFile.getClasses()) {
             PsiField[] allFields = psiClass.getAllFields();
             for (PsiField field : allFields) {
-                if ((field.hasAnnotation(MybatisFlexConstant.ANNOTATION_AUTOWIRED)
-                        || field.hasAnnotation(MybatisFlexConstant.ANNOTATION_RESOURCE))
-                        && selectedText.contains(field.getName())) {
 
-                    String text = field.getText().split("\n")[1].replace(";", "").trim();
-
-                    if (!Character.isUpperCase(text.charAt(0))) {
+                if (selectedText.contains(field.getName())) {
+                    String text = field.getText();
+                    if(text.contains("=")){
+                        text = StrUtil.subBefore(text, "=", true);
+                    }
+                    if(text.contains("\n")){
+                        String[] split = text.split("\n");
+                        text = split[split.length-1];
+                    }
+                     text = text.replace(";", "").trim();
+                    while (!Character.isUpperCase(text.charAt(0))) {
                         text = StrUtil.subAfter(text, " ", false);
                     }
                     String className = StrUtil.subBefore(text, " ", true);
@@ -301,12 +312,12 @@ public class SQLPreviewAction extends AnAction {
                         WriteCommandAction.runWriteCommandAction(project, () -> {
                             psiJavaFile.getImportList().add(elementFactory.createImportStatement(sonPsiClass));
                         });
-                        selectedText = StrUtil.format("{}=new {}();\n", text, name);
+                        temVal = StrUtil.format("{}=new {}();\n", text, name);
                     }
                 }
             }
         }
-        return selectedText;
+        return temVal;
     }
 
 
@@ -321,7 +332,9 @@ public class SQLPreviewAction extends AnAction {
                 ApplicationManager.getApplication().invokeLater(() -> {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
-//                            virtualFile.delete(this);
+                            if (!MybatisFlexSettingDialog.insideSchemaFlag) {
+                                virtualFile.delete(this);
+                            }
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);
                             }
