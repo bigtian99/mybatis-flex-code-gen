@@ -22,6 +22,7 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -389,21 +390,26 @@ public class SQLPreviewAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        // String selectedText = e.getData(CommonDataKeys.EDITOR).getSelectionModel().getSelectedText();
-        // PsiJavaFile psiFile = (PsiJavaFile) e.getData(CommonDataKeys.PSI_FILE);
-        // preview(selectedText, psiFile, () -> {
-        // });
-        Set<String> functionSet = new HashSet<>();
-        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryChain");
-        Arrays.stream(psiClass.getMethods())
-                .forEach(psiMethod -> {
-                    PsiType returnType = psiMethod.getReturnType();
-                    if (ObjectUtil.isNotNull(returnType)) {
-                        if (!returnType.getCanonicalText().startsWith("com.mybatisflex.core")) {
-                            functionSet.add(psiMethod.getName());
-                        }
-                    }
-                });
-        functionSet.forEach(System.out::println);
+        // 如果是从项目视图中右键点击的进来的则创建新的类
+        String selectedText = e.getData(CommonDataKeys.EDITOR).getSelectionModel().getSelectedText();
+        if (StrUtil.isNotBlank(selectedText)) {
+            PsiJavaFile psiFile = (PsiJavaFile) e.getData(CommonDataKeys.PSI_FILE);
+            preview(selectedText, psiFile, () -> {
+            });
+            return;
+        }
+
+        // Set<String> functionSet = new HashSet<>();
+        // PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryChain");
+        // Arrays.stream(psiClass.getMethods())
+        //         .forEach(psiMethod -> {
+        //             PsiType returnType = psiMethod.getReturnType();
+        //             if (ObjectUtil.isNotNull(returnType)) {
+        //                 if (!returnType.getCanonicalText().startsWith("com.mybatisflex.core")) {
+        //                     functionSet.add(psiMethod.getName());
+        //                 }
+        //             }
+        //         });
+        // functionSet.forEach(System.out::println);
     }
 }
