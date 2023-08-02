@@ -67,4 +67,6 @@ public class MybatisFlexConstant {
     public static final String ANNOTATION_AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
     public static final String ANNOTATION_RESOURCE = "javax.annotation.Resource";
     public static final String ACTIVE_RECORD = "activeRecord";
+
+    public static final String LOMBOK_REQUIRED_ARGS_CONSTRUCTOR = "requiredArgsConstructor";
 }

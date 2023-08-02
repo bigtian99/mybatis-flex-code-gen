@@ -19,6 +19,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiElementFactory;
+import com.intellij.psi.PsiInvalidElementAccessException;
 import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,39 +61,42 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
 
     @Override
     public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
-        Editor editor = parameters.getEditor();
-        Document document = editor.getDocument();
-        VirtualFile file = VirtualFileUtils.getVirtualFile(document);
-        boolean flag = file.getName().equals("mybatis-flex.config");
-        // 如果不是 mybatis-flex.config 文件，直接返回
-        if (!flag) {
-            return;
-        }
-        Project project = parameters.getPosition().getProject();
-        if (ObjectUtil.isNull(elementFactory)) {
-            elementFactory = JavaPsiFacade.getElementFactory(project);
-            psiFacade = JavaPsiFacade.getInstance(project);
-            psiManager = PsiManager.getInstance(project);
-        }
-
-        // 获取已经存在的配置,存在的配置不再提示
-        List<String> existConfigList = getExistConfig(document);
-        // 获取当前光标位置
-        LogicalPosition logicalPosition = editor.getCaretModel().getLogicalPosition();
-        // 获取当前光标位置的文本信息
-        int line = logicalPosition.line;
-        String text = editor.getDocument().getText(new TextRange(line, document.getLineEndOffset(line)));
-        // 如果包含 = ，则提示 value
-        if (text.contains("=")) {
-            text = text.substring(0, text.lastIndexOf("=") + 1);
-            MybatisFlexConfgInfo confgInfo = CONFIG_MAP.get(text);
-            if (ObjectUtil.isNotNull(confgInfo)) {
-                addCodeTip(result, confgInfo.getValue());
+        try {
+            Editor editor = parameters.getEditor();
+            Document document = editor.getDocument();
+            VirtualFile file = VirtualFileUtils.getVirtualFile(document);
+            boolean flag = file.getName().equals("mybatis-flex.config");
+            // 如果不是 mybatis-flex.config 文件，直接返回
+            if (!flag) {
                 return;
             }
+            Project project = parameters.getPosition().getProject();
+            if (ObjectUtil.isNull(elementFactory)) {
+                elementFactory = JavaPsiFacade.getElementFactory(project);
+                psiFacade = JavaPsiFacade.getInstance(project);
+                psiManager = PsiManager.getInstance(project);
+            }
+
+            // 获取已经存在的配置,存在的配置不再提示
+            List<String> existConfigList = getExistConfig(document);
+            // 获取当前光标位置
+            LogicalPosition logicalPosition = editor.getCaretModel().getLogicalPosition();
+            // 获取当前光标位置的文本信息
+            int line = logicalPosition.line;
+            String text = editor.getDocument().getText(new TextRange(line, document.getLineEndOffset(line)));
+            // 如果包含 = ，则提示 value
+            if (text.contains("=")) {
+                text = text.substring(0, text.lastIndexOf("=") + 1);
+                MybatisFlexConfgInfo confgInfo = CONFIG_MAP.get(text);
+                if (ObjectUtil.isNotNull(confgInfo)) {
+                    addCodeTip(result, confgInfo.getValue());
+                    return;
+                }
+            }
+            // 添加代码提示
+            addCodeTip(result, existConfigList, text);
+        } catch (PsiInvalidElementAccessException e) {
         }
-        // 添加代码提示
-        addCodeTip(result, existConfigList, text);
     }
 
     /**

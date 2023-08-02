@@ -9,6 +9,9 @@ import lombok.AllArgsConstructor;
 #if($config.noArgsConstructor)
 import lombok.NoArgsConstructor;
 #end
+#if($config.requiredArgsConstructor)
+import lombok.RequiredArgsConstructor;
+#end
 #if($config.builder)
 import lombok.Builder;
 #end
@@ -41,6 +44,9 @@ import $classImport;
  */
 #if($config.accessors)
 @Accessors(chain = true)
+#end
+#if($config.requiredArgsConstructor)
+@RequiredArgsConstructor
 #end
 #if($config.data||$config.activeRecord)
 @Data#if($config.activeRecord)(staticConstructor = "create") #end

@@ -24,7 +24,8 @@ intellij {
 
 dependencies {
     implementation("com.alibaba.fastjson2:fastjson2:2.0.34")
-    implementation("cn.hutool:hutool-core:5.8.20")
+    implementation("cn.hutool:hutool-core:5.8.21")
+    implementation("cn.hutool:hutool-http:5.8.21")
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_17
