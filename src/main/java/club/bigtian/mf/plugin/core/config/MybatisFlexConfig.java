@@ -190,6 +190,7 @@ public class MybatisFlexConfig {
      * ar模式
      */
     private boolean activeRecord;
+    private boolean requiredArgsConstructor;
 
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
@@ -636,5 +637,13 @@ public class MybatisFlexConfig {
 
     public void setActiveRecord(boolean activeRecord) {
         this.activeRecord = activeRecord;
+    }
+
+    public boolean isRequiredArgsConstructor() {
+        return requiredArgsConstructor;
+    }
+
+    public void setRequiredArgsConstructor(boolean requiredArgsConstructor) {
+        this.requiredArgsConstructor = requiredArgsConstructor;
     }
 }

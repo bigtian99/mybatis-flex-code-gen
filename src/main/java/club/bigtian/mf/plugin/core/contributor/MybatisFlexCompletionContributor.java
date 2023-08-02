@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 /**
  * tabDef补全提示
- * Author: BigTian
+ * @author BigTian
  */
 public class MybatisFlexCompletionContributor extends CompletionContributor {
     PsiElementFactory elementFactory;

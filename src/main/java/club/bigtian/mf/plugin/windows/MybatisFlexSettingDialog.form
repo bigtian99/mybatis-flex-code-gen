@@ -586,6 +586,12 @@
                                   <text value="@Accessors"/>
                                 </properties>
                               </component>
+                              <component id="6efa7" class="javax.swing.JCheckBox" binding="requiredArgsConstructorCheckBox" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <text value="@RequiredArgsConstructor"/>
+                                </properties>
+                              </component>
                             </children>
                           </grid>
                           <grid id="18ee6" layout-manager="FlowLayout" hgap="5" vgap="-1" flow-align="0">

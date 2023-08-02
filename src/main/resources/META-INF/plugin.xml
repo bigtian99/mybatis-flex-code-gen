@@ -72,8 +72,8 @@
 
         <annotator language="JAVA"
                    implementationClass="club.bigtian.mf.plugin.core.annotator.MybatisFlexConfigAnnotator"/>
-
     </extensions>
+
 
     <actions>
         <action id="MyBatisFlex_TableAction" class="club.bigtian.mf.plugin.action.flex.TableAction"

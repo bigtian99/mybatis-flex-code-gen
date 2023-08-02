@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * @author bigtian
  */
-public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable {
+public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable{
     private static final Logger LOG = Logger.getInstance(MybatisFlexDocumentChangeHandler.class);
     private static final Key<Boolean> CHANGE = Key.create("change");
     private static final Key<Boolean> LISTENER = Key.create("listener");

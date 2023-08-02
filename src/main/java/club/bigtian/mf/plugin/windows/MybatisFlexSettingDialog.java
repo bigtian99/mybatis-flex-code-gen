@@ -76,6 +76,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JTabbedPane tabbedPane2;
     private JCheckBox activeRecordCheckBox;
     private JLabel insideSchema;
+    private JCheckBox requiredArgsConstructorCheckBox;
     private Project project;
 
     // 是否开启内部模式
@@ -253,6 +254,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         mapperPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.MAPPER_PATH), mapperPath.getText()));
         accessorsCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ACCESSORS));
         activeRecordCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
+        requiredArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
         initSinceComBox();
     }
 
@@ -331,6 +333,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setMapperPath(mapperPath.getText());
         config.setAccessors(accessorsCheckBox.isSelected());
         config.setActiveRecord(activeRecordCheckBox.isSelected());
+        config.setRequiredArgsConstructor(requiredArgsConstructorCheckBox.isSelected());
         return config;
     }
 
