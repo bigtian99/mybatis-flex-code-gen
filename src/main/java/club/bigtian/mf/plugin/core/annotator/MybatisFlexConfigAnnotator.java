@@ -30,70 +30,83 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         functionMap.put("QueryWrapper.create", MybatisFlexConfigAnnotator::queryChainHandler);
         functionMap.put("UpdateChain.of", MybatisFlexConfigAnnotator::updateChainHandler);
         functionMap.put("UpdateChain.create", MybatisFlexConfigAnnotator::updateChainHandler);
-        initQueryChainMethodHandler();
-        analysisMethod();
+        try {
+            initQueryChainMethodHandler();
+            analysisMethod();
+        } catch (Exception e) {
+
+        }
     }
 
     @Override
     public void annotate(PsiElement element, AnnotationHolder holder) {
-        // 获取当前行号
-        Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
-        if (ObjectUtil.isNull(document)) {
-            return;
-        }
-        int offset = element.getTextOffset();
-        int lineNumber = document.getLineNumber(offset) + 1;
-        // 判断是不是 mybatis-flex 的项目
-        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryWrapper");
-        String text = element.getText();
-        if (lineNumber == 0 || ObjectUtil.isNull(psiClass) || text.startsWith("import") || iconMap.containsKey(lineNumber)) {
-            return;
-        }
+        try {
+            // 获取当前行号
+            Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
+            if (ObjectUtil.isNull(document)) {
+                return;
+            }
+            int offset = element.getTextOffset();
+            int lineNumber = document.getLineNumber(offset) + 1;
+            // 判断是不是 mybatis-flex 的项目
+            PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryWrapper");
+            String text = element.getText();
+            if (lineNumber == 0 || ObjectUtil.isNull(psiClass) || text.startsWith("import") || iconMap.containsKey(lineNumber)) {
+                return;
+            }
 
-        if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")
-                && text.endsWith(";")) {
-            if (text.contains("=")) {
-                String trim = StrUtil.subAfter(text, "=", false).trim();
-                // 防止用户在自己手写sql的时候，误触发
-                if (Character.isUpperCase(trim.charAt(0))) {
-                    text = trim;
-                }
-            }
-            String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
-            // 如果是括号里面的则不显示icon
-            if (matchText != null && !StrUtil.startWithAny(text, "QueryWrapper", "QueryChain", "UpdateChain")) {
-                if (matchText.startsWith("\"") || text.startsWith("//")) {
-                    return;
-                }
-                if (matchText.contains(",")) {
-                    for (String key : matchText.split(",")) {
-                        if (StrUtil.containsAny(key, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")) {
-                            if (key.endsWith(")")) {
-                                text = key;
-                            } else {
-                                text = matchText;
-                            }
-                            break;
-                        }
+            if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")
+                    && text.endsWith(";")) {
+                if (text.contains("=")) {
+                    String trim = StrUtil.subAfter(text, "=", false).trim();
+                    // 防止用户在自己手写sql的时候，误触发
+                    if (Character.isUpperCase(trim.charAt(0))) {
+                        text = trim;
                     }
-                } else {
-                    text = matchText;
                 }
+                String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
+                // 如果是括号里面的则不显示icon
+                if (matchText != null && !StrUtil.startWithAny(text, "QueryWrapper", "QueryChain", "UpdateChain")) {
+                    if (matchText.startsWith("\"") || text.startsWith("//")) {
+                        return;
+                    }
+                    if (matchText.contains(",")) {
+                        for (String key : matchText.split(",")) {
+                            if (StrUtil.containsAny(key, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")) {
+                                boolean flag = getCount(key, '(') == getCount(key, ')');
+                                if (flag) {
+                                    if (key.endsWith(")")) {
+                                        text = key;
+                                    } else {
+                                        text = matchText;
+                                    }
+                                } else {
+                                    text = matchText;
+                                }
+                                break;
+                            }
+                        }
+                    } else {
+                        text = matchText;
+                    }
+                }
+                String key = StrUtil.subBefore(text, "(", false);
+                if (text.contains("queryChain()")) {
+                    key = "QueryWrapper.create";
+                }
+                Function<String, String> function = functionMap.get(key);
+                if (ObjectUtil.isNotNull(function)) {
+                    text = function.apply(text);
+                }
+                text = handlerVariable(text);
+                iconMap.put(lineNumber, StrUtil.subBefore(text, ";", true));
+                // 创建图标注解
+                AnnotationBuilder annotationBuilder = holder.newSilentAnnotation(HighlightSeverity.INFORMATION);
+                annotationBuilder.gutterIconRenderer(new SqlPreviewIconRenderer(lineNumber, (PsiJavaFile) element.getContainingFile(), iconMap));
+                annotationBuilder.create();
+
             }
-            String key = StrUtil.subBefore(text, "(", false);
-            if(text.contains("queryChain()")){
-                key = "QueryWrapper.create";
-            }
-            Function<String, String> function = functionMap.get(key);
-            if (ObjectUtil.isNotNull(function)) {
-                text = function.apply(text);
-            }
-            text = handlerVariable(text);
-            iconMap.put(lineNumber, StrUtil.subBefore(text, ";", true));
-            // 创建图标注解
-            AnnotationBuilder annotationBuilder = holder.newSilentAnnotation(HighlightSeverity.INFORMATION);
-            annotationBuilder.gutterIconRenderer(new SqlPreviewIconRenderer(lineNumber, (PsiJavaFile) element.getContainingFile(), iconMap));
-            annotationBuilder.create();
+        } catch (PsiInvalidElementAccessException e) {
 
         }
     }
@@ -117,14 +130,49 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 continue;
             }
             for (String s : betweenAll) {
+                int count = 0;
+                count = getCount(s, '(');
+                if (count > 0) {
+                    s = getString(text, s, count);
+                }
+
+                s = compensate(text, s);
+                if (text.contains(s + ",")) {
+                    String last = StrUtil.subAfter(text, s, false);
+                    s += last.substring(0, last.indexOf(")"));
+                }
                 String oldKey = getOldKey(key, s);
+                Object symbol;
+                if (!s.startsWith("\"")) {
+                    try {
+                        if(s.contains(",")){
+                            symbol = Long.valueOf(s.split(",")[0]);
+                        }else{
+                            symbol = Long.valueOf(s);
+                        }
+                    } catch (NumberFormatException e) {
+                        symbol = "?";
+                    }
+                } else {
+                    if(s.contains(",")){
+                        s =s.split(",")[0];
+                    }
+                    symbol = s.replace("\"", "");
+
+                }
+                String newKey = StrUtil.format(".{}(\"{}\")", key, symbol);
+                // if (s.contains(".")) {
+                //     newKey += ")";
+                // }
                 if (oldKey.contains("(")) {
                     // text = text.replace(oldKey+")", StrUtil.format(".{}(\"{})\")", key, s));
-                    text = text.replace(oldKey + ")", StrUtil.format(".{}(\"{}\"))", key, "?"));
+                    if (!(symbol instanceof Long)) {
+                        text = text.replace(oldKey, newKey);
+                    }
                     continue;
                 }
                 // text = text.replace(oldKey, StrUtil.format(".{}(\"{}\")", key, s));
-                text = text.replace(oldKey, StrUtil.format(".{}(\"{}\"))", key, "?"));
+                text = text.replace(oldKey, newKey);
             }
         }
         return text;
@@ -186,28 +234,92 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     }
 
     static String likeHandler(String[] betweenAll, String sql, String key) {
+        String tempSql=sql;
+        sql = sql.replace(" ", "");
         for (String s : betweenAll) {
             String replace = "";
+            int count = 0;
+            count = getCount(s, '(');
+            if (count > 0) {
+                s = getString(sql, s, count);
+            }
+
+            s = compensate(sql, s);
+            if (sql.contains(s + ",")) {
+                String last = StrUtil.subAfter(sql, s, false);
+                s += last.substring(0, last.indexOf(")"));
+            }
+
+            if (s.startsWith("(") && s.endsWith(")")) {
+                int endIndex = s.lastIndexOf(")");
+                int beginIndex = s.indexOf("(");
+                s = s.substring(beginIndex + 1, endIndex);
+
+            }
             if (s.contains(",")) {
-                String[] split = s.split(",");
-                String s1 = split[0];
+                String[] split = s.split("\\),");
+
+                String s1 = split[0] + ")";
+                if(s1.contains(",")){
+                    s1 = s.split(",")[0];
+                }
                 if (!s1.startsWith("\"")) {
-                    replace += "\"?\"";
+                    replace += StrUtil.format("\"{}\"", s.startsWith("\"")?s1:"?");
                 } else {
                     replace = s1;
                 }
-                replace += " , el -> true";
+                replace = replace + " , el -> true";
             } else {
                 if (!s.startsWith("\"")) {
-                    replace = StrUtil.format("\"{}\"", s);
+                    replace = StrUtil.format("\"?\"", s);
                 } else {
                     replace = s;
                 }
             }
-            sql = sql.replace(s, replace);
+            if (StrUtil.isNotBlank(s) && StrUtil.isNotBlank(replace)) {
+                tempSql = tempSql.replace(s, replace);
+            }
 
         }
-        return sql;
+        return tempSql;
+    }
+
+
+    private static String compensate(String sql, String s) {
+        while (true) {
+            int count1 = getCount(s, '(');
+            int count2 = getCount(s, ')');
+            if (count1 != count2) {
+                s = getString(sql, s, count1 - count2);
+            } else {
+                break;
+            }
+        }
+        return s;
+    }
+
+    private static String getString(String sql, String s, int count) {
+        String last = StrUtil.subAfter(sql, s, false);
+        for (int i = 0; i < count; i++) {
+            int i1 = last.indexOf(")");
+            if (i1 != -1) {
+                s += last.substring(0, i1 + 1);
+                last = last.substring(i1 + 1);
+            }
+        }
+        return s;
+    }
+
+    private static int getCount(String s, char sp) {
+        int length = s.length();
+        int count = 0;
+        for (int i = 0; i < length; i++) {
+            char c = s.charAt(i);
+            if (c == sp) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -217,7 +329,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
      * @return {@code String}
      */
     private static String updateChainHandler(String text) {
-        boolean flag = StrUtil.containsAny(text, "update()", "remove()","toSQL()");
+        boolean flag = StrUtil.containsAny(text, "update()", "remove()", "toSQL()");
         if (flag) {
             return StrUtil.subBefore(text, ".", true);
         }

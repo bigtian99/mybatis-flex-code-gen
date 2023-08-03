@@ -100,7 +100,7 @@ public class TableUtils {
                 DasColumn dasColumn = (DasColumn) column;
                 columnInfo.setName(dasColumn.getName());
                 columnInfo.setFieldName(StrUtil.toCamelCase(dasColumn.getName()));
-                String jdbcTypeStr = getFieldType(dasColumn.getDataType().typeName);
+                String jdbcTypeStr = dasColumn.getDataType().toString();
                 int jdbc = dialect.getJavaTypeForNativeType(jdbcTypeStr);
                 String jdbcTypeName = JdbcUtil.getJdbcTypeName(jdbc);
                 String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName);
