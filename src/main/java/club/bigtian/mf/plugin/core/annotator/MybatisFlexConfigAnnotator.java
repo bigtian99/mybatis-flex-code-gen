@@ -200,7 +200,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     static String betweenHandler(String[] betweenAll, String sql, String key) {
         for (String s : betweenAll) {
             String compute = compute(sql, s, key);
-            String oldKey = compute;
+            String oldKey = getKey(key,compute);
             String[] split = compute.split(",");
             int count = getCount(compute, ',');
             String newKey = getNewKey(split, count, oldKey);
@@ -258,7 +258,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         leftCount = getCount(value, '(');
         rightCount = getCount(value, ')');
         if (leftCount == rightCount) {
-            if (sql.contains(value)) {
+            if (tmpSql.contains(value)) {
                 return value;
             }
         }
