@@ -12,6 +12,7 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.Document;
 import com.intellij.psi.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Function;
@@ -98,6 +99,9 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 if (ObjectUtil.isNotNull(function)) {
                     text = function.apply(text);
                 }
+                if (StrUtil.isEmpty(text)) {
+                    return;
+                }
                 text = handlerVariable(text);
                 iconMap.put(lineNumber, StrUtil.subBefore(text, ";", true));
                 // 创建图标注解
@@ -130,49 +134,18 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 continue;
             }
             for (String s : betweenAll) {
-                int count = 0;
-                count = getCount(s, '(');
-                if (count > 0) {
-                    s = getString(text, s, count);
+                String compute = compute(text, s, key);
+                String newKey = "";
+                if (compute.contains(",")) {
+                    Object symbol = getSymbol(compute.split(",")[0]);
+                    newKey = getKey(key,  symbol + ",el->true");
                 }
-
-                s = compensate(text, s);
-                if (text.contains(s + ",")) {
-                    String last = StrUtil.subAfter(text, s, false);
-                    s += last.substring(0, last.indexOf(")"));
+                else {
+                    newKey =getKey( key, getSymbol(s).toString());
                 }
-                String oldKey = getOldKey(key, s);
-                Object symbol;
-                if (!s.startsWith("\"")) {
-                    try {
-                        if(s.contains(",")){
-                            symbol = Long.valueOf(s.split(",")[0]);
-                        }else{
-                            symbol = Long.valueOf(s);
-                        }
-                    } catch (NumberFormatException e) {
-                        symbol = "?";
-                    }
-                } else {
-                    if(s.contains(",")){
-                        s =s.split(",")[0];
-                    }
-                    symbol = s.replace("\"", "");
-
-                }
-                String newKey = StrUtil.format(".{}(\"{}\")", key, symbol);
-                // if (s.contains(".")) {
-                //     newKey += ")";
-                // }
-                if (oldKey.contains("(")) {
-                    // text = text.replace(oldKey+")", StrUtil.format(".{}(\"{})\")", key, s));
-                    if (!(symbol instanceof Long)) {
-                        text = text.replace(oldKey, newKey);
-                    }
-                    continue;
-                }
-                // text = text.replace(oldKey, StrUtil.format(".{}(\"{}\")", key, s));
+                String oldKey = getKey(key,compute);
                 text = text.replace(oldKey, newKey);
+
             }
         }
         return text;
@@ -190,11 +163,13 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 .forEach(psiMethod -> {
                     String name = psiMethod.getName();
                     if (StrUtil.containsIgnoreCase(name, "like")) {
-                        methodMap.put(name, MybatisFlexConfigAnnotator::likeHandler);
+                        // methodMap.put(name, MybatisFlexConfigAnnotator::likeHandler);
                     } else if (StrUtil.containsIgnoreCase(name, "Null")) {
                         methodMap.put(name, MybatisFlexConfigAnnotator::nullHandler);
                     } else if (StrUtil.containsIgnoreCase(name, "in")) {
                         methodMap.put(name, MybatisFlexConfigAnnotator::inHandler);
+                    } else if (StrUtil.containsIgnoreCase(name, "between")) {
+                        methodMap.put(name, MybatisFlexConfigAnnotator::betweenHandler);
                     }
 
                     allMethodList.add(name);
@@ -222,92 +197,88 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         return null;
     }
 
+    static String betweenHandler(String[] betweenAll, String sql, String key) {
+        for (String s : betweenAll) {
+            String compute = compute(sql, s, key);
+            String oldKey = compute;
+            String[] split = compute.split(",");
+            int count = getCount(compute, ',');
+            String newKey = getNewKey(split, count, oldKey);
+            sql = sql.replace(oldKey, newKey);
+        }
+        return sql;
+    }
+
+    private static String getNewKey(String[] split, int count, String oldKey) {
+        for (int i = 0; i < split.length; i++) {
+            String string = split[i].trim();
+            boolean flag = string.startsWith("\"");
+            if (!flag) {
+                Object symbol = getSymbol(string);
+                if (i != split.length - 1 || count < 2) {
+                    oldKey = oldKey.replace(string, symbol.toString());
+                    continue;
+                }
+                oldKey = oldKey.replace(string, "el -> true");
+            }
+        }
+        return oldKey;
+    }
+
+    @NotNull
+    private static Object getSymbol(String string) {
+        Object symbol;
+        if (string.startsWith("\"")) {
+            return string;
+        }
+        try {
+            Long value = Long.valueOf(string);
+            symbol = value;
+        } catch (NumberFormatException e) {
+            symbol = "\"?\"";
+        }
+        return symbol;
+    }
+
+    static String compute(String sql, String value, String key) {
+        if (!value.contains("(")) {
+            // return StrUtil.format(".{}({})", key, getSymbol(value));
+            return getSymbol(value).toString();
+        }
+        String tmpSql = sql;
+        sql = sql.replace(" ", "");
+        int leftCount = getCount(value, '(');
+        int rightCount = getCount(value, ')');
+        if (leftCount == rightCount) {
+            // 判断时候还有嵌套
+            if (sql.contains(value + ",")) {
+                value += StrUtil.subBetween(tmpSql, value, ")");
+            }
+        }
+        leftCount = getCount(value, '(');
+        rightCount = getCount(value, ')');
+        if (leftCount == rightCount) {
+            if (sql.contains(value)) {
+                return value;
+            }
+        }
+        // 补偿括号
+        String sqlAfter = StrUtil.subAfter(sql, value, false);
+        int idx = sqlAfter.indexOf(")");
+        value = value + sqlAfter.substring(0, idx + 1);
+
+        return compute(tmpSql, value, value);
+    }
+
     static String nullHandler(String[] betweenAll, String sql, String key) {
         if (ArrayUtil.isEmpty(betweenAll)) {
             return sql;
         }
         for (String value : betweenAll) {
-            String oldKey = getOldKey(key, value);
+            String oldKey = getKey(key, value);
             sql = sql.replace(oldKey, StrUtil.format(".{}(el -> true)", key));
         }
         return sql;
-    }
-
-    static String likeHandler(String[] betweenAll, String sql, String key) {
-        String tempSql=sql;
-        sql = sql.replace(" ", "");
-        for (String s : betweenAll) {
-            String replace = "";
-            int count = 0;
-            count = getCount(s, '(');
-            if (count > 0) {
-                s = getString(sql, s, count);
-            }
-
-            s = compensate(sql, s);
-            if (sql.contains(s + ",")) {
-                String last = StrUtil.subAfter(sql, s, false);
-                s += last.substring(0, last.indexOf(")"));
-            }
-
-            if (s.startsWith("(") && s.endsWith(")")) {
-                int endIndex = s.lastIndexOf(")");
-                int beginIndex = s.indexOf("(");
-                s = s.substring(beginIndex + 1, endIndex);
-
-            }
-            if (s.contains(",")) {
-                String[] split = s.split("\\),");
-
-                String s1 = split[0] + ")";
-                if(s1.contains(",")){
-                    s1 = s.split(",")[0];
-                }
-                if (!s1.startsWith("\"")) {
-                    replace += StrUtil.format("\"{}\"", s.startsWith("\"")?s1:"?");
-                } else {
-                    replace = s1;
-                }
-                replace = replace + " , el -> true";
-            } else {
-                if (!s.startsWith("\"")) {
-                    replace = StrUtil.format("\"?\"", s);
-                } else {
-                    replace = s;
-                }
-            }
-            if (StrUtil.isNotBlank(s) && StrUtil.isNotBlank(replace)) {
-                tempSql = tempSql.replace(s, replace);
-            }
-
-        }
-        return tempSql;
-    }
-
-
-    private static String compensate(String sql, String s) {
-        while (true) {
-            int count1 = getCount(s, '(');
-            int count2 = getCount(s, ')');
-            if (count1 != count2) {
-                s = getString(sql, s, count1 - count2);
-            } else {
-                break;
-            }
-        }
-        return s;
-    }
-
-    private static String getString(String sql, String s, int count) {
-        String last = StrUtil.subAfter(sql, s, false);
-        for (int i = 0; i < count; i++) {
-            int i1 = last.indexOf(")");
-            if (i1 != -1) {
-                s += last.substring(0, i1 + 1);
-                last = last.substring(i1 + 1);
-            }
-        }
-        return s;
     }
 
     private static int getCount(String s, char sp) {
@@ -352,8 +323,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         return text;
     }
 
-    private static String getOldKey(String key, String s) {
-        String oldKey = StrUtil.format(".{}({})", key, s);
-        return oldKey;
+    private static String getKey(String key, String s) {
+        return StrUtil.format(".{}({})", key, s);
     }
 }
