@@ -78,7 +78,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                     if (matchText.contains(",")) {
                         for (String key : matchText.split(",")) {
                             if (StrUtil.containsAny(key, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")) {
-                                boolean flag = getCount(key, '(') == getCount(key, ')');
+                                boolean flag = getCount(key, "(") == getCount(key, ")");
                                 if (flag) {
                                     if (key.endsWith(")")) {
                                         text = key;
@@ -139,7 +139,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 continue;
             }
             for (String s : betweenAll) {
-                String compute = compute(text, s, key,"");
+                String compute = compute(text, s, "(", ")","");
                 String newKey = "";
                 if (compute.contains(",")) {
                     Object symbol = getSymbol(compute.split(",")[0]);
@@ -197,12 +197,17 @@ public class MybatisFlexConfigAnnotator implements Annotator {
 
     static String inHandler(String[] betweenAll, String sql, String key) {
         for (String val : betweenAll) {
-            String compute = compute(sql, val, key,"");
-            String variableValue = methodVariableMap.get(compute.split(",")[0]);
+            String compute = compute(sql, val, "(", ")","");
+            String[] split = compute.split(",");
+            String variableValue = methodVariableMap.get(split[0]);
             String newKey = getKey(key, getSymbol(val).toString());
-            if(StrUtil.isNotBlank(variableValue)){
-                newKey=getKey(key,compute.replace(compute.split(",")[0],variableValue));
+            if (StrUtil.isNotBlank(variableValue)) {
+                newKey = getKey(key, compute.replace(split[0], variableValue)+",el->true");
             }
+            if(split.length>1){
+                newKey= getKey(key,StrUtil.format("{},el->true",getSymbol(split[0])));
+            }
+            newKey=newKey.replace("\"?\"","new Object[]{\"?\"}");
             String oldKey = getKey(key, compute);
             sql = sql.replace(oldKey, newKey);
         }
@@ -221,7 +226,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         PsiCodeBlock body = ((PsiMethod) parent).getBody();
         methodVariableMap = Arrays.stream(body.getStatements())
                 .filter(el -> {
-                    if (el instanceof PsiDeclarationStatement ) {
+                    if (el instanceof PsiDeclarationStatement) {
                         PsiDeclarationStatement psiDeclarationStatement = (PsiDeclarationStatement) el;
                         String text = psiDeclarationStatement.getText();
                         return StrUtil.containsAny(text, "QueryWrapper");
@@ -242,10 +247,10 @@ public class MybatisFlexConfigAnnotator implements Annotator {
 
     static String betweenHandler(String[] betweenAll, String sql, String key) {
         for (String s : betweenAll) {
-            String compute = compute(sql, s, key);
+            String compute = compute(sql, s, "(", ")", key);
             String oldKey = getKey(key, compute);
             String[] split = compute.split(",");
-            int count = getCount(compute, ',');
+            int count = getCount(compute, ",");
             String newKey = getNewKey(split, count, oldKey);
             sql = sql.replace(oldKey, newKey);
         }
@@ -283,36 +288,39 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         return symbol;
     }
 
-    static String compute(String sql, String value, String key,String ...args) {
-        if (!value.contains("(")) {
-            if(args.length>0){
+    static String compute(String sql, String value, String leftSymbol, String rightSymbol, String... args) {
+        if (!value.contains(leftSymbol)) {
+            if (args.length > 0) {
                 return value;
             }
             return getSymbol(value).toString();
         }
         String tmpSql = sql;
         sql = sql.replace(" ", "");
-        int leftCount = getCount(value, '(');
-        int rightCount = getCount(value, ')');
+        int leftCount = getCount(value, leftSymbol);
+        int rightCount = getCount(value, rightSymbol);
         if (leftCount == rightCount) {
             // 判断时候还有嵌套
             if (sql.contains(value + ",")) {
                 value += StrUtil.subBetween(tmpSql, value, ")");
             }
         }
-        leftCount = getCount(value, '(');
-        rightCount = getCount(value, ')');
+        leftCount = getCount(value, leftSymbol);
+        rightCount = getCount(value, rightSymbol);
         if (leftCount == rightCount) {
             if (tmpSql.contains(value)) {
+                if (value.contains("{") && "(".equals(leftSymbol)) {
+                    return compute(tmpSql, value, "{", "}", value);
+                }
                 return value;
             }
         }
         // 补偿括号
         String sqlAfter = StrUtil.subAfter(tmpSql, value, false);
-        int idx = sqlAfter.indexOf(")");
+        int idx = sqlAfter.indexOf(rightSymbol);
         value = value + sqlAfter.substring(0, idx + 1);
 
-        return compute(tmpSql, value, value);
+        return compute(tmpSql, value, leftSymbol, rightSymbol, value);
     }
 
     static String nullHandler(String[] betweenAll, String sql, String key) {
@@ -326,12 +334,12 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         return sql;
     }
 
-    private static int getCount(String s, char sp) {
+    private static int getCount(String s, String sp) {
         int length = s.length();
         int count = 0;
         for (int i = 0; i < length; i++) {
             char c = s.charAt(i);
-            if (c == sp) {
+            if (c == sp.charAt(0)) {
                 count++;
             }
         }
