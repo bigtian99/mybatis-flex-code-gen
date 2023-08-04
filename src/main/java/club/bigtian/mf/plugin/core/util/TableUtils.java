@@ -103,7 +103,7 @@ public class TableUtils {
                 String jdbcTypeStr = dasColumn.getDataType().toString();
                 int jdbc = dialect.getJavaTypeForNativeType(jdbcTypeStr);
                 String jdbcTypeName = JdbcUtil.getJdbcTypeName(jdbc);
-                String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName);
+                String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName, dasColumn.getDataType().size);
                 columnInfo.setFieldType(fieldType);
                 columnInfo.setNotNull(dasColumn.isNotNull());
                 columnInfo.setComment(ObjectUtil.defaultIfNull(dasColumn.getComment(), "").replaceAll("\n", ""));
@@ -123,10 +123,11 @@ public class TableUtils {
      *
      * @param jdbc         jdbc
      * @param jdbcTypeName
+     * @param size
      * @return {@code String}
      */
-    private static String getFieldType(int jdbc, TableInfo tableInfo, String jdbcTypeName) {
-        String className = convert(jdbc).getName();
+    private static String getFieldType(int jdbc, TableInfo tableInfo, String jdbcTypeName, int size) {
+        String className = convert(jdbc, size).getName();
         if (Object.class.getName().equals(className)) {
             String fieldType = MybatisFlexPluginConfigData.getFieldType(jdbcTypeName);
             if (StrUtil.isNotBlank(fieldType)) {
@@ -151,14 +152,13 @@ public class TableUtils {
      * 获取字段类型
      *
      * @param sqlType sql类型
+     * @param size
      * @return {@code Class<?>}
      */
-    public static Class<?> convert(int sqlType) {
+    public static Class<?> convert(int sqlType, int size) {
         switch (sqlType) {
             case Types.BIT:
                 return Boolean.class;
-            case Types.TINYINT:
-                return Byte.class;
             case Types.SMALLINT:
                 return Short.class;
             case Types.INTEGER:
@@ -181,6 +181,14 @@ public class TableUtils {
             case Types.LONGNVARCHAR:
             case Types.CLOB:
                 return String.class;
+            case Types.TINYINT:
+                if (size == 1) {
+                    return Boolean.class;
+                } else if (size == 2) {
+                    return Short.class;
+                } else {
+                    return Integer.class;
+                }
             case Types.TIME:
                return java.sql.Time.class;
             case Types.TIMESTAMP:

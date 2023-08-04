@@ -2,7 +2,6 @@ package club.bigtian.mf.plugin.core.annotator;
 
 import club.bigtian.mf.plugin.core.function.BigFunction;
 import club.bigtian.mf.plugin.core.render.SqlPreviewIconRenderer;
-import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -48,7 +47,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     @Override
     public void annotate(PsiElement element, AnnotationHolder holder) {
         try {
-            ProjectUtils.setCurrentProject(element.getProject());
+            // ProjectUtils.setCurrentProject(element.getProject());
             // 获取当前行号
             Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
             if (ObjectUtil.isNull(document) || !document.isWritable()) {
