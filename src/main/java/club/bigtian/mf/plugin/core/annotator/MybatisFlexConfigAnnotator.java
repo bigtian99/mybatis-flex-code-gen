@@ -34,6 +34,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         functionMap.put("UpdateChain.of", MybatisFlexConfigAnnotator::updateChainHandler);
         functionMap.put("UpdateChain.create", MybatisFlexConfigAnnotator::updateChainHandler);
         methodMap.put("limit", MybatisFlexConfigAnnotator::limitHandler);
+        methodMap.put("join", MybatisFlexConfigAnnotator::joinHandler);
         try {
             initQueryChainMethodHandler();
             analysisMethod();
@@ -278,7 +279,17 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             newKey = getKey(key, compute.contains(",")?"1 , 10":"10");
             sql = sql.replace(oldKey, newKey);
         }
+        return sql;
+    }
 
+    static String joinHandler(String[] betweenAll, String sql, String key) {
+        for (String s : betweenAll) {
+            String compute = compute(sql, s, "(", ")", key);
+            String oldKey = getKey(key, compute);
+            String newKey;
+            newKey = getKey(key, compute.contains(",")?"1 , 10":"10");
+            sql = sql.replace(oldKey, newKey);
+        }
         return sql;
     }
 
@@ -375,10 +386,6 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         return text;
     }
 
-    private static String limitHandler(String text) {
-
-        return text;
-    }
 
     /**
      * 查询处理程序链

@@ -38,9 +38,7 @@
     <change-notes><![CDATA[
     <h3>1.4.6-RELEASE</h3>
     <ul>
-    <li>【新增】代码生成支持Active Record</li>
-    <li>【优化】插件设置界面优化</li>
-    <li>【修复】Oralce代码生成，字段类型错乱</li>
+    <li>【优化】支持变量SQL预览</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.

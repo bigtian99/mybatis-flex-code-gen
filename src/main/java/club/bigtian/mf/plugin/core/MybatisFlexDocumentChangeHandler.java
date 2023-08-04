@@ -19,6 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.util.PsiUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.KtFile;
 
@@ -30,7 +31,7 @@ import java.util.Set;
 /**
  * @author bigtian
  */
-public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable{
+public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable {
     private static final Logger LOG = Logger.getInstance(MybatisFlexDocumentChangeHandler.class);
     private static final Key<Boolean> CHANGE = Key.create("change");
     private static final Key<Boolean> LISTENER = Key.create("listener");
@@ -91,9 +92,11 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         if (ObjectUtil.isNull(currentFile)) {
             return;
         }
+
         PsiFile psiFile = VirtualFileUtils.getPsiFile(project, currentFile);
         if (flag || ObjectUtil.isNull(currentFile) || !(psiFile instanceof PsiJavaFile) && !(psiFile instanceof KtFile)
-                || !ObjectUtil.defaultIfNull(document.getUserData(CHANGE), false)) {
+                || !ObjectUtil.defaultIfNull(document.getUserData(CHANGE), false)
+                || PsiUtil.hasErrorElementChild(psiFile)) {
             return;
         }
         document.putUserData(CHANGE, false);

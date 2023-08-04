@@ -179,21 +179,21 @@ public class TableUtils {
             case Types.NVARCHAR:
             case Types.LONGVARCHAR:
             case Types.LONGNVARCHAR:
+            case Types.CLOB:
                 return String.class;
             case Types.TIME:
-//                return java.sql.Time.class;
+               return java.sql.Time.class;
             case Types.TIMESTAMP:
-//                return java.sql.Timestamp.class;
+               return java.sql.Timestamp.class;
             case Types.DATE:
                 return Date.class;
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
-                return Byte[].class;
-            case Types.CLOB:
-            case Types.NCLOB:
             case Types.BLOB:
-                return java.sql.Blob.class;
+                return Byte[].class;
+            case Types.NCLOB:
+                return java.sql.NClob.class;
             case Types.ARRAY:
                 return java.sql.Array.class;
             case Types.STRUCT:
