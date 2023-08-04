@@ -23,8 +23,10 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     private static Map<String, Function<String, String>> functionMap = new HashMap<>();
     private static Set<String> removeMethodSet = new HashSet<>();
     private static Set<String> allMethodList = new HashSet<>();
+    private static Map<String, String> methodVariableMap;
     public static Map<String, BigFunction<String[], String, String, String>> methodMap = new HashMap<>();
-
+    private static PsiElement element;
+    private static Integer lineNumber;
 
     static {
         functionMap.put("QueryChain.of", MybatisFlexConfigAnnotator::queryChainHandler);
@@ -65,6 +67,8 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                         text = trim;
                     }
                 }
+                MybatisFlexConfigAnnotator.element = element;
+                MybatisFlexConfigAnnotator.lineNumber = lineNumber;
                 String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
                 // 如果是括号里面的则不显示icon
                 if (matchText != null && !StrUtil.startWithAny(text, "QueryWrapper", "QueryChain", "UpdateChain")) {
@@ -97,6 +101,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 }
                 Function<String, String> function = functionMap.get(key);
                 if (ObjectUtil.isNotNull(function)) {
+                    initMethodVariable();
                     text = function.apply(text);
                 }
                 if (StrUtil.isEmpty(text)) {
@@ -134,16 +139,15 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 continue;
             }
             for (String s : betweenAll) {
-                String compute = compute(text, s, key);
+                String compute = compute(text, s, key,"");
                 String newKey = "";
                 if (compute.contains(",")) {
                     Object symbol = getSymbol(compute.split(",")[0]);
-                    newKey = getKey(key,  symbol + ",el->true");
+                    newKey = getKey(key, symbol + ",el->true");
+                } else {
+                    newKey = getKey(key, getSymbol(s).toString());
                 }
-                else {
-                    newKey =getKey( key, getSymbol(s).toString());
-                }
-                String oldKey = getKey(key,compute);
+                String oldKey = getKey(key, compute);
                 text = text.replace(oldKey, newKey);
 
             }
@@ -162,9 +166,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         Arrays.stream(psiClass.getMethods())
                 .forEach(psiMethod -> {
                     String name = psiMethod.getName();
-                    if (StrUtil.containsIgnoreCase(name, "like")) {
-                        // methodMap.put(name, MybatisFlexConfigAnnotator::likeHandler);
-                    } else if (StrUtil.containsIgnoreCase(name, "Null")) {
+                    if (StrUtil.containsIgnoreCase(name, "Null")) {
                         methodMap.put(name, MybatisFlexConfigAnnotator::nullHandler);
                     } else if (StrUtil.containsIgnoreCase(name, "in")) {
                         methodMap.put(name, MybatisFlexConfigAnnotator::inHandler);
@@ -194,13 +196,54 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     }
 
     static String inHandler(String[] betweenAll, String sql, String key) {
-        return null;
+        for (String val : betweenAll) {
+            String compute = compute(sql, val, key,"");
+            String variableValue = methodVariableMap.get(compute.split(",")[0]);
+            String newKey = getKey(key, getSymbol(val).toString());
+            if(StrUtil.isNotBlank(variableValue)){
+                newKey=getKey(key,compute.replace(compute.split(",")[0],variableValue));
+            }
+            String oldKey = getKey(key, compute);
+            sql = sql.replace(oldKey, newKey);
+        }
+        return sql;
+    }
+
+
+    /**
+     * init方法变量
+     */
+    private static void initMethodVariable() {
+        PsiElement parent = element.getParent();
+        while (!(parent instanceof PsiMethod)) {
+            parent = parent.getParent();
+        }
+        PsiCodeBlock body = ((PsiMethod) parent).getBody();
+        methodVariableMap = Arrays.stream(body.getStatements())
+                .filter(el -> {
+                    if (el instanceof PsiDeclarationStatement ) {
+                        PsiDeclarationStatement psiDeclarationStatement = (PsiDeclarationStatement) el;
+                        String text = psiDeclarationStatement.getText();
+                        return StrUtil.containsAny(text, "QueryWrapper");
+                    } else {
+                        return false;
+                    }
+                })
+                .map(el -> {
+                    PsiDeclarationStatement psiDeclarationStatement = (PsiDeclarationStatement) el;
+                    String text = psiDeclarationStatement.getText();
+                    String variableName = StrUtil.subBetween(text, " ", "=");
+                    String variableValue = StrUtil.subAfter(text, "=", false);
+                    HashMap<String, String> valueMap = new HashMap<>();
+                    valueMap.put(variableName.trim(), variableValue.replace(";", "").trim());
+                    return valueMap;
+                }).collect(HashMap::new, HashMap::putAll, HashMap::putAll);
     }
 
     static String betweenHandler(String[] betweenAll, String sql, String key) {
         for (String s : betweenAll) {
             String compute = compute(sql, s, key);
-            String oldKey = getKey(key,compute);
+            String oldKey = getKey(key, compute);
             String[] split = compute.split(",");
             int count = getCount(compute, ',');
             String newKey = getNewKey(split, count, oldKey);
@@ -240,9 +283,11 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         return symbol;
     }
 
-    static String compute(String sql, String value, String key) {
+    static String compute(String sql, String value, String key,String ...args) {
         if (!value.contains("(")) {
-            // return StrUtil.format(".{}({})", key, getSymbol(value));
+            if(args.length>0){
+                return value;
+            }
             return getSymbol(value).toString();
         }
         String tmpSql = sql;
@@ -263,7 +308,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             }
         }
         // 补偿括号
-        String sqlAfter = StrUtil.subAfter(sql, value, false);
+        String sqlAfter = StrUtil.subAfter(tmpSql, value, false);
         int idx = sqlAfter.indexOf(")");
         value = value + sqlAfter.substring(0, idx + 1);
 

@@ -81,7 +81,7 @@ public class SQLPreviewAction extends AnAction {
             }
             createFile(psiFile, StrUtil.format(CLASS_TEMPLATE, selectedText), psiFile.getPackageName());
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error(e);
         } finally {
             function.apply();
         }
@@ -129,11 +129,6 @@ public class SQLPreviewAction extends AnAction {
         if (text.contains("=")) {
             text = StrUtil.subAfter(text, "=", false);
         }
-        // // TODO 待优化
-        // // update/remove就截取舍弃
-        // if (StrUtil.containsAny(text, "update()", "remove()", "list", "exists")) {
-        //     text = StrUtil.subBefore(text, ".", true);
-        // }
         Map<String, String> qualifiedNameImportMap = PsiJavaFileUtil.getQualifiedNameImportMap(psiJavaFile);
 
         String val = null;
@@ -399,17 +394,5 @@ public class SQLPreviewAction extends AnAction {
             return;
         }
 
-        // Set<String> functionSet = new HashSet<>();
-        // PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryChain");
-        // Arrays.stream(psiClass.getMethods())
-        //         .forEach(psiMethod -> {
-        //             PsiType returnType = psiMethod.getReturnType();
-        //             if (ObjectUtil.isNotNull(returnType)) {
-        //                 if (!returnType.getCanonicalText().startsWith("com.mybatisflex.core")) {
-        //                     functionSet.add(psiMethod.getName());
-        //                 }
-        //             }
-        //         });
-        // functionSet.forEach(System.out::println);
     }
 }
