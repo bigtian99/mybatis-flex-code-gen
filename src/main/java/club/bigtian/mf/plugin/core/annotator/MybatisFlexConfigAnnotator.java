@@ -63,11 +63,11 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()", "query()")
                     && text.endsWith(";")) {
                 if (text.contains("=")) {
-                    String trim = StrUtil.subAfter(text, "=", false).trim();
+                    text = StrUtil.subAfter(text, "=", false).trim();
                     // 防止用户在自己手写sql的时候，误触发
-                    if (Character.isUpperCase(trim.charAt(0))) {
-                        text = trim;
-                    }
+                    // if (Character.isUpperCase(trim.charAt(0))) {
+                    //     text = trim;
+                    // }
                 }
                 MybatisFlexConfigAnnotator.element = element;
                 MybatisFlexConfigAnnotator.lineNumber = lineNumber;
