@@ -33,6 +33,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         functionMap.put("QueryWrapper.create", MybatisFlexConfigAnnotator::queryChainHandler);
         functionMap.put("UpdateChain.of", MybatisFlexConfigAnnotator::updateChainHandler);
         functionMap.put("UpdateChain.create", MybatisFlexConfigAnnotator::updateChainHandler);
+        methodMap.put("limit", MybatisFlexConfigAnnotator::limitHandler);
         try {
             initQueryChainMethodHandler();
             analysisMethod();
@@ -139,7 +140,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 continue;
             }
             for (String s : betweenAll) {
-                String compute = compute(text, s, "(", ")","");
+                String compute = compute(text, s, "(", ")", "");
                 String newKey = "";
                 if (compute.contains(",")) {
                     Object symbol = getSymbol(compute.split(",")[0]);
@@ -176,6 +177,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
 
                     allMethodList.add(name);
                 });
+        allMethodList.add("limit");
 
     }
 
@@ -197,17 +199,17 @@ public class MybatisFlexConfigAnnotator implements Annotator {
 
     static String inHandler(String[] betweenAll, String sql, String key) {
         for (String val : betweenAll) {
-            String compute = compute(sql, val, "(", ")","");
+            String compute = compute(sql, val, "(", ")", "");
             String[] split = compute.split(",");
             String variableValue = methodVariableMap.get(split[0]);
             String newKey = getKey(key, getSymbol(val).toString());
             if (StrUtil.isNotBlank(variableValue)) {
-                newKey = getKey(key, compute.replace(split[0], variableValue)+",el->true");
+                newKey = getKey(key, compute.replace(split[0], variableValue) + ",el->true");
             }
-            if(split.length>1){
-                newKey= getKey(key,StrUtil.format("{},el->true",getSymbol(split[0])));
+            if (split.length > 1) {
+                newKey = getKey(key, StrUtil.format("{},el->true", getSymbol(split[0])));
             }
-            newKey=newKey.replace("\"?\"","new Object[]{\"?\"}");
+            newKey = newKey.replace("\"?\"", "new Object[]{\"?\"}");
             String oldKey = getKey(key, compute);
             sql = sql.replace(oldKey, newKey);
         }
@@ -254,6 +256,29 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             String newKey = getNewKey(split, count, oldKey);
             sql = sql.replace(oldKey, newKey);
         }
+        return sql;
+    }
+
+    static String nullHandler(String[] betweenAll, String sql, String key) {
+        if (ArrayUtil.isEmpty(betweenAll)) {
+            return sql;
+        }
+        for (String value : betweenAll) {
+            String oldKey = getKey(key, value);
+            sql = sql.replace(oldKey, StrUtil.format(".{}(el -> true)", key));
+        }
+        return sql;
+    }
+
+    static String limitHandler(String[] betweenAll, String sql, String key) {
+        for (String s : betweenAll) {
+            String compute = compute(sql, s, "(", ")", key);
+            String oldKey = getKey(key, compute);
+            String newKey;
+            newKey = getKey(key, compute.contains(",")?"1 , 10":"10");
+            sql = sql.replace(oldKey, newKey);
+        }
+
         return sql;
     }
 
@@ -323,16 +348,6 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         return compute(tmpSql, value, leftSymbol, rightSymbol, value);
     }
 
-    static String nullHandler(String[] betweenAll, String sql, String key) {
-        if (ArrayUtil.isEmpty(betweenAll)) {
-            return sql;
-        }
-        for (String value : betweenAll) {
-            String oldKey = getKey(key, value);
-            sql = sql.replace(oldKey, StrUtil.format(".{}(el -> true)", key));
-        }
-        return sql;
-    }
 
     private static int getCount(String s, String sp) {
         int length = s.length();
@@ -357,6 +372,11 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         if (flag) {
             return StrUtil.subBefore(text, ".", true);
         }
+        return text;
+    }
+
+    private static String limitHandler(String text) {
+
         return text;
     }
 
