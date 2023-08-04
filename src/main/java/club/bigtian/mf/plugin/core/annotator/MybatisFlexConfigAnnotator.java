@@ -2,6 +2,7 @@ package club.bigtian.mf.plugin.core.annotator;
 
 import club.bigtian.mf.plugin.core.function.BigFunction;
 import club.bigtian.mf.plugin.core.render.SqlPreviewIconRenderer;
+import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -47,6 +48,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     @Override
     public void annotate(PsiElement element, AnnotationHolder holder) {
         try {
+            ProjectUtils.setCurrentProject(element.getProject());
             // 获取当前行号
             Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
             if (ObjectUtil.isNull(document) || !document.isWritable()) {
@@ -319,7 +321,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             String compute = compute(sql, s, "(", ")", key);
             String oldKey = getKey(key, compute);
             String newKey;
-            newKey = getKey(key, compute.contains(",")?"1 , 10":"10");
+            newKey = getKey(key, compute.contains(",") ? "1 , 10" : "10");
             sql = sql.replace(oldKey, newKey);
         }
         return sql;
@@ -330,7 +332,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             String compute = compute(sql, s, "(", ")", key);
             String oldKey = getKey(key, compute);
             String newKey;
-            newKey = getKey(key, compute.contains(",")?"1 , 10":"10");
+            newKey = getKey(key, compute.contains(",") ? "1 , 10" : "10");
             sql = sql.replace(oldKey, newKey);
         }
         return sql;

@@ -44,12 +44,12 @@ public class SQLPreviewAction extends AnAction {
 
     private static final List<String> IMPORT_LIST = Arrays.asList("com.mybatisflex.core.FlexGlobalConfig",
             "com.mybatisflex.core.mybatis.FlexConfiguration",
-            "com.zaxxer.hikari.HikariDataSource",
+            "org.springframework.jdbc.datasource.DelegatingDataSource",
             "org.apache.ibatis.mapping.Environment",
             "org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory");
 
     private static final String COMMON_CODE =
-            "    Environment environment = new Environment(\"mybatisFlex\", new JdbcTransactionFactory(), new HikariDataSource());\n" +
+            "    Environment environment = new Environment(\"mybatisFlex\", new JdbcTransactionFactory(), new DelegatingDataSource());\n" +
                     "        FlexConfiguration configuration = new FlexConfiguration(environment);\n" +
                     "        FlexGlobalConfig globalConfig = FlexGlobalConfig.getDefaultConfig();\n" +
                     "        globalConfig.setConfiguration(configuration);\n" +
