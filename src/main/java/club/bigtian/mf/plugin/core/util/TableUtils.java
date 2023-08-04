@@ -106,7 +106,7 @@ public class TableUtils {
                 String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName);
                 columnInfo.setFieldType(fieldType);
                 columnInfo.setNotNull(dasColumn.isNotNull());
-                columnInfo.setComment(ObjectUtil.defaultIfNull(dasColumn.getComment(), "").replaceAll("\r\n", ""));
+                columnInfo.setComment(ObjectUtil.defaultIfNull(dasColumn.getComment(), "").replaceAll("\n", ""));
                 columnInfo.setMethodName(StrUtil.upperFirst(columnInfo.getFieldName()));
                 columnInfo.setType(jdbcTypeName);
                 columnInfo.setPrimaryKey(table.getColumnAttrs(dasColumn).contains(DasColumn.Attribute.PRIMARY_KEY));

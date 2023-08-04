@@ -48,7 +48,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         try {
             // 获取当前行号
             Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
-            if (ObjectUtil.isNull(document)) {
+            if (ObjectUtil.isNull(document) || !document.isWritable()) {
                 return;
             }
             int offset = element.getTextOffset();
@@ -60,7 +60,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 return;
             }
 
-            if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")
+            if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()", "query()")
                     && text.endsWith(";")) {
                 if (text.contains("=")) {
                     String trim = StrUtil.subAfter(text, "=", false).trim();
@@ -71,34 +71,39 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 }
                 MybatisFlexConfigAnnotator.element = element;
                 MybatisFlexConfigAnnotator.lineNumber = lineNumber;
-                String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
-                // 如果是括号里面的则不显示icon
-                if (matchText != null && !StrUtil.startWithAny(text, "QueryWrapper", "QueryChain", "UpdateChain")) {
-                    if (matchText.startsWith("\"") || text.startsWith("//")) {
-                        return;
-                    }
-                    if (matchText.contains(",")) {
-                        for (String key : matchText.split(",")) {
-                            if (StrUtil.containsAny(key, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")) {
-                                boolean flag = getCount(key, "(") == getCount(key, ")");
-                                if (flag) {
-                                    if (key.endsWith(")")) {
-                                        text = key;
+                if (checkInBracket(text)) {
+                    String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
+                    // 如果是括号里面的则不显示icon
+                    if (matchText != null && !StrUtil.startWithAny(text, "QueryWrapper", "QueryChain", "UpdateChain")) {
+                        if (matchText.startsWith("\"") || text.startsWith("//")) {
+                            return;
+                        }
+                        if (matchText.contains(",")) {
+                            for (String key : matchText.split(",")) {
+                                if (StrUtil.containsAny(key, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")) {
+                                    boolean flag = getCount(key, "(") == getCount(key, ")");
+                                    if (flag) {
+                                        if (key.endsWith(")")) {
+                                            text = key;
+                                        } else {
+                                            text = matchText;
+                                        }
                                     } else {
                                         text = matchText;
                                     }
-                                } else {
-                                    text = matchText;
+                                    break;
                                 }
-                                break;
+                            }
+                        } else {
+                            if (getCount(matchText, "(") == getCount(matchText, ")")) {
+                                text = matchText;
                             }
                         }
-                    } else {
-                        text = matchText;
                     }
                 }
+
                 String key = StrUtil.subBefore(text, "(", false);
-                if (text.contains("queryChain()")) {
+                if (StrUtil.contains("query()", "queryChain()")) {
                     key = "QueryWrapper.create";
                 }
                 Function<String, String> function = functionMap.get(key);
@@ -122,6 +127,14 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         }
     }
 
+    public boolean checkInBracket(String text) {
+        String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
+        if (StrUtil.containsAny(matchText, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()", "query()")) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * 处理程序变量
      *
@@ -134,7 +147,6 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             }
             BigFunction<String[], String, String, String> function = methodMap.get(key);
             String[] betweenAll = StrUtil.subBetweenAll(text, StrUtil.format(".{}(", key), ")");
-
             if (ObjectUtil.isNotNull(function)) {
                 // 如果有单独的方法来处理，就不走通用的处理逻辑
                 text = function.apply(betweenAll, text, key);

@@ -133,7 +133,7 @@ public class SQLPreviewAction extends AnAction {
 
         String val = null;
         String print = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, text);
-        boolean flag = text.contains("queryChain()");
+        boolean flag = StrUtil.containsAny(text, "queryChain()", "query()");
         AtomicReference<String> variableReference = new AtomicReference<>();
         String ofValue = null;
         if (flag) {
@@ -328,7 +328,7 @@ public class SQLPreviewAction extends AnAction {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
                             if (!MybatisFlexSettingDialog.insideSchemaFlag) {
-                                // virtualFile.delete(this);
+                                virtualFile.delete(this);
                             }
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);

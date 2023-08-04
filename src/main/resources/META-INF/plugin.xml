@@ -39,6 +39,8 @@
     <h3>1.4.6-RELEASE</h3>
     <ul>
     <li>【优化】支持变量SQL预览</li>
+    <li>【优化】表备注换行导致代码升成之后报错</li>
+    <li>【修复】修复 IService里面的部分代码也会显示预览 SQL图标</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
