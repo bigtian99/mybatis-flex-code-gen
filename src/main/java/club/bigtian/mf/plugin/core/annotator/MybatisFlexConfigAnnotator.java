@@ -309,8 +309,10 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             return sql;
         }
         for (String value : betweenAll) {
-            String oldKey = getKey(key, value);
-            sql = sql.replace(oldKey, StrUtil.format(".{}(el -> true)", key));
+            String compute = compute(sql, value, "(", ")", key);
+            String oldKey = getKey(key, compute);
+            String newKey = StrUtil.format(".{}(el -> true)", key);
+            sql = sql.replace(oldKey, newKey);
         }
         return sql;
     }
@@ -381,7 +383,8 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         int rightCount = getCount(value, rightSymbol);
         if (leftCount == rightCount) {
             // 判断时候还有嵌套
-            if (sql.contains(value + ",")) {
+            String replace = value.replace(" ", "");
+            if (sql.contains(replace + ",") || sql.contains(replace + ">")) {
                 value += StrUtil.subBetween(tmpSql, value, ")");
             }
         }

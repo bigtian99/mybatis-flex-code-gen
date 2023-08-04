@@ -129,7 +129,6 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     }
 
 
-
     /**
      * 校验文件是否导入了Table注解
      *
@@ -190,8 +189,9 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             return;
         }
         VirtualFile currentFile = VirtualFileUtils.getVirtualFile(document);
-
-        currentFile.putUserData(CHANGE, true);
+        if (ObjectUtil.isNotNull(currentFile)) {
+            currentFile.putUserData(CHANGE, true);
+        }
     }
 
     private void compile(@NotNull Editor editor) {
