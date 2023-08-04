@@ -13,6 +13,7 @@ import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.Document;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -72,38 +73,10 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 MybatisFlexConfigAnnotator.element = element;
                 MybatisFlexConfigAnnotator.lineNumber = lineNumber;
                 if (checkInBracket(text)) {
-                    String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
-                    // 如果是括号里面的则不显示icon
-                    if (matchText != null && !StrUtil.startWithAny(text, "QueryWrapper", "QueryChain", "UpdateChain")) {
-                        if (matchText.startsWith("\"") || text.startsWith("//")) {
-                            return;
-                        }
-                        if (matchText.contains(",")) {
-                            for (String key : matchText.split(",")) {
-                                if (StrUtil.containsAny(key, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")) {
-                                    boolean flag = getCount(key, "(") == getCount(key, ")");
-                                    if (flag) {
-                                        if (key.endsWith(")")) {
-                                            text = key;
-                                        } else {
-                                            text = matchText;
-                                        }
-                                    } else {
-                                        text = matchText;
-                                    }
-                                    break;
-                                }
-                            }
-                        } else {
-                            if (getCount(matchText, "(") == getCount(matchText, ")")) {
-                                text = matchText;
-                            }
-                        }
-                    }
+                    text = getBracketContent(text);
                 }
-
                 String key = StrUtil.subBefore(text, "(", false);
-                if (StrUtil.contains("query()", "queryChain()")) {
+                if (StrUtil.containsAny(text, "query()", "queryChain()")) {
                     key = "QueryWrapper.create";
                 }
                 Function<String, String> function = functionMap.get(key);
@@ -120,13 +93,57 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 AnnotationBuilder annotationBuilder = holder.newSilentAnnotation(HighlightSeverity.INFORMATION);
                 annotationBuilder.gutterIconRenderer(new SqlPreviewIconRenderer(lineNumber, (PsiJavaFile) element.getContainingFile(), iconMap));
                 annotationBuilder.create();
-
             }
         } catch (PsiInvalidElementAccessException e) {
 
         }
     }
 
+    /**
+     * 获取括号内容
+     *
+     * @param text 文本
+     * @return {@code String}
+     */
+    @Nullable
+    private static String getBracketContent(String text) {
+        String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
+        // 如果是括号里面的则不显示icon
+        if (matchText != null && !StrUtil.startWithAny(text, "QueryWrapper", "QueryChain", "UpdateChain")) {
+            if (matchText.startsWith("\"") || text.startsWith("//")) {
+                return null;
+            }
+            if (matchText.contains(",")) {
+                for (String key : matchText.split(",")) {
+                    if (StrUtil.containsAny(key, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()")) {
+                        boolean flag = getCount(key, "(") == getCount(key, ")");
+                        if (flag) {
+                            if (key.endsWith(")")) {
+                                text = key;
+                            } else {
+                                text = matchText;
+                            }
+                        } else {
+                            text = matchText;
+                        }
+                        break;
+                    }
+                }
+            } else {
+                if (getCount(matchText, "(") == getCount(matchText, ")")) {
+                    text = matchText;
+                }
+            }
+        }
+        return text;
+    }
+
+    /**
+     * 检查是不是在括号里面
+     *
+     * @param text 文本
+     * @return boolean
+     */
     public boolean checkInBracket(String text) {
         String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
         if (StrUtil.containsAny(matchText, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()", "query()")) {
@@ -165,6 +182,20 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 text = text.replace(oldKey, newKey);
 
             }
+        }
+
+        return commonReplace(text);
+    }
+
+    /**
+     * 常见替换
+     *
+     * @param text 文本
+     * @return {@code String}
+     */
+    public String commonReplace(String text) {
+        if (text.startsWith("return")) {
+            text = StrUtil.subAfter(text, "return", false);
         }
         return text;
     }
