@@ -200,16 +200,17 @@ public class TableUtils {
             case Types.LONGVARBINARY:
             case Types.BLOB:
                 return Byte[].class;
-            case Types.NCLOB:
-                return java.sql.NClob.class;
-            case Types.ARRAY:
-                return java.sql.Array.class;
-            case Types.STRUCT:
-                return java.sql.Struct.class;
-            case Types.REF:
-                return java.sql.Ref.class;
-            case Types.SQLXML:
-                return java.sql.SQLXML.class;
+            // 返回对象，在点击生成代码是时候让用户自行选择
+            // case Types.NCLOB:
+            //     return java.sql.NClob.class;
+            // case Types.ARRAY:
+            //     return java.sql.Array.class;
+            // case Types.STRUCT:
+            //     return java.sql.Struct.class;
+            // case Types.REF:
+            //     return java.sql.Ref.class;
+            // case Types.SQLXML:
+            //     return java.sql.SQLXML.class;
             default:
                 return Object.class;
         }
