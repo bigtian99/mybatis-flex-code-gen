@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.core.annotator;
 import club.bigtian.mf.plugin.core.function.BigFunction;
 import club.bigtian.mf.plugin.core.render.SqlPreviewIconRenderer;
 import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
+import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -28,6 +29,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     public static Map<String, BigFunction<String[], String, String, String>> methodMap = new HashMap<>();
     private static PsiElement element;
     private static Integer lineNumber;
+    private static PsiJavaFile psiJavaFile;
 
     static {
         functionMap.put("QueryChain.of", MybatisFlexConfigAnnotator::queryChainHandler);
@@ -49,6 +51,8 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             // ProjectUtils.setCurrentProject(element.getProject());
             // 获取当前行号
             Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
+            psiJavaFile = (PsiJavaFile) VirtualFileUtils.getPsiFile(document);
+
             if (ObjectUtil.isNull(document) || !document.isWritable()) {
                 return;
             }
@@ -357,10 +361,21 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             newKey = getKey(key, StrUtil.format(template, compute + s));
         } else {
             String variableValue = methodVariableMap.get(compute);
+
             if (StrUtil.isNotBlank(variableValue)) {
                 newKey = getKey(key, StrUtil.format(template, handlerVariable(variableValue) + s));
+            } else if (compute.endsWith(".class")) {
+                newKey = getKey(key, compute);
             } else {
+                Set<String> importSet = PsiJavaFileUtil.getImportSet(psiJavaFile);
                 newKey = getKey(key, StrUtil.format("\"?\"{}", s));
+                for (String impor : importSet) {
+                    // 为了兼容 TableDef
+                    if (impor.contains(compute)) {
+                        newKey = getKey(key, compute);
+                        break;
+                    }
+                }
             }
         }
         return newKey;
