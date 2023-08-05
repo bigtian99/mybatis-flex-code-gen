@@ -73,7 +73,7 @@ public class SQLPreviewAction extends AnAction {
 
     public void preview(String selectedText, PsiJavaFile psiFile, SimpleFunction function) {
         try {
-            if (selectedText.contains("QueryWrapper")) {
+            if (selectedText.startsWith("QueryWrapper")) {
                 selectedText = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, selectedText);
             } else {
                 // 处理链式调用
@@ -328,7 +328,7 @@ public class SQLPreviewAction extends AnAction {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
                             if (!MybatisFlexSettingDialog.insideSchemaFlag) {
-                                virtualFile.delete(this);
+                                // virtualFile.delete(this);
                             }
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);

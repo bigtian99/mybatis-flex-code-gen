@@ -35,7 +35,6 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         functionMap.put("UpdateChain.of", MybatisFlexConfigAnnotator::updateChainHandler);
         functionMap.put("UpdateChain.create", MybatisFlexConfigAnnotator::updateChainHandler);
         methodMap.put("limit", MybatisFlexConfigAnnotator::limitHandler);
-        methodMap.put("join", MybatisFlexConfigAnnotator::joinHandler);
         try {
             initQueryChainMethodHandler();
             analysisMethod();
@@ -158,7 +157,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
      *
      * @param text 文本
      */
-    private String handlerVariable(String text) {
+    private static String handlerVariable(String text) {
         for (String key : allMethodList) {
             if (!text.contains(StrUtil.format(".{}(", key))) {
                 continue;
@@ -194,7 +193,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
      * @param text 文本
      * @return {@code String}
      */
-    public String commonReplace(String text) {
+    public static String commonReplace(String text) {
         if (text.startsWith("return")) {
             text = StrUtil.subAfter(text, "return", false);
         }
@@ -206,9 +205,8 @@ public class MybatisFlexConfigAnnotator implements Annotator {
      */
     public static void analysisMethod() {
         PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryColumn");
-        if (ObjectUtil.isNull(psiClass)) {
-            return;
-        }
+        PsiClass queryWrapper = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryWrapper");
+
         Arrays.stream(psiClass.getMethods())
                 .forEach(psiMethod -> {
                     String name = psiMethod.getName();
@@ -219,11 +217,19 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                     } else if (StrUtil.containsIgnoreCase(name, "between")) {
                         methodMap.put(name, MybatisFlexConfigAnnotator::betweenHandler);
                     }
-
                     allMethodList.add(name);
                 });
-        allMethodList.add("limit");
 
+        Arrays.stream(queryWrapper.getMethods())
+                .forEach(psiMethod -> {
+                    String name = psiMethod.getName();
+                    if (StrUtil.containsAnyIgnoreCase(name, "limit", "join")) {
+                        allMethodList.add(name);
+                        if (StrUtil.containsAnyIgnoreCase(name, "join")) {
+                            methodMap.put(name, MybatisFlexConfigAnnotator::joinHandler);
+                        }
+                    }
+                });
     }
 
     /**
@@ -240,6 +246,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                         }
                     }
                 });
+
     }
 
     static String inHandler(String[] betweenAll, String sql, String key) {
@@ -249,7 +256,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             String variableValue = methodVariableMap.get(split[0]);
             String newKey = getKey(key, getSymbol(val).toString());
             if (StrUtil.isNotBlank(variableValue)) {
-                newKey = getKey(key, compute.replace(split[0], variableValue) + ",el->true");
+                newKey = getKey(key, compute.replace(split[0], handlerVariable(variableValue)) + ",el->true");
             }
             if (split.length > 1) {
                 newKey = getKey(key, StrUtil.format("{},el->true", getSymbol(split[0])));
@@ -332,11 +339,31 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         for (String s : betweenAll) {
             String compute = compute(sql, s, "(", ")", key);
             String oldKey = getKey(key, compute);
-            String newKey;
-            newKey = getKey(key, compute.contains(",") ? "1 , 10" : "10");
+            String newKey = "";
+            if (compute.contains(",")) {
+                String s1 = compute.split(",")[0];
+                newKey = getJoinNewKey(s1, key, "{}", ",true");
+            } else {
+                newKey = getJoinNewKey(compute, key, "{}", "");
+            }
             sql = sql.replace(oldKey, newKey);
         }
         return sql;
+    }
+
+    private static String getJoinNewKey(String compute, String key, String template, String s) {
+        String newKey = "";
+        if (compute.startsWith("\"")) {
+            newKey = getKey(key, StrUtil.format(template, compute + s));
+        } else {
+            String variableValue = methodVariableMap.get(compute);
+            if (StrUtil.isNotBlank(variableValue)) {
+                newKey = getKey(key, StrUtil.format(template, handlerVariable(variableValue) + s));
+            } else {
+                newKey = getKey(key, StrUtil.format("\"?\"{}", s));
+            }
+        }
+        return newKey;
     }
 
     private static String getNewKey(String[] split, int count, String oldKey) {
@@ -384,7 +411,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         if (leftCount == rightCount) {
             // 判断时候还有嵌套
             String replace = value.replace(" ", "");
-            if (sql.contains(replace + ",") || sql.contains(replace + ">")) {
+            if (sql.contains(replace + ",") || sql.contains(replace + ">") || sql.contains(replace + ".")) {
                 value += StrUtil.subBetween(tmpSql, value, ")");
             }
         }
