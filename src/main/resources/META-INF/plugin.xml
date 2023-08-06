@@ -72,6 +72,15 @@
 
         <annotator language="JAVA"
                    implementationClass="club.bigtian.mf.plugin.core.annotator.MybatisFlexConfigAnnotator"/>
+
+
+        <!-- 语法校验，让没有生成代码的方法产生错误 -->
+        <localInspection language="JAVA" shortName="NoFromInspection"
+                         id="club.bigtian.mf.plugin.core.inspection.NoFromInspection"
+                         displayName="From method inspection"
+
+                         groupName="Mybatis felx" enabledByDefault="true" level="ERROR"
+                         implementationClass="club.bigtian.mf.plugin.core.inspection.NoFromInspection"/>
     </extensions>
 
     <actions>

@@ -328,7 +328,7 @@ public class SQLPreviewAction extends AnAction {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
                             if (!MybatisFlexSettingDialog.insideSchemaFlag) {
-                                // virtualFile.delete(this);
+                                virtualFile.delete(this);
                             }
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);
@@ -366,7 +366,6 @@ public class SQLPreviewAction extends AnAction {
                                     new SQLPreviewDialog(event1.getText()).setVisible(true);
                                 }
                             } else if (ProcessOutputTypes.STDERR.equals(outputType)) {
-
                                 String text = event1.getText();
                                 if (text.startsWith("Exception in")) {
                                     NotificationUtils.notifyError((StrUtil.subAfter(text, ":", true)), "Mybatis-Flex system tips");

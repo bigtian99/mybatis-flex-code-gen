@@ -25,6 +25,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     private static Map<String, Function<String, String>> functionMap = new HashMap<>();
     private static Set<String> removeMethodSet = new HashSet<>();
     private static Set<String> allMethodList = new HashSet<>();
+    private static Set<String> allowEndWithMethodSet = new HashSet<>();
     private static Map<String, String> methodVariableMap;
     public static Map<String, BigFunction<String[], String, String, String>> methodMap = new HashMap<>();
     private static PsiElement element;
@@ -37,9 +38,11 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         functionMap.put("UpdateChain.of", MybatisFlexConfigAnnotator::updateChainHandler);
         functionMap.put("UpdateChain.create", MybatisFlexConfigAnnotator::updateChainHandler);
         methodMap.put("limit", MybatisFlexConfigAnnotator::limitHandler);
+        allowEndWithMethodSet.add("on");
         try {
             initQueryChainMethodHandler();
             analysisMethod();
+            initAllowEndWithMethod();
         } catch (Exception e) {
 
         }
@@ -51,6 +54,9 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             // ProjectUtils.setCurrentProject(element.getProject());
             // 获取当前行号
             Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
+            if (ObjectUtil.isNull(document)) {
+                return;
+            }
             psiJavaFile = (PsiJavaFile) VirtualFileUtils.getPsiFile(document);
 
             if (ObjectUtil.isNull(document) || !document.isWritable()) {
@@ -92,15 +98,49 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                     return;
                 }
                 text = handlerVariable(text);
-                iconMap.put(lineNumber, StrUtil.subBefore(text, ";", true));
-                // 创建图标注解
-                AnnotationBuilder annotationBuilder = holder.newSilentAnnotation(HighlightSeverity.INFORMATION);
-                annotationBuilder.gutterIconRenderer(new SqlPreviewIconRenderer(lineNumber, (PsiJavaFile) element.getContainingFile(), iconMap));
-                annotationBuilder.create();
+
+                if (allowEndWith(text)) {
+                    holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                            .range(element.getTextRange())
+                            .create();
+                    iconMap.put(lineNumber, StrUtil.subBefore(text, ";", true));
+                    // 创建图标注解
+                    AnnotationBuilder annotationBuilder = holder.newSilentAnnotation(HighlightSeverity.INFORMATION);
+                    annotationBuilder.gutterIconRenderer(new SqlPreviewIconRenderer(lineNumber, (PsiJavaFile) element.getContainingFile(), iconMap));
+                    annotationBuilder.create();
+                }
+
             }
         } catch (PsiInvalidElementAccessException e) {
 
         }
+    }
+
+    private boolean allowEndWith(String text) {
+        for (String methodName : allowEndWithMethodSet) {
+            if (!text.contains(StrUtil.format(".{}(", methodName))) {
+                continue;
+            }
+            String[] betweenAll = StrUtil.subBetweenAll(text, StrUtil.format(".{}(", methodName), ")");
+            for (String s : betweenAll) {
+                String compute = compute(text, s, "(", ")", "");
+                String newKey = getKey(methodName, "?");
+                String oldKey = getKey(methodName, compute);
+                text = text.replace(oldKey, newKey);
+            }
+        }
+        String methodName = StrUtil.subAfter(text, ".", true);
+
+        methodName = StrUtil.subBefore(methodName, "(", false);
+        return allowEndWithMethodSet.contains(methodName);
+    }
+
+    public static void initAllowEndWithMethod() {
+        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryConditionBuilder");
+        Arrays.stream(psiClass.getMethods())
+                .forEach(psiMethod -> {
+                    allowEndWithMethodSet.add(psiMethod.getName());
+                });
     }
 
     /**
@@ -227,6 +267,12 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         Arrays.stream(queryWrapper.getMethods())
                 .forEach(psiMethod -> {
                     String name = psiMethod.getName();
+                    PsiType returnType = psiMethod.getReturnType();
+                    if (ObjectUtil.isNotNull(returnType)) {
+                        if ("com.mybatisflex.core.query.QueryWrapper".equals(returnType.getCanonicalText())) {
+                            allowEndWithMethodSet.add(name);
+                        }
+                    }
                     if (StrUtil.containsAnyIgnoreCase(name, "limit", "join")) {
                         allMethodList.add(name);
                         if (StrUtil.containsAnyIgnoreCase(name, "join")) {
@@ -298,7 +344,9 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                     String variableName = StrUtil.subBetween(text, " ", "=");
                     String variableValue = StrUtil.subAfter(text, "=", false);
                     HashMap<String, String> valueMap = new HashMap<>();
-                    valueMap.put(variableName.trim(), variableValue.replace(";", "").trim());
+                    if (StrUtil.isNotBlank(variableValue)) {
+                        valueMap.put(variableName.trim(), variableValue.replace(";", "").trim());
+                    }
                     return valueMap;
                 }).collect(HashMap::new, HashMap::putAll, HashMap::putAll);
     }
