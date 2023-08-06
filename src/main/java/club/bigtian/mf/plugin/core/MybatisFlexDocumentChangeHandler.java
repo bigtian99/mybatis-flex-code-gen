@@ -6,15 +6,16 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
-import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
+import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
@@ -22,12 +23,14 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiUtil;
 import org.apache.velocity.VelocityContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.KtFile;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -54,7 +57,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             // 检查索引是否已准备好
             Project project = ProjectUtils.getCurrentProject();
             oldFile.putUserData(CHANGE, false);
-            PsiJavaFile psiJavaFile = (PsiJavaFile) VirtualFileUtils.getPsiFile(project, oldFile);
+            PsiClassOwner psiJavaFile = (PsiClassOwner) VirtualFileUtils.getPsiFile(project, oldFile);
             PsiClass psiClass = psiJavaFile.getClasses()[0];
             Module moduleForFile = ModuleUtil.findModuleForFile(oldFile, project);
             PsiField[] fields = psiClass.getFields();
@@ -147,59 +150,10 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         ProjectUtils.setCurrentProject(editor.getProject());
     }
 
-    private void executeCompile(Editor editor) {
-        Document document = editor.getDocument();
-        boolean flag = checkFile(editor);
-        Project project = editor.getProject();
-        VirtualFile currentFile = VirtualFileUtils.getVirtualFile(document);
-        if (ObjectUtil.isNull(currentFile)) {
-            return;
-        }
-
-        PsiFile psiFile = VirtualFileUtils.getPsiFile(project, currentFile);
-        if (flag || ObjectUtil.isNull(currentFile) || !(psiFile instanceof PsiJavaFile) && !(psiFile instanceof KtFile)
-                || !ObjectUtil.defaultIfNull(document.getUserData(CHANGE), false)
-                || PsiUtil.hasErrorElementChild(psiFile)) {
-            return;
-        }
-        document.putUserData(CHANGE, false);
-        // 执行任务的逻辑
-        Application application = ApplicationManager.getApplication();
-        application.invokeLater(() -> {
-            compile(editor);
-        });
-    }
 
 
-    /**
-     * 校验文件是否导入了Table注解
-     *
-     * @param editor
-     * @return
-     */
-    private static boolean checkFile(Editor editor) {
-        FileDocumentManager fileDocumentManager = FileDocumentManager.getInstance();
-        VirtualFile currentFile = fileDocumentManager.getFile(editor.getDocument());
-        if (ObjectUtil.isNull(currentFile)) {
-            return false;
-        }
-        PsiManager psiManager = PsiManager.getInstance(Objects.requireNonNull(editor.getProject()));
-        PsiFile psiFile = psiManager.findFile(currentFile);
-        // 支持java和kotlin
-        if (!(psiFile instanceof PsiJavaFile) && !(psiFile instanceof KtFile)) {
-            return false;
-        }
-        Set<String> importSet = new HashSet<>();
-        if (psiFile instanceof KtFile) {
-            KtFile ktFile = (KtFile) psiFile;
-            importSet = KtFileUtil.getImportSet(ktFile);
-        }
-        if (psiFile instanceof PsiJavaFile) {
-            PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-            importSet = PsiJavaFileUtil.getImportSet(psiJavaFile);
-        }
-        return !importSet.contains("import com.mybatisflex.annotation.Table;" );
-    }
+
+
 
     private static boolean checkFile(VirtualFile currentFile) {
         if (ObjectUtil.isNull(currentFile)) {
@@ -220,7 +174,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
             importSet = PsiJavaFileUtil.getImportSet(psiJavaFile);
         }
-        return importSet.contains("import com.mybatisflex.annotation.Table;" );
+        return importSet.contains("com.mybatisflex.annotation.Table" );
     }
 
     @Override

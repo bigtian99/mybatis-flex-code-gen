@@ -5,9 +5,10 @@ import com.mybatisflex.core.table.TableDef;
 
 class ${className} : TableDef("", "${talbeName}") {
 
-    #foreach($column in $list)
-        val $column.name = QueryColumn(this, "${column.columnName}")
-    #end
+#foreach($column in $list)
+    val $column.name = QueryColumn(this, "${column.columnName}")
+#end
+
     /**
      * 所有字段。
      */
