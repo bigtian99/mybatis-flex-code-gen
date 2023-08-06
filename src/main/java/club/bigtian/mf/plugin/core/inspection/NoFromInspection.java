@@ -66,27 +66,19 @@ public class NoFromInspection extends LocalInspectionTool {
 
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-            PsiElement expression = descriptor.getPsiElement();
+            PsiElement expression = descriptor.getPsiElement() instanceof PsiLocalVariable
+                    ? descriptor.getPsiElement().getLastChild().getPrevSibling()
+                    : descriptor.getPsiElement();
+
             String text = expression.getText();
             TextRange range = descriptor.getTextRangeInElement();
             PsiElementFactory instance = PsiElementFactory.getInstance(project);
-            String prefix = StrUtil.sub(text, range.getStartOffset(), range.getEndOffset() + 1);
-            String suffix = StrUtil.sub(text, range.getEndOffset() + 1, text.length());
+            int idx = text.indexOf(")");
+            String prefix = StrUtil.sub(text, range.getStartOffset(), idx + 1);
+            String suffix = StrUtil.sub(text, idx + 1, text.length());
             Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
-            PsiElement statement = instance.createStatementFromText(prefix + "\n.from()" + suffix, expression);
-
+            PsiElement statement = instance.createStatementFromText(prefix + "\n.from()" + suffix, null);
             int offset = expression.getTextOffset() + prefix.length() + 7;
-            // PsiLocalVariable需要特殊处理
-            if (expression instanceof PsiLocalVariable) {
-                expression = expression.getLastChild().getPrevSibling();
-                text = expression.getText();
-                int idx = text.indexOf(")");
-                prefix = StrUtil.sub(text, range.getStartOffset(), idx + 1);
-                suffix = StrUtil.sub(text, idx + 1, text.length());
-                offset = expression.getTextOffset() + prefix.length() + 7;
-                statement = instance.createStatementFromText(prefix + "\n.from()" + suffix, null);
-                expression.replace(statement);
-            }
             expression.replace(statement);
             // 同步更新文档
             editor.getCaretModel().moveToOffset(offset);

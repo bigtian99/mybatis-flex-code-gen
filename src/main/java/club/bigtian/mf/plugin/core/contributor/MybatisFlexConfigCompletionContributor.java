@@ -162,13 +162,17 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
                         .withTypeText(confgInfo.getDescription())
                         .withInsertHandler((context, item) -> {
                             int tailOffset = context.getTailOffset();
+                            Document document = context.getDocument();
+                            Editor editor = context.getEditor();
                             // 如果不包含 #，则添加注释
-                            if (!text.contains("#")) {
-                                context.getDocument().insertString(tailOffset, " # " + confgInfo.getDescription());
-                            }
+
                             if (confgInfo.getValue().size() > 1) {
                                 context.getEditor().getCaretModel().moveToOffset(tailOffset + key.length() + 3);
                             }
+                            // 获取插入文本的上一行结束位置
+                            int lineNumber = document.getLineNumber(tailOffset);
+                            int lineStartOffset = document.getLineStartOffset(lineNumber);
+                            document.insertString(lineStartOffset, "# " + confgInfo.getDescription() + "\n");
                         })
                         .withIcon(Icons.FLEX);
                 completionResultSet.addElement(lookupElement);

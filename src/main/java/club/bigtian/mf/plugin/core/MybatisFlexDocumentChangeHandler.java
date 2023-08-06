@@ -20,9 +20,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiManager;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.KtFile;
@@ -48,7 +46,12 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             Boolean userData = oldFile.getUserData(CHANGE);
             if (BooleanUtil.isTrue(userData) && checkFile(oldFile)) {
                 oldFile.putUserData(CHANGE, false);
-                CompilerManagerUtil.compile(new VirtualFile[]{oldFile}, null);
+                PsiJavaFile psiJavaFile = (PsiJavaFile) VirtualFileUtils.getPsiFile(ProjectUtils.getCurrentProject(), oldFile);
+                PsiClass psiClass = psiJavaFile.getClasses()[0];
+                PsiField[] fields = psiClass.getFields();
+                System.out.println(fields.length);
+
+                // CompilerManagerUtil.compile(new VirtualFile[]{oldFile}, null);
             }
 
         }
