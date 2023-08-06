@@ -67,7 +67,7 @@ public class Template {
      * @return {@code String}
      */
     @NotNull
-    private static String getTemplateContent(String templateName) {
+    public static String getTemplateContent(String templateName) {
         URL resource = Template.class.getResource(StrUtil.format("/templates/{}.vm", templateName));
         String templateContent = null;
         try {

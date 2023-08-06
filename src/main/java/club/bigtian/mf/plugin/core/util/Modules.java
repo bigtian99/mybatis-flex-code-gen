@@ -142,6 +142,10 @@ public class Modules {
         return isManvenProject;
     }
 
+    public static String getProjectTypeSuffix(Module module) {
+        return isManvenProject(module) ? ".java" : ".kt";
+    }
+
 
     /**
      * 获取模块

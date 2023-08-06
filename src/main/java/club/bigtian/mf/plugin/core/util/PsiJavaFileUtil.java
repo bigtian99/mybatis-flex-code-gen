@@ -56,10 +56,11 @@ public class PsiJavaFileUtil {
         JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
         return psiFacade.findClass(qualifiedName, GlobalSearchScope.allScope(project));
     }
-    public static PsiClass getPsiClass(String qualifiedName,GlobalSearchScope scope) {
+
+    public static PsiClass getPsiClass(String qualifiedName, GlobalSearchScope scope) {
         Project project = ProjectUtils.getCurrentProject();
         JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
-        return psiFacade.findClass(qualifiedName,scope);
+        return psiFacade.findClass(qualifiedName, scope);
     }
 
     public static PsiImportStatement createImportStatement(PsiClass psiClass) {
@@ -74,5 +75,16 @@ public class PsiJavaFileUtil {
             genericity = StrUtil.subAfter(genericity, ",", true).trim();
         }
         return genericity;
+    }
+
+    /**
+     * 获得包名
+     *
+     * @param psiClass psi类
+     * @return {@code String}
+     */
+    public static String getPackageName(PsiClass psiClass) {
+        PsiJavaFile psiJavaFile = (PsiJavaFile) psiClass.getContainingFile();
+        return psiJavaFile.getPackageName();
     }
 }

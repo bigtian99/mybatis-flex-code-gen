@@ -1,0 +1,24 @@
+package $packageName;
+
+import com.mybatisflex.core.query.QueryColumn;
+import com.mybatisflex.core.table.TableDef;
+
+public class ${className} extends TableDef{
+
+public static final ${className} $instance=new ${className}();
+
+#foreach($column in $list)
+public final QueryColumn $column.name =new QueryColumn(this,"${column.columnName}" );
+
+#end
+/**
+ * 所有字段。
+ */
+public final QueryColumn ALL_COLUMNS=new QueryColumn(this,"*" );
+
+/**
+ * 默认字段，不包含逻辑删除或者 large 等字段。
+ */
+public final QueryColumn[]DEFAULT_COLUMNS=new QueryColumn[]{#foreach($column in $list) $column.name #if($foreach.hasNext),#end#end};
+public ${className}(){super("","${talbeName}" );}
+        }

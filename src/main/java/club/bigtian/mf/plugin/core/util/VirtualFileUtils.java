@@ -74,6 +74,9 @@ public class VirtualFileUtils {
     public static PsiDirectory getPsiDirectory(Project project, String path) {
         PsiManager psiManager = PsiManager.getInstance(project);
         VirtualFile virtualFile = transToJavaFile(path);
+        if (ObjectUtil.isNull(virtualFile)) {
+            return null;
+        }
         return psiManager.findDirectory(virtualFile);
     }
 
@@ -120,6 +123,29 @@ public class VirtualFileUtils {
                     subdirectory = targetDirectory.createSubdirectory(directoryName);
                 }
                 targetDirectory = subdirectory;
+            }
+        }
+        return targetDirectory;
+    }
+
+    public static PsiDirectory createSubDirectory(Module module, String packageName) {
+        PsiDirectory targetDirectory = getPsiDirectory(module.getProject(), packageName);
+        if (ObjectUtil.isNotNull(targetDirectory)) {
+            return targetDirectory;
+        }
+        String path = StrUtil.subBefore(module.getModuleFilePath(), ".idea", false);
+        targetDirectory = getPsiDirectory(module.getProject(), path);
+        if (targetDirectory != null) {
+            String[] directories = StrUtil.subAfter(packageName, path, false).split("/" );
+            for (String directoryName : directories) {
+                AtomicReference<PsiDirectory> subdirectory = new AtomicReference<>(targetDirectory.findSubdirectory(directoryName));
+                if (subdirectory.get() == null) {
+                    PsiDirectory finalTargetDirectory = targetDirectory;
+                    WriteCommandAction.runWriteCommandAction(module.getProject(), () -> {
+                        subdirectory.set(finalTargetDirectory.createSubdirectory(directoryName));
+                    });
+                }
+                targetDirectory = subdirectory.get();
             }
         }
         return targetDirectory;

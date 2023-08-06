@@ -1,33 +1,33 @@
 package club.bigtian.mf.plugin.core;
 
 import club.bigtian.mf.plugin.core.util.*;
+import club.bigtian.mf.plugin.entity.AptInfo;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
-import com.intellij.openapi.editor.event.DocumentEvent;
-import com.intellij.openapi.editor.event.DocumentListener;
-import com.intellij.openapi.editor.event.EditorFactoryEvent;
-import com.intellij.openapi.editor.event.EditorFactoryListener;
+import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
+import org.apache.velocity.VelocityContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.KtFile;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -35,27 +35,67 @@ import java.util.Set;
  */
 public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable, FileEditorManagerListener {
     private static final Logger LOG = Logger.getInstance(MybatisFlexDocumentChangeHandler.class);
-    private static final Key<Boolean> CHANGE = Key.create("change");
-    private static final Key<Boolean> LISTENER = Key.create("listener");
+    private static final Key<Boolean> CHANGE = Key.create("change" );
+    private static final Key<Boolean> LISTENER = Key.create("listener" );
 
     @Override
     public void selectionChanged(@NotNull FileEditorManagerEvent event) {
         FileEditor oldEditor = event.getOldEditor();
         if (ObjectUtil.isNotNull(oldEditor)) {
             VirtualFile oldFile = event.getOldFile();
-            Boolean userData = oldFile.getUserData(CHANGE);
-            if (BooleanUtil.isTrue(userData) && checkFile(oldFile)) {
-                oldFile.putUserData(CHANGE, false);
-                PsiJavaFile psiJavaFile = (PsiJavaFile) VirtualFileUtils.getPsiFile(ProjectUtils.getCurrentProject(), oldFile);
-                PsiClass psiClass = psiJavaFile.getClasses()[0];
-                PsiField[] fields = psiClass.getFields();
-                System.out.println(fields.length);
+            createAptFile(oldFile);
+        }
 
-                // CompilerManagerUtil.compile(new VirtualFile[]{oldFile}, null);
+    }
+
+    private static void createAptFile(VirtualFile oldFile) {
+        Boolean userData = oldFile.getUserData(CHANGE);
+        if (BooleanUtil.isTrue(userData) && checkFile(oldFile)) {
+            // 检查索引是否已准备好
+            Project project = ProjectUtils.getCurrentProject();
+            oldFile.putUserData(CHANGE, false);
+            PsiJavaFile psiJavaFile = (PsiJavaFile) VirtualFileUtils.getPsiFile(project, oldFile);
+            PsiClass psiClass = psiJavaFile.getClasses()[0];
+            Module moduleForFile = ModuleUtil.findModuleForFile(oldFile, project);
+            PsiField[] fields = psiClass.getFields();
+            List<AptInfo> list = new ArrayList<>();
+            for (PsiField field : fields) {
+                PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column" );
+                if (ObjectUtil.isNotNull(column)) {
+                    PsiAnnotationMemberValue value = column.findAttributeValue("value" );
+                    String fieldName = value.getText().replace("\"", "" );
+                    list.add(new AptInfo(fieldName, StrUtil.toUnderlineCase(field.getName()).toUpperCase()));
+                } else {
+                    list.add(new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase()));
+                }
             }
+            String path = StrUtil.subBefore(moduleForFile.getModuleFilePath(), ".idea", false) + (Modules.isManvenProject(moduleForFile)
+                    ? "target/generated-sources/annotations/" : "build/generated/source/kapt/main/" )
+                    + psiJavaFile.getPackageName().replace(".", "/" ) + "/table";
 
+            PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table" );
+            PsiDirectory psiDirectory = VirtualFileUtils.createSubDirectory(moduleForFile, path);
+            VelocityContext context = new VelocityContext();
+            String className = psiClass.getName() + "TableDef";
+            context.put("className", className);
+            context.put("packageName", psiJavaFile.getPackageName() + ".table" );
+            context.put("list", list);
+            context.put("instance", StrUtil.toUnderlineCase(psiClass.getName()).toUpperCase());
+            context.put("talbeName", table.findAttributeValue("value" ).getText().replace("\"", "" ));
+            String suffix = Modules.getProjectTypeSuffix(moduleForFile);
+            String fileName = className + suffix;
+            PsiFile psiFile = VelocityUtils.render(context, Template.getTemplateContent("AptTemplate" + suffix), fileName);
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                PsiFile file = psiDirectory.findFile(fileName);
+                if (ObjectUtil.isNotNull(file)) {
+                    file.getViewProvider().getDocument().setText(psiFile.getText());
+                } else {
+                    psiDirectory.add(psiFile);
+                }
+            });
         }
     }
+
 
     public MybatisFlexDocumentChangeHandler() {
         super();
@@ -66,15 +106,14 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
         for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
             ProjectUtils.setCurrentProject(editor.getProject());
-
             document = editor.getDocument();
             document.putUserData(LISTENER, true);
-            // editor.addEditorMouseListener(new EditorMouseListener() {
-            //     @Override
-            //     public void mouseExited(@NotNull EditorMouseEvent event) {
-            //         executeCompile(editor);
-            //     }
-            // });
+            editor.addEditorMouseListener(new EditorMouseListener() {
+                @Override
+                public void mouseExited(@NotNull EditorMouseEvent event) {
+                    createAptFile(VirtualFileUtils.getVirtualFile(editor.getDocument()));
+                }
+            });
         }
         FileEditorManager.getInstance(ProjectUtils.getCurrentProject()).addFileEditorManagerListener(this);
 
@@ -94,12 +133,12 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     public void editorCreated(@NotNull EditorFactoryEvent event) {
         EditorFactoryListener.super.editorCreated(event);
         Editor editor = event.getEditor();
-        // editor.addEditorMouseListener(new EditorMouseListener() {
-        //     @Override
-        //     public void mouseExited(@NotNull EditorMouseEvent event) {
-        //         executeCompile(editor);
-        //     }
-        // });
+        editor.addEditorMouseListener(new EditorMouseListener() {
+            @Override
+            public void mouseExited(@NotNull EditorMouseEvent event) {
+                createAptFile(VirtualFileUtils.getVirtualFile(editor.getDocument()));
+            }
+        });
         Document document = editor.getDocument();
         if (Boolean.TRUE.equals(document.getUserData(LISTENER))) {
             document.putUserData(LISTENER, true);
@@ -159,7 +198,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
             importSet = PsiJavaFileUtil.getImportSet(psiJavaFile);
         }
-        return !importSet.contains("import com.mybatisflex.annotation.Table;");
+        return !importSet.contains("import com.mybatisflex.annotation.Table;" );
     }
 
     private static boolean checkFile(VirtualFile currentFile) {
@@ -181,7 +220,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
             importSet = PsiJavaFileUtil.getImportSet(psiJavaFile);
         }
-        return importSet.contains("import com.mybatisflex.annotation.Table;");
+        return importSet.contains("import com.mybatisflex.annotation.Table;" );
     }
 
     @Override
