@@ -51,9 +51,12 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     @Override
     public void annotate(PsiElement element, AnnotationHolder holder) {
         try {
-            // ProjectUtils.setCurrentProject(element.getProject());
             // 获取当前行号
-            Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(element.getContainingFile());
+            PsiFile containingFile = element.getContainingFile();
+            if (ObjectUtil.isNull(containingFile)) {
+                return;
+            }
+            Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(containingFile);
             if (ObjectUtil.isNull(document)) {
                 return;
             }
@@ -106,7 +109,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                     iconMap.put(lineNumber, StrUtil.subBefore(text, ";", true));
                     // 创建图标注解
                     AnnotationBuilder annotationBuilder = holder.newSilentAnnotation(HighlightSeverity.INFORMATION);
-                    annotationBuilder.gutterIconRenderer(new SqlPreviewIconRenderer(lineNumber, (PsiJavaFile) element.getContainingFile(), iconMap));
+                    annotationBuilder.gutterIconRenderer(new SqlPreviewIconRenderer(lineNumber, (PsiJavaFile) containingFile, iconMap));
                     annotationBuilder.create();
                 }
 

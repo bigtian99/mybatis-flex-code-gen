@@ -48,10 +48,12 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             VirtualFile oldFile = event.getOldFile();
             createAptFile(oldFile);
         }
-
     }
 
     private static void createAptFile(VirtualFile oldFile) {
+        if (ObjectUtil.isNull(oldFile)) {
+            return;
+        }
         Boolean userData = oldFile.getUserData(CHANGE);
         if (BooleanUtil.isTrue(userData) && checkFile(oldFile)) {
             // 检查索引是否已准备好
@@ -118,7 +120,11 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 }
             });
         }
-        FileEditorManager.getInstance(ProjectUtils.getCurrentProject()).addFileEditorManagerListener(this);
+        Project project = ProjectUtils.getCurrentProject();
+        if (ObjectUtil.isNull(project)) {
+            return;
+        }
+        FileEditorManager.getInstance(project).addFileEditorManagerListener(this);
 
     }
 
@@ -149,10 +155,6 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         }
         ProjectUtils.setCurrentProject(editor.getProject());
     }
-
-
-
-
 
 
     private static boolean checkFile(VirtualFile currentFile) {

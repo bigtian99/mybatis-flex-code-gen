@@ -13,8 +13,14 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class NoFromInspection extends LocalInspectionTool {
     public static final Key<Boolean> WARING = Key.create("waring");
+
+    private static final List<String> KEY_LIST = Arrays.asList("QueryWrapper.", "UpdateChain.", "QueryChain.", ".queryChain()", ".query()");
+
 
     @NotNull
     @Override
@@ -27,7 +33,7 @@ public class NoFromInspection extends LocalInspectionTool {
                     if (element instanceof PsiLocalVariable || element instanceof PsiExpressionStatement) {
                         if (hasUncheckedException(element)) {
                             String text = element.getText();
-                            holder.registerProblem(element, new TextRange(0, text.indexOf(")")), "请添加from 方法，否则查询可能会出错", new QuickFix());
+                            holder.registerProblem(element, new TextRange(0, text.length()), "请添加from 方法，否则查询可能会出错", new QuickFix());
                         }
 
                     }
@@ -43,11 +49,24 @@ public class NoFromInspection extends LocalInspectionTool {
         // 获取光标
         PsiFile psiFile = expression.getContainingFile();
         String text = expression.getText();
-        boolean flag = StrUtil.containsAny(text, "QueryWrapper.", "UpdateChain.", "QueryChain.", ".queryChain()", ".query()");
-        if (!psiFile.isWritable() || !flag || !text.endsWith(";")) {
+        boolean flag = StrUtil.containsAny(text, KEY_LIST.toArray(new String[0]));
+        if (!psiFile.isWritable() || !(flag && checkIsString(text)) || !text.endsWith(";")) {
             return false;
         }
         return !text.contains("from(");
+    }
+
+    public boolean checkIsString(String text) {
+        int count = 0;
+        for (String key : KEY_LIST) {
+            boolean flag = text.contains(key);
+            if (!flag) {
+                continue;
+            }
+            String prefix = StrUtil.subBefore(text, key, false);
+            count = StrUtil.count(prefix, '\"');
+        }
+        return count % 2 == 0;
     }
 
     // 自定义 QuickFix 用于修复问题

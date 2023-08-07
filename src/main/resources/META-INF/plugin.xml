@@ -79,7 +79,7 @@
                          id="club.bigtian.mf.plugin.core.inspection.NoFromInspection"
                          displayName="From method inspection"
 
-                         groupName="Mybatis felx" enabledByDefault="true" level="ERROR"
+                         groupName="Mybatis felx" enabledByDefault="true" level="INFO"
                          implementationClass="club.bigtian.mf.plugin.core.inspection.NoFromInspection"/>
     </extensions>
 
