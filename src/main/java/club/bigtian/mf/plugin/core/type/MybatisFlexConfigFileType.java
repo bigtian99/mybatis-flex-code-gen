@@ -16,13 +16,15 @@ import javax.swing.*;
  */
 public class MybatisFlexConfigFileType implements FileIconProvider {
 
-
     @Override
     public @Nullable Icon getIcon(@NotNull VirtualFile file, int flags, @Nullable Project project) {
         if (file.getName().equals("mybatis-flex.config")) {
+
             return Icons.FLEX;
         }
         // 返回 null 时，使用默认图标
         return null;
     }
+
+
 }

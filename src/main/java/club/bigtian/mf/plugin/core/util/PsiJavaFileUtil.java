@@ -92,4 +92,6 @@ public class PsiJavaFileUtil {
         PsiJavaFile psiJavaFile = (PsiJavaFile) psiClass.getContainingFile();
         return psiJavaFile.getPackageName();
     }
+
+
 }

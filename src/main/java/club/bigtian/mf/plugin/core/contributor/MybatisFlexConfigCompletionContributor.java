@@ -76,14 +76,13 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
                 psiFacade = JavaPsiFacade.getInstance(project);
                 psiManager = PsiManager.getInstance(project);
             }
-
             // 获取已经存在的配置,存在的配置不再提示
             List<String> existConfigList = getExistConfig(document);
             // 获取当前光标位置
             LogicalPosition logicalPosition = editor.getCaretModel().getLogicalPosition();
             // 获取当前光标位置的文本信息
             int line = logicalPosition.line;
-            String text = editor.getDocument().getText(new TextRange(line, document.getLineEndOffset(line)));
+            String text = editor.getDocument().getText(new TextRange(editor.getDocument().getLineStartOffset(line), editor.getDocument().getLineEndOffset(line)));
             // 如果包含 = ，则提示 value
             if (text.contains("=")) {
                 text = text.substring(0, text.lastIndexOf("=") + 1);
@@ -98,6 +97,7 @@ public class MybatisFlexConfigCompletionContributor extends CompletionContributo
         } catch (PsiInvalidElementAccessException e) {
         }
     }
+
 
     /**
      * 获取已经存在的配置

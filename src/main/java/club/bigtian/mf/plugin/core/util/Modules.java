@@ -1,10 +1,12 @@
 package club.bigtian.mf.plugin.core.util;
 
+import club.bigtian.mf.plugin.core.config.CustomConfig;
 import club.bigtian.mf.plugin.core.filter.FilterComboBoxModel;
 import club.bigtian.mf.plugin.core.render.ModuleComBoxRender;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -15,10 +17,7 @@ import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.JavaDirectoryService;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiPackage;
+import com.intellij.psi.*;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import javax.swing.*;
@@ -254,5 +253,39 @@ public class Modules {
             return StrUtil.subBefore(path, "src", false);
         }
         return "";
+    }
+
+
+    public static CustomConfig moduleConfig(Module module) {
+        String path = getPath(module);
+        PsiFile file = null;
+        PsiDirectory psiDirectory = VirtualFileUtils.getPsiDirectory(module.getProject(), path);
+        while (ObjectUtil.isNull(file) && ObjectUtil.isNotNull(psiDirectory)) {
+            file = psiDirectory.findFile("mybatis-flex.config");
+            if (ObjectUtil.isNull(file)) {
+                // 往上找
+                psiDirectory = psiDirectory.getParent();
+            }
+        }
+        if (ObjectUtil.isNull(file)) {
+            return null;
+        }
+        CustomConfig config = new CustomConfig();
+        Arrays.stream(file.getText().split("\n"))
+                .filter(el -> el.startsWith("processor"))
+                .forEach(el -> {
+                    String text = StrUtil.subAfter(el, ".", false);
+                    if (StrUtil.count(el, ".") > 1) {
+                        String[] split = text.split("\\.");
+                        text = split[0];
+                        if (split.length > 1) {
+                            text += StrUtil.upperFirst(split[1]);
+                        }
+                    }
+                    String prefix = StrUtil.toCamelCase(StrUtil.subBefore(text, "=", false));
+                    String suffix = StrUtil.subAfter(text, "=", false);
+                    ReflectUtil.setFieldValue(config, prefix, suffix);
+                });
+        return config;
     }
 }

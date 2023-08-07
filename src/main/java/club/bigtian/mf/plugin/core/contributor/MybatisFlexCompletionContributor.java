@@ -1,7 +1,7 @@
 package club.bigtian.mf.plugin.core.contributor;
 
-import club.bigtian.mf.plugin.core.util.KtFileUtil;
-import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
+import club.bigtian.mf.plugin.core.config.CustomConfig;
+import club.bigtian.mf.plugin.core.util.*;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -87,12 +87,14 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
         List<Module> moduleList = Arrays.stream(ModuleRootManager.getInstance(module).getDependencies())
                 .collect(Collectors.toList());
         moduleList.add(module);
+        CustomConfig config = new CustomConfig();
         // 获取当前模块以及所依赖的模块的TableDef文件
         for (Module dependency : moduleList) {
             VirtualFile[] contentRoots = ModuleRootManager.getInstance(dependency).getContentRoots();
             VirtualFile virtualFile = null;
             for (VirtualFile contentRoot : contentRoots) {
-                virtualFile = getVirtualFile(contentRoot);
+                config = Modules.moduleConfig(dependency);
+                virtualFile = getVirtualFile(contentRoot, config);
                 if (ObjectUtil.isNotNull(virtualFile)) {
                     break;
                 }
@@ -100,7 +102,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
             if (ObjectUtil.isNull(virtualFile)) {
                 return;
             }
-            getTableDef(virtualFile, tableDefMap, project);
+            getTableDef(virtualFile, tableDefMap, config);
         }
     }
 
@@ -230,21 +232,22 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
      * @param tableDefMap
      * @param project
      */
-    private void getTableDef(VirtualFile file, Map<String, String> tableDefMap, Project project) {
+    private void getTableDef(VirtualFile file, Map<String, String> tableDefMap, CustomConfig config) {
         VirtualFile[] children = file.getChildren();
         for (VirtualFile child : children) {
             boolean directory = child.isDirectory();
             if (directory) {
-                getTableDef(child, tableDefMap, project);
+                getTableDef(child, tableDefMap, config);
             } else {
                 String name = child.getName();
-                if (name.endsWith("TableDef.java")) {
-                    PsiJavaFile psiJavaFile = (PsiJavaFile) psiManager.findFile(child);
+                String tableDefConf = ObjectUtil.defaultIfNull(config.getTableDefClassSuffix(), "TableDef");
+                if (name.contains(tableDefConf)) {
+                    PsiClassOwner psiJavaFile = (PsiClassOwner) psiManager.findFile(child);
                     assert psiJavaFile != null;
                     String packageName = psiJavaFile.getPackageName();
-                    String path = child.getPath().replace(".java", "");
+                    String path = StrUtil.subBefore(child.getPath(), ".", true);
                     String tableDef = StrUtil.subAfter(path, "/", true);
-                    String tableName = StrUtil.toUnderlineCase(StrUtil.subBefore(tableDef, "TableDef", false)).toUpperCase();
+                    String tableName = StrUtil.toUnderlineCase(StrUtil.subBefore(tableDef, tableDefConf, false)).toUpperCase();
                     tableDefMap.put(tableName, packageName + "." + tableDef);
                 }
             }
@@ -255,10 +258,18 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
      * 只获取target/build目录下的文件
      *
      * @param baseDir
+     * @param config
      * @return
      */
     @Nullable
-    private static VirtualFile getVirtualFile(VirtualFile baseDir) {
+    private static VirtualFile getVirtualFile(VirtualFile baseDir, CustomConfig config) {
+        String genPath = config.getGenPath();
+        if (StrUtil.isNotBlank(genPath)) {
+            PsiDirectory psiDirectory = VirtualFileUtils.getPsiDirectory(ProjectUtils.getCurrentProject(), genPath);
+            if (ObjectUtil.isNotNull(psiDirectory)) {
+                return psiDirectory.getVirtualFile();
+            }
+        }
         VirtualFile file = baseDir.findChild("target");
         if (ObjectUtil.isNull(file)) {
             file = baseDir.findChild("build");

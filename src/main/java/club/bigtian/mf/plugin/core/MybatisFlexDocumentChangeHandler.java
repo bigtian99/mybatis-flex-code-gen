@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.core;
 
+import club.bigtian.mf.plugin.core.config.CustomConfig;
 import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.entity.AptInfo;
 import cn.hutool.core.util.BooleanUtil;
@@ -38,8 +39,8 @@ import java.util.Set;
  */
 public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable, FileEditorManagerListener {
     private static final Logger LOG = Logger.getInstance(MybatisFlexDocumentChangeHandler.class);
-    private static final Key<Boolean> CHANGE = Key.create("change" );
-    private static final Key<Boolean> LISTENER = Key.create("listener" );
+    private static final Key<Boolean> CHANGE = Key.create("change");
+    private static final Key<Boolean> LISTENER = Key.create("listener");
 
     @Override
     public void selectionChanged(@NotNull FileEditorManagerEvent event) {
@@ -66,29 +67,31 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiField[] fields = psiClass.getAllFields();
             List<AptInfo> list = new ArrayList<>();
             for (PsiField field : fields) {
-                PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column" );
+                PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column");
                 if (ObjectUtil.isNotNull(column)) {
-                    PsiAnnotationMemberValue value = column.findAttributeValue("value" );
-                    String fieldName = value.getText().replace("\"", "" );
+                    PsiAnnotationMemberValue value = column.findAttributeValue("value");
+                    String fieldName = value.getText().replace("\"", "");
                     list.add(new AptInfo(fieldName, StrUtil.toUnderlineCase(field.getName()).toUpperCase()));
                 } else {
                     list.add(new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase()));
                 }
             }
+            CustomConfig config = Modules.moduleConfig(moduleForFile);
 
-            String path = moduleDirPath + (Modules.isManvenProject(moduleForFile)
-                    ? "target/generated-sources/annotations/" : "build/generated/source/kapt/main/" )
-                    + psiJavaFile.getPackageName().replace(".", "/" ) + "/table";
+            String path = moduleDirPath + CustomConfig.getConfig(config.getGenPath(),
+                    "target/generated-sources/annotations/",
+                    "build/generated/source/kapt/main/", Modules.isManvenProject(moduleForFile))
+                    + psiJavaFile.getPackageName().replace(".", "/") + "/table";
 
-            PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table" );
+            PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table");
             PsiDirectory psiDirectory = VirtualFileUtils.createSubDirectory(moduleForFile, path);
             VelocityContext context = new VelocityContext();
-            String className = psiClass.getName() + "TableDef";
+            String className = psiClass.getName() + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
             context.put("className", className);
-            context.put("packageName", psiJavaFile.getPackageName() + ".table" );
+            context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
             context.put("list", list);
             context.put("instance", StrUtil.toUnderlineCase(psiClass.getName()).toUpperCase());
-            context.put("talbeName", table.findAttributeValue("value" ).getText().replace("\"", "" ));
+            context.put("talbeName", table.findAttributeValue("value").getText().replace("\"", ""));
             String suffix = Modules.getProjectTypeSuffix(moduleForFile);
             String fileName = className + suffix;
             PsiFile psiFile = VelocityUtils.render(context, Template.getTemplateContent("AptTemplate" + suffix), fileName);
@@ -178,7 +181,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
             importSet = PsiJavaFileUtil.getQualifiedNameImportSet(psiJavaFile);
         }
-        return importSet.contains("com.mybatisflex.annotation.Table" );
+        return importSet.contains("com.mybatisflex.annotation.Table");
     }
 
     @Override

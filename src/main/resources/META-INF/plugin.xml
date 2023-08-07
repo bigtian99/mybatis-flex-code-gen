@@ -40,8 +40,9 @@
     <ul>
     <li>【新增】对kotlin APT支持</li>
     <li>【新增】对没有from方法的代码片段进行弱提示</li>
+    <li>【新增】支持mybatis-flex.config的genPath</li>
     <li>【优化】支持变量SQL预览</li>
-    <li>【优化】表备注换行导致代码升成之后报错</li>
+    <li>【优化】表备注换行导致代码生成之后报错</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
