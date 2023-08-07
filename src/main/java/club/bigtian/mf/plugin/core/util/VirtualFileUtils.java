@@ -101,6 +101,7 @@ public class VirtualFileUtils {
      * @return {@code PsiDirectory}
      */
     public static PsiDirectory getPsiDirectory(Module module, String packageName, String key) {
+
         Set javaResourceRootTypes = StrUtil.isEmpty(key) ? JavaModuleSourceRootTypes.RESOURCES : JavaModuleSourceRootTypes.SOURCES;
         PsiDirectory psiDirectory = PSI_DIRECTORY_MAP.get(packageName);
         if (ObjectUtil.isNull(psiDirectory)) {
@@ -133,7 +134,7 @@ public class VirtualFileUtils {
         if (ObjectUtil.isNotNull(targetDirectory)) {
             return targetDirectory;
         }
-        String path = StrUtil.subBefore(module.getModuleFilePath(), ".idea", false);
+        String path = Modules.getPath(module);
         targetDirectory = getPsiDirectory(module.getProject(), path);
         if (targetDirectory != null) {
             String[] directories = StrUtil.subAfter(packageName, path, false).split("/" );

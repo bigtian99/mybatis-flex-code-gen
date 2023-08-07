@@ -62,7 +62,8 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiClassOwner psiJavaFile = (PsiClassOwner) VirtualFileUtils.getPsiFile(project, oldFile);
             PsiClass psiClass = psiJavaFile.getClasses()[0];
             Module moduleForFile = ModuleUtil.findModuleForFile(oldFile, project);
-            PsiField[] fields = psiClass.getFields();
+            String moduleDirPath = Modules.getPath(moduleForFile);
+            PsiField[] fields = psiClass.getAllFields();
             List<AptInfo> list = new ArrayList<>();
             for (PsiField field : fields) {
                 PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column" );
@@ -74,7 +75,8 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                     list.add(new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase()));
                 }
             }
-            String path = StrUtil.subBefore(moduleForFile.getModuleFilePath(), ".idea", false) + (Modules.isManvenProject(moduleForFile)
+
+            String path = moduleDirPath + (Modules.isManvenProject(moduleForFile)
                     ? "target/generated-sources/annotations/" : "build/generated/source/kapt/main/" )
                     + psiJavaFile.getPackageName().replace(".", "/" ) + "/table";
 
@@ -174,7 +176,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         }
         if (psiFile instanceof PsiJavaFile) {
             PsiJavaFile psiJavaFile = (PsiJavaFile) psiFile;
-            importSet = PsiJavaFileUtil.getImportSet(psiJavaFile);
+            importSet = PsiJavaFileUtil.getQualifiedNameImportSet(psiJavaFile);
         }
         return importSet.contains("com.mybatisflex.annotation.Table" );
     }

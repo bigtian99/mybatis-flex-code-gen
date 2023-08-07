@@ -85,7 +85,7 @@ public class Modules {
                     })
                     .collect(Collectors.toMap(el -> {
                         String name = el.getName();
-                        if(name.contains(".")){
+                        if (name.contains(".")) {
                             String[] strArr = name.split("\\.");
                             return strArr[strArr.length - 2];
                         }
@@ -118,7 +118,7 @@ public class Modules {
             });
             String name = module.getName();
             if (name.contains(".")) {
-                String[] strArr =name.split("\\.");
+                String[] strArr = name.split("\\.");
                 name = strArr[strArr.length - 2];
             }
             modulePackageMap.put(name, moduleMap);
@@ -170,6 +170,7 @@ public class Modules {
 
     public static String getModulePath(Module module, Set javaResourceRootTypes) {
         AtomicReference<String> path = new AtomicReference<>();
+
         ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
         fileIndex.iterateContent(fileOrDir -> {
             if (fileOrDir.isDirectory() && fileIndex.isUnderSourceRootOfType(fileOrDir, javaResourceRootTypes)) {
@@ -244,5 +245,14 @@ public class Modules {
 
     public static String getModuleName(Module module) {
         return module.getName().replaceAll("\\.main", "");
+    }
+
+    public static String getPath(Module moduleForFile) {
+        PsiDirectory moduleDirectory = getModuleDirectory(moduleForFile, JavaModuleSourceRootTypes.SOURCES);
+        if (moduleDirectory != null) {
+            String path = moduleDirectory.getVirtualFile().getPath();
+            return StrUtil.subBefore(path, "src", false);
+        }
+        return "";
     }
 }

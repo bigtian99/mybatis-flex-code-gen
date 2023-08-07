@@ -2,6 +2,7 @@ package club.bigtian.mf.plugin.core.annotator;
 
 import club.bigtian.mf.plugin.core.function.BigFunction;
 import club.bigtian.mf.plugin.core.render.SqlPreviewIconRenderer;
+import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
 import cn.hutool.core.util.ArrayUtil;
@@ -12,6 +13,7 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,19 +52,21 @@ public class MybatisFlexConfigAnnotator implements Annotator {
 
     @Override
     public void annotate(PsiElement element, AnnotationHolder holder) {
+        Project project = element.getProject();
+        ProjectUtils.setCurrentProject(project);
         try {
             // 获取当前行号
             PsiFile containingFile = element.getContainingFile();
             if (ObjectUtil.isNull(containingFile)) {
                 return;
             }
-            Document document = PsiDocumentManager.getInstance(element.getProject()).getDocument(containingFile);
+            Document document = PsiDocumentManager.getInstance(project).getDocument(containingFile);
             if (ObjectUtil.isNull(document)) {
                 return;
             }
             psiJavaFile = (PsiJavaFile) VirtualFileUtils.getPsiFile(document);
 
-            if (ObjectUtil.isNull(document) || !document.isWritable()) {
+            if (ObjectUtil.isNull(document) || !document.isWritable() || ObjectUtil.isNull(psiJavaFile)) {
                 return;
             }
             int offset = element.getTextOffset();

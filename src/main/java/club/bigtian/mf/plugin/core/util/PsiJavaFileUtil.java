@@ -39,6 +39,11 @@ public class PsiJavaFileUtil {
         return map;
     }
 
+    public static Set<String> getQualifiedNameImportSet(PsiJavaFile psiJavaFile) {
+
+        return new HashSet<>(getQualifiedNameImportMap(psiJavaFile).values());
+    }
+
     /**
      * 获取子类
      *

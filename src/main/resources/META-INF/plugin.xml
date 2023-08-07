@@ -38,9 +38,10 @@
     <change-notes><![CDATA[
     <h3>1.4.6-RELEASE</h3>
     <ul>
+    <li>【新增】对kotlin APT支持</li>
+    <li>【新增】对没有from方法的代码片段进行弱提示</li>
     <li>【优化】支持变量SQL预览</li>
     <li>【优化】表备注换行导致代码升成之后报错</li>
-    <li>【修复】修复 IService里面的部分代码也会显示预览 SQL图标</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
@@ -57,6 +58,7 @@
         <consoleFilterProvider implementation="club.bigtian.mf.plugin.core.console.MyBatisFlexConsoleFilterProvider"/>
         <executor implementation="club.bigtian.mf.plugin.core.log.MyBatisLogExecutor"
                   id="MyBatisLogFreeExecutor"/>
+
         <editorFactoryListener implementation="club.bigtian.mf.plugin.core.MybatisFlexDocumentChangeHandler"/>
         <completion.contributor language="kotlin"
                                 implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexCompletionContributor"/>
