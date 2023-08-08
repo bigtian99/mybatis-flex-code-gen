@@ -133,7 +133,7 @@ public class SQLPreviewAction extends AnAction {
 
         String val = null;
         String print = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, text);
-        boolean flag = StrUtil.containsAny(text, "queryChain()", "query()");
+        boolean flag = StrUtil.containsAny(text, "queryChain()", "query()", "updateChain()");
         AtomicReference<String> variableReference = new AtomicReference<>();
         String ofValue = null;
         if (flag) {
@@ -276,7 +276,6 @@ public class SQLPreviewAction extends AnAction {
         for (PsiClass psiClass : psiJavaFile.getClasses()) {
             PsiField[] allFields = psiClass.getAllFields();
             for (PsiField field : allFields) {
-
                 if (selectedText.contains(field.getName())) {
                     String text = field.getText();
                     if (text.contains("=")) {
@@ -328,7 +327,7 @@ public class SQLPreviewAction extends AnAction {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
                             if (!MybatisFlexSettingDialog.insideSchemaFlag) {
-                                virtualFile.delete(this);
+                                // virtualFile.delete(this);
                             }
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);

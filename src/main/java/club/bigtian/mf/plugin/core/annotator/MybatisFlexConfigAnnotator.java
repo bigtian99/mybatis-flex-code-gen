@@ -40,7 +40,9 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         functionMap.put("UpdateChain.of", MybatisFlexConfigAnnotator::updateChainHandler);
         functionMap.put("UpdateChain.create", MybatisFlexConfigAnnotator::updateChainHandler);
         methodMap.put("limit", MybatisFlexConfigAnnotator::limitHandler);
+        removeMethodSet.add("toSQL(");
         allowEndWithMethodSet.add("on");
+        allowEndWithMethodSet.add("toQueryWrapper");
         try {
             initQueryChainMethodHandler();
             analysisMethod();
@@ -78,7 +80,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 return;
             }
 
-            if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()", "query()")
+            if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()", "updateChain()", "query()", "toQueryWrapper()")
                     && text.endsWith(";")) {
                 if (text.contains("=")) {
                     text = StrUtil.subAfter(text, "=", false).trim();
@@ -93,7 +95,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                     text = getBracketContent(text);
                 }
                 String key = StrUtil.subBefore(text, "(", false);
-                if (StrUtil.containsAny(text, "query()", "queryChain()")) {
+                if (StrUtil.containsAny(text, "query()", "queryChain()", "updateChain()", "toQueryWrapper()")) {
                     key = "QueryWrapper.create";
                 }
                 Function<String, String> function = functionMap.get(key);
@@ -118,8 +120,8 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 }
 
             }
-        } catch (PsiInvalidElementAccessException e) {
-
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -158,7 +160,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
      */
     @Nullable
     private static String getBracketContent(String text) {
-        String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
+        String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")")).trim();
         // 如果是括号里面的则不显示icon
         if (matchText != null && !StrUtil.startWithAny(text, "QueryWrapper", "QueryChain", "UpdateChain")) {
             if (matchText.startsWith("\"") || text.startsWith("//")) {
@@ -181,7 +183,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                     }
                 }
             } else {
-                if (getCount(matchText, "(") == getCount(matchText, ")")) {
+                if (getCount(matchText, "(") == getCount(matchText, ")") && matchText.endsWith(")")) {
                     text = matchText;
                 }
             }
@@ -197,7 +199,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
      */
     public boolean checkInBracket(String text) {
         String matchText = StrUtil.sub(text, text.indexOf("(") + 1, text.lastIndexOf(")"));
-        if (StrUtil.containsAny(matchText, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()", "query()")) {
+        if (StrUtil.containsAny(matchText, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()", "query()", "toQueryWrapper()", "updateChain()")) {
             return true;
         }
         return false;
@@ -293,7 +295,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
      * 初始化查询处理程序链方法
      */
     public static void initQueryChainMethodHandler() {
-        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryChain");
+        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.MapperQueryChain");
         Arrays.stream(psiClass.getMethods())
                 .forEach(psiMethod -> {
                     PsiType returnType = psiMethod.getReturnType();
