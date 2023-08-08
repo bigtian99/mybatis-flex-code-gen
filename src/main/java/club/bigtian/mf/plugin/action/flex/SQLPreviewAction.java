@@ -127,12 +127,13 @@ public class SQLPreviewAction extends AnAction {
      */
     public String chain(String text, PsiJavaFile psiJavaFile) {
         if (text.contains("=")) {
-            text = StrUtil.subAfter(text, "=", false);
+            text = StrUtil.subAfter(text, "=", false).trim();
         }
         Map<String, String> qualifiedNameImportMap = PsiJavaFileUtil.getQualifiedNameImportMap(psiJavaFile);
 
         String val = null;
-        String print = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, text);
+        // 处理service里面的链式调用
+        String print = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, StrUtil.startWithAny(text, "queryChain()", "query()", "updateChain()") ? "service." + text : text);
         boolean flag = StrUtil.containsAny(text, "queryChain()", "query()", "updateChain()");
         AtomicReference<String> variableReference = new AtomicReference<>();
         String ofValue = null;
@@ -270,10 +271,19 @@ public class SQLPreviewAction extends AnAction {
 
 
     public String getImplText(PsiJavaFile psiJavaFile, String selectedText, Map<String, String> qualifiedNameImportMap, ManyFunction<String> consumer) {
-        String temVal = null;
+        String temVal = "";
         Project project = psiJavaFile.getProject();
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
-        for (PsiClass psiClass : psiJavaFile.getClasses()) {
+        PsiClass[] classes = psiJavaFile.getClasses();
+        if (StrUtil.startWithAny(selectedText, "query()", "queryChain()", "updateChain()")) {
+            String name = StrUtil.subBefore(psiJavaFile.getName(), ".", true);
+            temVal = StrUtil.format("{} service=new {}();\n", name, name);
+            String text = psiJavaFile.getText();
+            String mapper = StrUtil.subBetween(text, "ServiceImpl<", ",").trim();
+            consumer.applay(qualifiedNameImportMap.get(mapper), "service");
+            return temVal;
+        }
+        for (PsiClass psiClass : classes) {
             PsiField[] allFields = psiClass.getAllFields();
             for (PsiField field : allFields) {
                 if (selectedText.contains(field.getName())) {
