@@ -7,14 +7,16 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.application.ApplicationActivationListener;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.wm.IdeFrame;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class NewVersionNotifier  {
+public class NewVersionNotifier implements ApplicationActivationListener {
 
     private static final String PLUGIN_ID = "com.mybatisflex.bigtian"; // 替换为你的插件ID
-
 
 
     public static void checkForNewVersion() {
@@ -52,4 +54,8 @@ public class NewVersionNotifier  {
         return version1.compareTo(version2);
     }
 
+    @Override
+    public void applicationActivated(@NotNull IdeFrame ideFrame) {
+        System.out.println("激活");
+    }
 }

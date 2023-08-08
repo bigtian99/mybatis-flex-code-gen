@@ -268,7 +268,7 @@ public class Modules {
             }
         }
         if (ObjectUtil.isNull(file)) {
-            return null;
+            return new CustomConfig();
         }
         CustomConfig config = new CustomConfig();
         Arrays.stream(file.getText().split("\n"))
