@@ -279,7 +279,7 @@
                               <component id="48a75" class="javax.swing.JTextField" binding="contrPath">
                                 <constraints/>
                                 <properties>
-                                  <name value=""/>
+                                  <name value="contrPath"/>
                                   <preferredSize width="130" height="30"/>
                                   <text value="controller"/>
                                 </properties>
@@ -293,7 +293,7 @@
                               <component id="d76a1" class="javax.swing.JTextField" binding="servicePath">
                                 <constraints/>
                                 <properties>
-                                  <name value=""/>
+                                  <name value="servicePath"/>
                                   <preferredSize width="130" height="30"/>
                                   <text value="service"/>
                                 </properties>
@@ -307,7 +307,7 @@
                               <component id="ea2ea" class="javax.swing.JTextField" binding="implPath">
                                 <constraints/>
                                 <properties>
-                                  <name value="implSuffix"/>
+                                  <name value="implPath"/>
                                   <preferredSize width="130" height="30"/>
                                   <text value="impl"/>
                                 </properties>
@@ -321,7 +321,7 @@
                               <component id="f5216" class="javax.swing.JTextField" binding="domainPath">
                                 <constraints/>
                                 <properties>
-                                  <name value="modelSuffix"/>
+                                  <name value="domainPath"/>
                                   <preferredSize width="130" height="30"/>
                                   <text value="domain"/>
                                 </properties>
@@ -335,7 +335,7 @@
                               <component id="ec85b" class="javax.swing.JTextField" binding="mapperPath">
                                 <constraints/>
                                 <properties>
-                                  <name value="mapperSuffix"/>
+                                  <name value="mapperPath"/>
                                   <preferredSize width="130" height="30"/>
                                   <text value="mapper"/>
                                 </properties>
@@ -349,7 +349,7 @@
                               <component id="a5bba" class="javax.swing.JTextField" binding="xmlPath">
                                 <constraints/>
                                 <properties>
-                                  <name value="mapperSuffix"/>
+                                  <name value="xmlPath"/>
                                   <preferredSize width="130" height="30"/>
                                   <text value="mappers"/>
                                 </properties>

@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.windows;
 import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
+import club.bigtian.mf.plugin.core.function.SimpleFunction;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.FileChooserUtil;
@@ -18,7 +19,8 @@ import com.intellij.ui.LanguageTextField;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Set;
+import java.util.List;
+import java.util.*;
 
 public class MybatisFlexSettingDialog extends JDialog {
     private JPanel contentPane;
@@ -81,9 +83,13 @@ public class MybatisFlexSettingDialog extends JDialog {
 
     // 是否开启内部模式
     public static boolean insideSchemaFlag = false;
+    SimpleFunction simpleFunction;
+    List<JTextField> list = Arrays.asList(contrPath, servicePath, implPath, domainPath, xmlPath, mapperPath);
+    Map<String, String> pathMap;
 
-    public MybatisFlexSettingDialog(Project project) {
+    public MybatisFlexSettingDialog(Project project, SimpleFunction simpleFunction) {
         this.project = project;
+        this.simpleFunction = simpleFunction;
         setContentPane(contentPane);
         setModal(true);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -92,11 +98,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         setMinimumSize(new Dimension(700, 500));
         getRootPane().setDefaultButton(buttonOK);
         DialogUtil.centerShow(this);
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
         insideSchema.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -219,7 +221,6 @@ public class MybatisFlexSettingDialog extends JDialog {
         });
     }
 
-
     public void init() {
         controllerTemplate.setText(Template.getVmCode(MybatisFlexConstant.CONTROLLER_TEMPLATE));
         modelTemplate.setText(Template.getVmCode(MybatisFlexConstant.MODEL_TEMPLATE));
@@ -256,6 +257,10 @@ public class MybatisFlexSettingDialog extends JDialog {
         activeRecordCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
         requiredArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
         initSinceComBox();
+        pathMap = new HashMap<>();
+        for (JTextField textField : list) {
+            pathMap.put(textField.getName(), textField.getText());
+        }
     }
 
     public void initSinceComBox() {
@@ -341,6 +346,14 @@ public class MybatisFlexSettingDialog extends JDialog {
     private void onOK() {
         MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(getConfigData());
         Messages.showInfoMessage("保存成功", "提示");
+        for (JTextField textField : list) {
+            String value = pathMap.get(textField.getName());
+            if (value.equals(textField.getText())) {
+                continue;
+            }
+            simpleFunction.apply();
+            break;
+        }
         dispose();
     }
 

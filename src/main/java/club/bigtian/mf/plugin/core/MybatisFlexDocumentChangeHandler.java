@@ -24,6 +24,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import com.intellij.testFramework.LightVirtualFile;
 import org.apache.velocity.VelocityContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.KtFile;
@@ -163,7 +164,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
 
     private static boolean checkFile(VirtualFile currentFile) {
-        if (ObjectUtil.isNull(currentFile)) {
+        if (ObjectUtil.isNull(currentFile) || currentFile instanceof LightVirtualFile) {
             return false;
         }
         PsiManager psiManager = PsiManager.getInstance(ProjectUtils.getCurrentProject());

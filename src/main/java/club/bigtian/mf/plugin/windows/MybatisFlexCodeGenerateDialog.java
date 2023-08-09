@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.windows;
 import club.bigtian.mf.plugin.core.RenderMybatisFlexTemplate;
 import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
+import club.bigtian.mf.plugin.core.filter.FilterComboBoxModel;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.render.TableListCellRenderer;
 import club.bigtian.mf.plugin.core.search.InvertedIndexSearch;
@@ -94,17 +95,9 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         project = actionEvent.getProject();
 
         ProjectUtils.setCurrentProject(project);
-        generateBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onGenerate();
-            }
-        });
+        generateBtn.addActionListener(e -> onGenerate());
 
-        cancelBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        cancelBtn.addActionListener(e -> onCancel());
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -113,11 +106,8 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             }
         });
 
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e ->
+                onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         init(project);
 
         syncCheckBox.addActionListener(e -> {
@@ -133,19 +123,20 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
 
         settingLabel.addActionListener(e -> {
             Set<String> sinces = MybatisFlexPluginConfigData.getSinceMap().keySet();
-            MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project);
+            MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project, () -> {
+                initConfigData(null);
+            });
             dialog.show();
             sinceFlag = true;
-            //避免用户配置后，直接点击设置界面，再回来导致配置丢失
+            // 避免用户配置后，直接点击设置界面，再回来导致配置丢失
             MybatisFlexConfig configData = getConfigData();
             Set<String> sinceSet = MybatisFlexPluginConfigData.getSinceMap().keySet();
-
             if (sinces.size() > sinceSet.size()) {
                 initSinceComBox(0);
             } else {
                 initSinceComBox(CollUtil.isEmpty(list) ? null : sinceComBox.getSelectedIndex());
             }
-            //再次设置是因为initSinceComBox最终会把sinceFlag设置为false
+            // 再次设置是因为initSinceComBox最终会把sinceFlag设置为false
             sinceFlag = true;
             initConfigData(configData);
         });
@@ -237,7 +228,19 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         });
         setSelectTalbe(actionEvent);
 
-        strictComBox.addChangeListener(e -> generateBtn.setEnabled(!strictComBox.isSelected()));
+        strictComBox.addChangeListener(e -> {
+            boolean strict = strictComBox.isSelected();
+            if (strict) {
+                Set<Boolean> collected = packageList.stream()
+                        .map(el -> StrUtil.isNotBlank(el.getText()))
+                        .collect(Collectors.toSet());
+
+                strict = !collected.contains(false);
+            } else {
+                strict = true;
+            }
+            generateBtn.setEnabled(strict);
+        });
 
         cotrollerCombox.addActionListener(e -> {
             if (sinceFlag) {
@@ -319,7 +322,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 if (SINCE_CONFIG_ADD.equals(value.toString())) {
                     setIcon(AllIcons.General.Add);
-                }else {
+                } else {
                     setIcon(null); // 清除图标
                 }
                 setText(value.toString());
@@ -380,7 +383,9 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 @Override
                 protected void textChanged(@NotNull DocumentEvent e) {
                     ComponentValidator.getInstance(textField).ifPresent(v -> v.revalidate());
-                    enableGenerate();
+                    if (strictComBox.isSelected()) {
+                        enableGenerate();
+                    }
                 }
             });
         });
@@ -556,4 +561,65 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     }
 
 
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        cotrollerCombox = createNodeBox(Arrays.asList("test"));
+    }
+
+
+    public JComboBox<String> createNodeBox(List<String> nodeNameList) {
+        // 创建下拉框渲染器
+
+        FilterComboBoxModel model = new FilterComboBoxModel(nodeNameList);
+        JComboBox<String> comboBox = new JComboBox<>(model);
+        comboBox.setEditable(true);
+
+        JTextField filterTextField = (JTextField) comboBox.getEditor().getEditorComponent();
+        filterTextField.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int keyCode = e.getKeyCode();
+                if (e.isControlDown() && keyCode == KeyEvent.VK_V || e.isMetaDown() && keyCode == KeyEvent.VK_META) {
+                    String filterText = filterTextField.getText();
+                    SwingUtilities.invokeLater(() -> comboBox.getEditor().setItem(filterText));
+                    model.filterItems(filterText);
+                    comboBox.hidePopup();
+                    comboBox.showPopup();
+                }
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                int keyCode = e.getKeyCode();
+                if (
+                        keyCode == KeyEvent.VK_SPACE || keyCode == KeyEvent.VK_DELETE || keyCode ==
+                                KeyEvent.VK_BACK_SPACE || (e.getModifiers() & InputEvent.CTRL_MASK) != 0 && keyCode ==
+                                KeyEvent.VK_V || keyCode > 48 && keyCode <= 57 || (e.isControlDown() || e.isMetaDown()) && keyCode == KeyEvent.VK_V) {
+                    String filterText = filterTextField.getText();
+                    SwingUtilities.invokeLater(() -> comboBox.getEditor().setItem(filterText));
+                    model.filterItems(filterText);
+                    comboBox.hidePopup();
+                    comboBox.showPopup();
+                }
+            }
+        });
+
+
+        comboBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                Object selectedItem = comboBox.getSelectedItem();
+                if (selectedItem != null) {
+                    filterTextField.setText(selectedItem.toString());
+                    model.filterItems("");
+                }
+            }
+        });
+
+        return comboBox;
+    }
 }
