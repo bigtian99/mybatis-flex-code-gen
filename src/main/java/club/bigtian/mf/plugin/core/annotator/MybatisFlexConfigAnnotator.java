@@ -15,6 +15,7 @@ import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
+import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,7 +60,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         try {
             // 获取当前行号
             PsiFile containingFile = element.getContainingFile();
-            if (ObjectUtil.isNull(containingFile)) {
+            if (ObjectUtil.isNull(containingFile) || containingFile instanceof LightVirtualFile) {
                 return;
             }
             Document document = PsiDocumentManager.getInstance(project).getDocument(containingFile);
@@ -125,6 +126,10 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         }
     }
 
+    /**
+     * @param text 传入的文本
+     * @return
+     */
     private boolean allowEndWith(String text) {
         for (String methodName : allowEndWithMethodSet) {
             if (!text.contains(StrUtil.format(".{}(", methodName))) {
