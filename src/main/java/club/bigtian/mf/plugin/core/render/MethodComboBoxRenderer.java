@@ -11,7 +11,7 @@ public class MethodComboBoxRenderer extends JLabel implements ListCellRenderer {
     private JLabel rowEndLabel;
     private JLabel label;
 
-    public MethodComboBoxRenderer() {
+    public MethodComboBoxRenderer(String selectText) {
         setOpaque(true);
         setLayout(new BorderLayout());
         label = new JLabel();
@@ -22,6 +22,9 @@ public class MethodComboBoxRenderer extends JLabel implements ListCellRenderer {
         add(rowEndLabel, BorderLayout.EAST);
         rowEndLabel.setBorder(new EmptyBorder(0, 0, 0, 50));
         rowEndLabel.setPreferredSize(new Dimension(130, rowEndLabel.getHeight()));
+        label.setText(StrUtil.subBefore(selectText, "(", false));
+        rowEndLabel.setText(StrUtil.subBetween(selectText, "(", ")"));
+
     }
 
 

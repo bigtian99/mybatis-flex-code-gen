@@ -4,7 +4,6 @@ import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
-import club.bigtian.mf.plugin.core.render.MethodComboBoxRenderer;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.TreeClassChooser;
@@ -38,6 +37,8 @@ public class ReturnInfoDialog extends JDialog {
 
     private Map<String, Boolean> staticMethodMap;
 
+    MybatisFlexConfig config;
+
     public ReturnInfoDialog() {
         setContentPane(contentPane);
         setModal(true);
@@ -58,7 +59,7 @@ public class ReturnInfoDialog extends JDialog {
                 onCancel();
             }
         });
-        methodComBox.setRenderer(new MethodComboBoxRenderer());
+        loadConfig();
         methodComBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -96,7 +97,7 @@ public class ReturnInfoDialog extends JDialog {
                 }
                 String qualifiedName = psiClass.getQualifiedName();
                 classField.setText(qualifiedName);
-                addMethodComBoxItem(psiClass);
+                addMethodComBoxItem(psiClass, null);
             }
         });
         staticRadio.addActionListener(e -> {
@@ -105,13 +106,12 @@ public class ReturnInfoDialog extends JDialog {
         newRadio.addActionListener(e -> {
             staticRadio.setSelected(false);
         });
-        loadConfig();
     }
 
-    private void addMethodComBoxItem(PsiClass psiClass) {
+    private void addMethodComBoxItem(PsiClass psiClass, String selectedMethodName) {
         methodComBox.removeAllItems();
         Arrays.stream(psiClass.getMethods())
-                .filter(el -> !el.getName().startsWith("set")&&!el.getName().startsWith("get"))
+                .filter(el -> !el.getName().startsWith("set") && !el.getName().startsWith("get"))
                 .forEach(method -> {
                     String name = method.getName();
                     StringJoiner joiner = new StringJoiner(",");
@@ -129,22 +129,26 @@ public class ReturnInfoDialog extends JDialog {
                     }
                     name = name + "(" + joiner.toString() + ")";
                     methodComBox.addItem(name);
+
                     boolean flag = method.getModifierList().hasModifierProperty(PsiModifier.STATIC);
                     staticMethodMap.put(name, flag);
                 });
+        if (StrUtil.isNotBlank(selectedMethodName)) {
+            methodComBox.setSelectedItem(selectedMethodName);
+        }
         methodComBox.revalidate();
         methodComBox.repaint();
     }
 
     private void loadConfig() {
-        MybatisFlexConfig config = Template.getMybatisFlexConfig();
+        config = Template.getMybatisFlexConfig();
         String qualifiedName = config.getQualifiedName();
         classField.setText(qualifiedName);
         Project project = ProjectUtils.getCurrentProject();
         if (StrUtil.isNotBlank(qualifiedName)) {
             PsiClass psiClass = JavaPsiFacade.getInstance(project).findClass(qualifiedName, GlobalSearchScope.allScope(project));
-            addMethodComBoxItem(psiClass);
-            methodComBox.setSelectedItem(config.getMethodName());
+            addMethodComBoxItem(psiClass, config.getMethodName());
+
         }
         genericityCheckBox.setSelected(config.isGenericity());
         if (MybatisFlexConstant.STRING.equals(config.getResultType())) {
