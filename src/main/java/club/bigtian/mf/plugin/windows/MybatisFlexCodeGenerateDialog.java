@@ -70,6 +70,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     private FixedSizeButton sortBtn;
     private JProgressBar progressBar;
     private JCheckBox strictComBox;
+    private JButton button1;
 
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
@@ -280,6 +281,14 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             }
             MybatisFlexConfig configData = getConfigData();
             mapperXmlPath.setText(Modules.getPackagePath(xmlComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getXmlPath(), "mappers")));
+        });
+        button1.addActionListener(e -> {
+            CustomMappingDialog dialog = new CustomMappingDialog();
+            dialog.show();
+            tableInfoMap = TableUtils.getAllTables(actionEvent)
+                    .stream()
+                    .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
+            setSelectTalbe(actionEvent);
         });
     }
 

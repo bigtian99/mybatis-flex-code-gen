@@ -128,6 +128,32 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
          */
         public String columnFieldMap = "{}";
 
+        public String typeMapping = "{}";
+
+    }
+
+    /**
+     * 得到类型映射
+     *
+     * @return {@code Map<String, String>}
+     */
+
+    public static Map<String, String> getTypeMapping() {
+        return JSON.parseObject(getInstance().getState().typeMapping, new TypeReference<Map<String, String>>() {
+        });
+    }
+
+    /**
+     * 设置类型映射
+     *
+     * @param typeMapping 类型映射
+     */
+
+    public static void setTypeMapping(Map<String, String> typeMapping) {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        state.typeMapping = JSONObject.toJSONString(typeMapping);
+        instance.loadState(state);
     }
 
     /**

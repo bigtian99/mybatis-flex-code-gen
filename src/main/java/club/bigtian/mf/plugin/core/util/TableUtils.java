@@ -22,10 +22,7 @@ import com.intellij.util.containers.JBIterable;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TableUtils {
@@ -103,7 +100,7 @@ public class TableUtils {
                 String jdbcTypeStr = dasColumn.getDataType().toString();
                 int jdbc = dialect.getJavaTypeForNativeType(jdbcTypeStr);
                 String jdbcTypeName = JdbcUtil.getJdbcTypeName(jdbc);
-                String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName, dasColumn.getDataType().size);
+                String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName, dasColumn.getDataType().size, jdbcTypeStr);
                 columnInfo.setFieldType(fieldType);
                 columnInfo.setNotNull(dasColumn.isNotNull());
                 columnInfo.setComment(ObjectUtil.defaultIfNull(dasColumn.getComment(), "").replaceAll("\n", ""));
@@ -124,9 +121,22 @@ public class TableUtils {
      * @param jdbc         jdbc
      * @param jdbcTypeName
      * @param size
+     * @param jdbcTypeStr
      * @return {@code String}
      */
-    private static String getFieldType(int jdbc, TableInfo tableInfo, String jdbcTypeName, int size) {
+    private static String getFieldType(int jdbc, TableInfo tableInfo, String jdbcTypeName, int size, String jdbcTypeStr) {
+        Map<String, String> typeMapping = MybatisFlexPluginConfigData.getTypeMapping();
+        if (typeMapping.containsKey(jdbcTypeStr) || typeMapping.containsKey(StrUtil.subBefore(jdbcTypeStr, "(", true))) {
+            String className = typeMapping.get(jdbcTypeStr);
+            if (StrUtil.isEmpty(className)) {
+                className = typeMapping.get(StrUtil.subBefore(jdbcTypeStr, "(", true));
+            }
+            if (StrUtil.contains(className, ".")) {
+                tableInfo.addImportClassItem(className);
+                return StrUtil.subAfter(className, ".", true);
+            }
+            return className;
+        }
         String className = convert(jdbc, size).getName();
         if (Object.class.getName().equals(className)) {
             String fieldType = MybatisFlexPluginConfigData.getFieldType(jdbcTypeName);
@@ -190,9 +200,9 @@ public class TableUtils {
                     return Integer.class;
                 }
             case Types.TIME:
-               return java.sql.Time.class;
+                return java.sql.Time.class;
             case Types.TIMESTAMP:
-               return java.sql.Timestamp.class;
+                return java.sql.Timestamp.class;
             case Types.DATE:
                 return Date.class;
             case Types.BINARY:
