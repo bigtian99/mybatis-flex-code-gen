@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.core.contributor;
 
+import club.bigtian.mf.plugin.core.MybatisFlexDocumentChangeHandler;
 import club.bigtian.mf.plugin.core.config.CustomConfig;
 import club.bigtian.mf.plugin.core.util.*;
 import cn.hutool.core.collection.CollUtil;
@@ -247,7 +248,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
                     String packageName = psiJavaFile.getPackageName();
                     String path = StrUtil.subBefore(child.getPath(), ".", true);
                     String tableDef = StrUtil.subAfter(path, "/", true);
-                    String tableName = StrUtil.toUnderlineCase(StrUtil.subBefore(tableDef, tableDefConf, false)).toUpperCase();
+                    String tableName = MybatisFlexDocumentChangeHandler.getDefInstanceName(config, StrUtil.subBefore(tableDef, tableDefConf, false));
                     tableDefMap.put(tableName, packageName + "." + tableDef);
                 }
             }

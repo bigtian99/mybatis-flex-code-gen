@@ -5,7 +5,7 @@ import com.mybatisflex.core.table.TableDef;
 
 public class ${className} extends TableDef{
 
-public static final ${className} $instance=new ${className}();
+    public static final ${className} $instance=new ${className}();
 
 #foreach($column in $list)
     public final QueryColumn $column.name =new QueryColumn(this,"${column.columnName}");
