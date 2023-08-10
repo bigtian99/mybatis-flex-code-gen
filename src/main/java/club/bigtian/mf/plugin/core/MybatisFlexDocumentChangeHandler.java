@@ -97,7 +97,9 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             context.put("className", className);
             context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
             context.put("list", list);
-            context.put("instance", StrUtil.toUnderlineCase(psiClass.getName()).toUpperCase());
+            context.put("instance", StrUtil.toUnderlineCase(psiClass.getName()
+                    .replace(ObjectUtil.defaultIfEmpty(config.getTableDefIgnoreEntitySuffixes(), ""),
+                            "")).toUpperCase());
             context.put("talbeName", table.findAttributeValue("value").getText().replace("\"", ""));
             String suffix = Modules.getProjectTypeSuffix(moduleForFile);
             String fileName = className + suffix;

@@ -22,5 +22,4 @@ public final QueryColumn[]DEFAULT_COLUMNS=new QueryColumn[]{#foreach($column in 
 
 public ${className}(){super("","${talbeName}");}
 
-
         }
