@@ -28,10 +28,7 @@ import org.apache.velocity.VelocityContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.KtFile;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -97,9 +94,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             context.put("className", className);
             context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
             context.put("list", list);
-            context.put("instance", StrUtil.toUnderlineCase(psiClass.getName()
-                    .replace(ObjectUtil.defaultIfEmpty(config.getTableDefIgnoreEntitySuffixes(), ""),
-                            "")).toUpperCase());
+            context.put("instance", getDefInstanceName(config, psiClass.getName()));
             context.put("talbeName", table.findAttributeValue("value").getText().replace("\"", ""));
             String suffix = Modules.getProjectTypeSuffix(moduleForFile);
             String fileName = className + suffix;
@@ -112,6 +107,26 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                     psiDirectory.add(psiFile);
                 }
             });
+        }
+    }
+
+    public static String getDefInstanceName(CustomConfig config, String className) {
+        String type = ObjectUtil.defaultIfNull(config.getTableDefPropertiesNameStyle(), "upperCase");
+        String ignoreEntitySuffixes = config.getTableDefIgnoreEntitySuffixes();
+        String[] suffixes = ObjectUtil.defaultIfEmpty(ignoreEntitySuffixes, "").split(",");
+        String target = Arrays.stream(suffixes).filter(s -> className.endsWith(s.trim())).findFirst().orElse("").trim();
+        String instace = StrUtil.toUnderlineCase(className .replace(target, ""));
+        switch (type) {
+            case "upperCase":
+                return instace.toUpperCase();
+            case "lowerCase":
+                return instace.toLowerCase();
+            case "upperCamelCase":
+                return StrUtil.upperFirst(StrUtil.toCamelCase(instace));
+            case "lowerCamelCase":
+                return StrUtil.lowerFirst(StrUtil.toCamelCase(instace));
+            default:
+                return instace.toUpperCase();
         }
     }
 
