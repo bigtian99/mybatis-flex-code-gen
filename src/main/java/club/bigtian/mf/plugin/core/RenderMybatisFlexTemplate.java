@@ -141,7 +141,7 @@ public class RenderMybatisFlexTemplate {
                 info.getImportClassList().add(config.getModelSuperClass());
             }
             for (ColumnInfo columnInfo : info.getColumnList()) {
-                if (superFieldList.contains(columnInfo.getName())) {
+                if (superFieldList.contains(columnInfo.getFieldName())) {
                     info.getColumnList().remove(columnInfo);
                     continue;
                 }
