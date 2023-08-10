@@ -7,15 +7,21 @@ import club.bigtian.mf.plugin.core.function.SimpleFunction;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.FileChooserUtil;
+import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.TreeClassChooser;
+import com.intellij.ide.util.TreeClassChooserFactory;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiClass;
 import com.intellij.ui.LanguageTextField;
 import com.intellij.ui.components.fields.ExpandableTextField;
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -82,6 +88,8 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JCheckBox requiredArgsConstructorCheckBox;
     private ExpandableTextField tenant;
     private ExpandableTextField version;
+    private com.intellij.ui.components.fields.ExtendableTextField modelSuperClass;
+    private JTextField dataSource;
     private Project project;
 
     // 是否开启内部模式
@@ -222,6 +230,26 @@ public class MybatisFlexSettingDialog extends JDialog {
             ReturnInfoDialog dialog = new ReturnInfoDialog();
             dialog.show();
         });
+        initSuperClass();
+    }
+
+    public void initSuperClass() {
+        modelSuperClass.setPreferredSize(new Dimension(166, 30));
+        ExtendableTextComponent.Extension browseExtension =
+                ExtendableTextComponent.Extension.create(AllIcons.Actions.Find, AllIcons.Actions.Find,
+                        "选择java类型", () -> {
+                            TreeClassChooserFactory chooserFactory = TreeClassChooserFactory.getInstance(ProjectUtils.getCurrentProject());
+                            TreeClassChooser chooser = chooserFactory.createAllProjectScopeChooser("选择类");
+                            chooser.showDialog();
+                            PsiClass selected = chooser.getSelected();
+                            if (ObjectUtil.isNull(selected)) {
+                                return;
+                            }
+                            String qualifiedName = selected.getQualifiedName();
+                            modelSuperClass.setText(qualifiedName);
+                            // 重新渲染 table 需要重新设置事件
+                        });
+        modelSuperClass.addExtension(browseExtension);
     }
 
     public void init() {
@@ -261,6 +289,8 @@ public class MybatisFlexSettingDialog extends JDialog {
         requiredArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
         tenant.setText(Template.getSuffix(MybatisFlexConstant.TENANT));
         version.setText(Template.getSuffix(MybatisFlexConstant.VERSION));
+        dataSource.setText(Template.getSuffix(MybatisFlexConstant.DATA_SOURCE));
+        modelSuperClass.setText(Template.getSuffix(MybatisFlexConstant.MODEL_SUPER_CLASS));
         initSinceComBox();
         pathMap = new HashMap<>();
         for (JTextField textField : list) {
@@ -346,6 +376,8 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setRequiredArgsConstructor(requiredArgsConstructorCheckBox.isSelected());
         config.setTenant(tenant.getText());
         config.setVersion(version.getText());
+        config.setModelSuperClass(modelSuperClass.getText());
+        config.setDataSource(dataSource.getText());
         return config;
     }
 

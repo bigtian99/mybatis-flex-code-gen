@@ -33,6 +33,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -431,7 +432,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             Messages.showWarningDialog("请选择要生成的表", "提示");
             return;
         }
-        List<TableInfo> selectedTableInfo = new ArrayList<>();
+        List<TableInfo> selectedTableInfo = new CopyOnWriteArrayList<>();
         for (String tableName : selectedTabeList) {
             selectedTableInfo.add(tableInfoMap.get(tableName));
         }

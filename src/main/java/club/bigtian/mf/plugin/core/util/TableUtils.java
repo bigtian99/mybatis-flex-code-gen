@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.sql.Types;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class TableUtils {
@@ -90,7 +91,7 @@ public class TableUtils {
             TableInfo tableInfo = new TableInfo();
             tableInfo.setName(table.getName());
             tableInfo.setComment(table.getComment());
-            List<ColumnInfo> columnList = new ArrayList<>();
+            List<ColumnInfo> columnList = new CopyOnWriteArrayList<>();
             JBIterable<? extends DasObject> columns = table.getDasChildren(ObjectKind.COLUMN);
             for (DasObject column : columns) {
                 ColumnInfo columnInfo = new ColumnInfo();

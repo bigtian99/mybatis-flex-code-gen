@@ -202,6 +202,26 @@ public class MybatisFlexConfig {
      */
     private String version;
 
+    private String modelSuperClass;
+
+    private String dataSource;
+
+    public String getModelSuperClass() {
+        return modelSuperClass;
+    }
+
+    public void setModelSuperClass(String modelSuperClass) {
+        this.modelSuperClass = modelSuperClass;
+    }
+
+    public String getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(String dataSource) {
+        this.dataSource = dataSource;
+    }
+
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
 //        data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, MybatisFlexConstant.CONTROLLER));

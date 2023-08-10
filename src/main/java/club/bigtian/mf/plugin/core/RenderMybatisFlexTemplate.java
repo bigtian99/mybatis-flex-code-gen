@@ -126,8 +126,25 @@ public class RenderMybatisFlexTemplate {
                 .collect(Collectors.toSet());
         Set<String> versionSet = Arrays.stream(ObjectUtil.defaultIfNull(config.getVersion(), "").split(";"))
                 .collect(Collectors.toSet());
+        List<String> superFieldList = new ArrayList<>();
+        String modelSuperClass = config.getModelSuperClass();
+        if (StrUtil.isNotBlank(modelSuperClass)) {
+            PsiClass superClass = PsiJavaFileUtil.getPsiClass(modelSuperClass);
+            if (ObjectUtil.isNotNull(superClass)) {
+                Arrays.stream(superClass.getFields())
+                        .forEach(field -> superFieldList.add(field.getName()));
+            }
+        }
         for (TableInfo info : selectedTableInfo) {
+            if (StrUtil.isNotBlank(config.getModelSuperClass())) {
+                info.setSuperClass(StrUtil.subAfter(config.getModelSuperClass(), ".", true));
+                info.getImportClassList().add(config.getModelSuperClass());
+            }
             for (ColumnInfo columnInfo : info.getColumnList()) {
+                if (superFieldList.contains(columnInfo.getName())) {
+                    info.getColumnList().remove(columnInfo);
+                    continue;
+                }
                 columnInfo.setLogicDelete(fieldSet.contains(columnInfo.getName()));
                 columnInfo.setTenant(tenantSet.contains(columnInfo.getName()));
                 columnInfo.setVersion(versionSet.contains(columnInfo.getName()));

@@ -32,6 +32,7 @@ public class TableInfo {
      * 导入的类集合
      */
     private Set<String> importClassList;
+    private String superClass;
 
     public Set<String> getImportClassList() {
         return importClassList;
@@ -68,6 +69,17 @@ public class TableInfo {
         this.columnList = columnList;
     }
 
+    public void setImportClassList(Set<String> importClassList) {
+        this.importClassList = importClassList;
+    }
+
+    public String getSuperClass() {
+        return superClass;
+    }
+
+    public void setSuperClass(String superClass) {
+        this.superClass = superClass;
+    }
 
     @Override
     public String toString() {
@@ -75,6 +87,8 @@ public class TableInfo {
                 "name='" + name + '\'' +
                 ", comment='" + comment + '\'' +
                 ", columnList=" + columnList +
+                ", importClassList=" + importClassList +
+                ", superClass='" + superClass + '\'' +
                 '}';
     }
 }

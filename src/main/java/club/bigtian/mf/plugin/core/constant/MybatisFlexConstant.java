@@ -71,4 +71,6 @@ public class MybatisFlexConstant {
     public static final String ACTIVE_RECORD = "activeRecord";
 
     public static final String LOMBOK_REQUIRED_ARGS_CONSTRUCTOR = "requiredArgsConstructor";
+    public static final String DATA_SOURCE = "dataSource";
+    public static final String MODEL_SUPER_CLASS = "modelSuperClass";
 }

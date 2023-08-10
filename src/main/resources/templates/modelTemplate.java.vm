@@ -66,8 +66,8 @@ import $classImport;
 #if($config.swagger3)
 @Schema(name = "$table.comment")
 #end
-@Table("$table.name")
-public class ${modelName} #if($config.activeRecord) extends Model<${modelName}>  #end {
+@Table("$table.name"#if($config.dataSource) , dataSource = "${config.dataSource}" #end)
+public class ${modelName} #if($config.activeRecord) extends Model<${modelName}>  #end #if($config.modelSuperClass) extends ${table.superClass}  #end {
 
     #foreach($column in $table.columnList)
     #if($column.comment.length()>0)
