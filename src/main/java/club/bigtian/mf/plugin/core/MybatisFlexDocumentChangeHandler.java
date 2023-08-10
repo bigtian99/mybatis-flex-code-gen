@@ -13,7 +13,6 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
-import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -45,15 +44,15 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
     @Override
     public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        try {
-            FileEditor oldEditor = event.getOldEditor();
-            if (ObjectUtil.isNotNull(oldEditor)) {
-                VirtualFile oldFile = event.getOldFile();
-                createAptFile(oldFile);
-            }
-        } catch (Exception e) {
-
-        }
+        // try {
+        //     FileEditor oldEditor = event.getOldEditor();
+        //     if (ObjectUtil.isNotNull(oldEditor)) {
+        //         VirtualFile oldFile = event.getOldFile();
+        //         createAptFile(oldFile);
+        //     }
+        // } catch (Exception e) {
+        //
+        // }
     }
 
     private static void createAptFile(VirtualFile oldFile) {
@@ -72,6 +71,9 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiField[] fields = psiClass.getAllFields();
             List<AptInfo> list = new ArrayList<>();
             for (PsiField field : fields) {
+                if (field.getName().startsWith("queryWrapper")) {
+                    continue;
+                }
                 PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column");
                 if (ObjectUtil.isNotNull(column)) {
                     PsiAnnotationMemberValue value = column.findAttributeValue("value");
