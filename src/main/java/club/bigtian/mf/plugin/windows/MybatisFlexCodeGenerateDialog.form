@@ -275,7 +275,7 @@
                       <text value="所属模块："/>
                     </properties>
                   </component>
-                  <component id="77db9" class="javax.swing.JComboBox" binding="cotrollerCombox">
+                  <component id="cd396" class="javax.swing.JComboBox" binding="cotrollerCombox">
                     <constraints>
                       <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
@@ -287,13 +287,17 @@
                     <constraints>
                       <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <editable value="false"/>
+                    </properties>
                   </component>
                   <component id="f89fa" class="javax.swing.JComboBox" binding="mapperComBox">
                     <constraints>
                       <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <editable value="false"/>
+                    </properties>
                   </component>
                   <component id="f19fd" class="javax.swing.JLabel">
                     <constraints>
@@ -339,13 +343,17 @@
                     <constraints>
                       <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <editable value="false"/>
+                    </properties>
                   </component>
                   <component id="a3450" class="javax.swing.JComboBox" binding="serviceImplComBox">
                     <constraints>
                       <grid row="3" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <editable value="false"/>
+                    </properties>
                   </component>
                   <component id="494de" class="javax.swing.JLabel">
                     <constraints>
@@ -399,7 +407,9 @@
                     <constraints>
                       <grid row="5" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
-                    <properties/>
+                    <properties>
+                      <editable value="false"/>
+                    </properties>
                   </component>
                   <component id="24e37" class="javax.swing.JCheckBox" binding="syncCheckBox">
                     <constraints>

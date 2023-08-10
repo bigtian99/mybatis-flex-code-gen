@@ -3,7 +3,6 @@ package club.bigtian.mf.plugin.windows;
 import club.bigtian.mf.plugin.core.RenderMybatisFlexTemplate;
 import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
-import club.bigtian.mf.plugin.core.filter.FilterComboBoxModel;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.render.TableListCellRenderer;
 import club.bigtian.mf.plugin.core.search.InvertedIndexSearch;
@@ -29,7 +28,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
@@ -216,7 +217,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 tableList.clearSelection();
             }
         });
-
         tableSearch.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent e) {
@@ -560,66 +560,4 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         }
     }
 
-
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
-        cotrollerCombox = createNodeBox(Arrays.asList("test"));
-    }
-
-
-    public JComboBox<String> createNodeBox(List<String> nodeNameList) {
-        // 创建下拉框渲染器
-
-        FilterComboBoxModel model = new FilterComboBoxModel(nodeNameList);
-        JComboBox<String> comboBox = new JComboBox<>(model);
-        comboBox.setEditable(true);
-
-        JTextField filterTextField = (JTextField) comboBox.getEditor().getEditorComponent();
-        filterTextField.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                int keyCode = e.getKeyCode();
-                if (e.isControlDown() && keyCode == KeyEvent.VK_V || e.isMetaDown() && keyCode == KeyEvent.VK_META) {
-                    String filterText = filterTextField.getText();
-                    SwingUtilities.invokeLater(() -> comboBox.getEditor().setItem(filterText));
-                    model.filterItems(filterText);
-                    comboBox.hidePopup();
-                    comboBox.showPopup();
-                }
-
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                int keyCode = e.getKeyCode();
-                if (
-                        keyCode == KeyEvent.VK_SPACE || keyCode == KeyEvent.VK_DELETE || keyCode ==
-                                KeyEvent.VK_BACK_SPACE || (e.getModifiers() & InputEvent.CTRL_MASK) != 0 && keyCode ==
-                                KeyEvent.VK_V || keyCode > 48 && keyCode <= 57 || (e.isControlDown() || e.isMetaDown()) && keyCode == KeyEvent.VK_V) {
-                    String filterText = filterTextField.getText();
-                    SwingUtilities.invokeLater(() -> comboBox.getEditor().setItem(filterText));
-                    model.filterItems(filterText);
-                    comboBox.hidePopup();
-                    comboBox.showPopup();
-                }
-            }
-        });
-
-
-        comboBox.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                Object selectedItem = comboBox.getSelectedItem();
-                if (selectedItem != null) {
-                    filterTextField.setText(selectedItem.toString());
-                    model.filterItems("");
-                }
-            }
-        });
-
-        return comboBox;
-    }
 }

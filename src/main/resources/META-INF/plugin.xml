@@ -80,12 +80,13 @@
 
                          groupName="Mybatis felx" enabledByDefault="true" level="INFO"
                          implementationClass="club.bigtian.mf.plugin.core.inspection.NoFromInspection"/>
+
+
     </extensions>
 
     <actions>
         <action id="MyBatisFlex_TableAction" class="club.bigtian.mf.plugin.action.flex.TableAction"
                 icon="/icons/flex.svg"
-
                 text="mybatis flex code generate" description="用于选择database中的table从而进行代码生成">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
@@ -107,6 +108,7 @@
                 description="SQLPreview" icon="/icons/flex.svg">
             <add-to-group group-id="GenerateGroup" anchor="first"/>
         </action>
+
     </actions>
 
     <idea-version since-build="202.*"/>

@@ -92,11 +92,11 @@ public class Modules {
                     }, module -> module));
             FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().collect(Collectors.toList()));
             modulesCombox.setModel(model);
+
             modulesCombox.setSelectedIndex(0);
         }
         getModulePackages();
     }
-
     public static void getModulePackages() {
         modulePackageMap = new HashMap<>();
         Project project = ProjectUtils.getCurrentProject();
@@ -127,7 +127,6 @@ public class Modules {
     /**
      * 判断是否manven项目
      *
-     * @param project 项目
      * @return boolean
      */
     public static boolean isManvenProject(Module module) {
@@ -271,21 +270,25 @@ public class Modules {
             return new CustomConfig();
         }
         CustomConfig config = new CustomConfig();
-        Arrays.stream(file.getText().split("\n"))
-                .filter(el -> el.startsWith("processor"))
-                .forEach(el -> {
-                    String text = StrUtil.subAfter(el, ".", false);
-                    if (StrUtil.count(el, ".") > 1) {
-                        String[] split = text.split("\\.");
-                        text = split[0];
-                        if (split.length > 1) {
-                            text += StrUtil.upperFirst(split[1]);
+        try {
+            Arrays.stream(file.getText().split("\n"))
+                    .filter(el -> el.startsWith("processor"))
+                    .forEach(el -> {
+                        String text = StrUtil.subAfter(el, ".", false);
+                        if (StrUtil.count(el, ".") > 1) {
+                            String[] split = text.split("\\.");
+                            text = split[0];
+                            if (split.length > 1) {
+                                text += StrUtil.upperFirst(split[1]);
+                            }
                         }
-                    }
-                    String prefix = StrUtil.toCamelCase(StrUtil.subBefore(text, "=", false));
-                    String suffix = StrUtil.subAfter(text, "=", false);
-                    ReflectUtil.setFieldValue(config, prefix, suffix);
-                });
+                        String prefix = StrUtil.toCamelCase(StrUtil.subBefore(text, "=", false)).trim();
+                        String suffix = StrUtil.subAfter(text, "=", false).trim();
+                        ReflectUtil.setFieldValue(config, prefix, suffix);
+                    });
+        } catch (Exception e) {
+
+        }
         return config;
     }
 }

@@ -66,10 +66,10 @@ public class CustomMappingDialog extends JDialog {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         typeMapping = MybatisFlexPluginConfigData.getTypeMapping();
-        TABLE_DATA = new Object[typeMapping.size() > 0 ? typeMapping.size() : 1][];
+        TABLE_DATA = new Object[typeMapping.size() > 0 ? typeMapping.size() : 0][];
 
         if (typeMapping.size() == 0) {
-            TABLE_DATA[0] = new Object[]{"", ""};
+            // TABLE_DATA[0] = new Object[]{"", ""};
         }
 
         addBtn.addActionListener(e -> {
@@ -159,10 +159,14 @@ public class CustomMappingDialog extends JDialog {
         TableModel model = table.getModel();
         int rowCount = model.getRowCount();
         Map<String, String> typeMappingMap = new HashMap<>();
-        for (int row = 0; row < rowCount; row++) {
-            String column = model.getValueAt(row, 0).toString().toLowerCase();
-            String javaField = model.getValueAt(row, 1).toString();
-            typeMappingMap.put(column, javaField);
+        try {
+            for (int row = 0; row < rowCount; row++) {
+                String column = model.getValueAt(row, 0).toString().toLowerCase();
+                String javaField = model.getValueAt(row, 1).toString();
+                typeMappingMap.put(column, javaField);
+            }
+        } catch (Exception e) {
+
         }
         return typeMappingMap;
     }

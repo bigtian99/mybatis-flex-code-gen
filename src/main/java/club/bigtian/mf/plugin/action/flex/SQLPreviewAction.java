@@ -340,13 +340,12 @@ public class SQLPreviewAction extends AnAction {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
                             if (!MybatisFlexSettingDialog.insideSchemaFlag) {
-                                // virtualFile.delete(this);
+                                virtualFile.delete(this);
                             }
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);
                             }
                         } catch (Exception e) {
-                            System.out.println(e.getMessage());
                         }
                     });
                 }, ModalityState.defaultModalityState());
