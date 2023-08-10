@@ -15,6 +15,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.LanguageTextField;
+import com.intellij.ui.components.fields.ExpandableTextField;
 
 import javax.swing.*;
 import java.awt.*;
@@ -79,6 +80,8 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JCheckBox activeRecordCheckBox;
     private JLabel insideSchema;
     private JCheckBox requiredArgsConstructorCheckBox;
+    private ExpandableTextField tenant;
+    private ExpandableTextField version;
     private Project project;
 
     // 是否开启内部模式
@@ -256,6 +259,8 @@ public class MybatisFlexSettingDialog extends JDialog {
         accessorsCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ACCESSORS));
         activeRecordCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
         requiredArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
+        tenant.setText(Template.getSuffix(MybatisFlexConstant.TENANT));
+        version.setText(Template.getSuffix(MybatisFlexConstant.VERSION));
         initSinceComBox();
         pathMap = new HashMap<>();
         for (JTextField textField : list) {
@@ -339,6 +344,8 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setAccessors(accessorsCheckBox.isSelected());
         config.setActiveRecord(activeRecordCheckBox.isSelected());
         config.setRequiredArgsConstructor(requiredArgsConstructorCheckBox.isSelected());
+        config.setTenant(tenant.getText());
+        config.setVersion(version.getText());
         return config;
     }
 

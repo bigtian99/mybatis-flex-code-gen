@@ -49,6 +49,8 @@ public class MybatisFlexConstant {
     public static final String IMPL_SUFFIX = "implSuffix";
     public static final String MODEL_SUFFIX = "modelSuffix";
     public static final String MAPPER_SUFFIX = "mapperSuffix";
+    public static final String TENANT = "tenant";
+    public static final String VERSION = "version";
     public static final String STRING = "static";
     public static final String NEW = "new";
     public static final String CONTROLLER = "Controller";

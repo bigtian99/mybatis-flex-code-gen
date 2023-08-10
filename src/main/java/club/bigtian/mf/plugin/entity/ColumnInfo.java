@@ -49,6 +49,26 @@ public class ColumnInfo {
      */
     private boolean logicDelete;
 
+    private boolean tenant;
+
+    private boolean version;
+
+    public boolean isTenant() {
+        return tenant;
+    }
+
+    public void setTenant(boolean tenant) {
+        this.tenant = tenant;
+    }
+
+    public boolean isVersion() {
+        return version;
+    }
+
+    public void setVersion(boolean version) {
+        this.version = version;
+    }
+
     public boolean isNotNull() {
         return notNull;
     }

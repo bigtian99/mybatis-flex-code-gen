@@ -192,6 +192,16 @@ public class MybatisFlexConfig {
     private boolean activeRecord;
     private boolean requiredArgsConstructor;
 
+    /**
+     * 租户
+     */
+    private String tenant;
+
+    /**
+     * 乐观锁
+     */
+    private String version;
+
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
 //        data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, MybatisFlexConstant.CONTROLLER));
@@ -645,5 +655,21 @@ public class MybatisFlexConfig {
 
     public void setRequiredArgsConstructor(boolean requiredArgsConstructor) {
         this.requiredArgsConstructor = requiredArgsConstructor;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

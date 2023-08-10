@@ -84,7 +84,7 @@ public class ${modelName} #if($config.activeRecord) extends Model<${modelName}> 
     #if($column.primaryKey)
     @Id(keyType = KeyType.$config.idType)
     #else
-    @Column(value="$column.name" #if($column.logicDelete),isLogicDelete = true #end)
+    @Column(value = "$column.name" #if($column.logicDelete), isLogicDelete = true #end #if($column.tenant), tenantId = true #end #if($column.version), version = true #end)
     #end
     private $column.fieldType  $column.fieldName;
 

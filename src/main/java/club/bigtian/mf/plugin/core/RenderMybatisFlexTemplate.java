@@ -37,7 +37,7 @@ public class RenderMybatisFlexTemplate {
     public static void assembleData(List<TableInfo> selectedTableInfo, MybatisFlexConfig config, @Nullable Project project) {
 
         VelocityEngine velocityEngine = new VelocityEngine();
-        //修复因velocity.log拒绝访问，导致Velocity初始化失败
+        // 修复因velocity.log拒绝访问，导致Velocity初始化失败
 //        高版本已经把这个方法废弃了，所以这里注释掉；优先支持高版本
 //        try {
 //            velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM, new NullLogChute());
@@ -114,20 +114,23 @@ public class RenderMybatisFlexTemplate {
                 });
             }
         });
-        //生成代码之后，重新构建
+        // 生成代码之后，重新构建
         CompilerManagerUtil.make(Modules.getModule(config.getModelModule()));
     }
 
     private static void logicDelete(List<TableInfo> selectedTableInfo, MybatisFlexConfig config) {
-        String logicDeleteField = config.getLogicDeleteField();
-        if (StrUtil.isBlank(logicDeleteField)) {
-            return;
-        }
-        Set<String> fieldSet = Arrays.stream(logicDeleteField.split(";"))
+
+        Set<String> fieldSet = Arrays.stream(ObjectUtil.defaultIfNull(config.getLogicDeleteField(), "").split(";"))
+                .collect(Collectors.toSet());
+        Set<String> tenantSet = Arrays.stream(ObjectUtil.defaultIfNull(config.getTenant(), "").split(";"))
+                .collect(Collectors.toSet());
+        Set<String> versionSet = Arrays.stream(ObjectUtil.defaultIfNull(config.getVersion(), "").split(";"))
                 .collect(Collectors.toSet());
         for (TableInfo info : selectedTableInfo) {
             for (ColumnInfo columnInfo : info.getColumnList()) {
                 columnInfo.setLogicDelete(fieldSet.contains(columnInfo.getName()));
+                columnInfo.setTenant(tenantSet.contains(columnInfo.getName()));
+                columnInfo.setVersion(versionSet.contains(columnInfo.getName()));
             }
         }
     }

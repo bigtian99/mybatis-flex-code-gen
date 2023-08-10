@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="club.bigtian.mf.plugin.windows.MybatisFlexSettingDialog">
   <grid id="cbd77" binding="contentPane" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="48" y="54" width="995" height="749"/>
+      <xy x="48" y="54" width="1193" height="749"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -491,6 +491,32 @@
                                 </properties>
                               </component>
                               <component id="1e927" class="com.intellij.ui.components.fields.ExpandableTextField" binding="logicTF">
+                                <constraints/>
+                                <properties>
+                                  <preferredSize width="166" height="30"/>
+                                  <toolTipText value="多个以英文逗号分割"/>
+                                </properties>
+                              </component>
+                              <component id="f0156" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="多租户："/>
+                                </properties>
+                              </component>
+                              <component id="1caf" class="com.intellij.ui.components.fields.ExpandableTextField" binding="tenant">
+                                <constraints/>
+                                <properties>
+                                  <preferredSize width="166" height="30"/>
+                                  <toolTipText value="多个以英文逗号分割"/>
+                                </properties>
+                              </component>
+                              <component id="5854d" class="javax.swing.JLabel">
+                                <constraints/>
+                                <properties>
+                                  <text value="乐观锁："/>
+                                </properties>
+                              </component>
+                              <component id="a3cc4" class="com.intellij.ui.components.fields.ExpandableTextField" binding="version">
                                 <constraints/>
                                 <properties>
                                   <preferredSize width="166" height="30"/>
