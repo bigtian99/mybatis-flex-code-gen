@@ -69,7 +69,8 @@ public class SQLPreviewAction extends AnAction {
 
     private PsiClass entityClass;
     PsiMethod constructorMethod;
-
+    List<String> list;
+    PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
 
     public void preview(String selectedText, PsiJavaFile psiFile, SimpleFunction function) {
         try {
@@ -103,6 +104,11 @@ public class SQLPreviewAction extends AnAction {
         WriteCommandAction.runWriteCommandAction(project, () -> {
             if (ObjectUtil.isNotNull(importList)) {
                 psiJavaFile.getImportList().add(importList);
+            }
+            if (CollUtil.isNotEmpty(list)) {
+                for (String impor : list) {
+                    psiJavaFile.getImportList().add(instance.createImportStatement(PsiJavaFileUtil.getPsiClass(impor)));
+                }
             }
             try {
                 PsiFile file = containingDirectory.findFile(psiJavaFile.getName());
@@ -175,7 +181,7 @@ public class SQLPreviewAction extends AnAction {
                 }
             }
         }
-        ArrayList<String> list = new ArrayList<>(IMPORT_LIST);
+        list = new ArrayList<>(IMPORT_LIST);
         if (ObjectUtil.isNotNull(ofValue) && ofValue.contains(":")) {
             String[] valueArr = ofValue.split(":");
             qualifiedName = valueArr[1];
@@ -186,7 +192,6 @@ public class SQLPreviewAction extends AnAction {
         if (StrUtil.isNotBlank(qualifiedName)) {
             list.add(qualifiedName);
         }
-        PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
         if (flag) {
             text += StrUtil.format(TEMPLATE, val, val, variableReference.get());
             // 导入新的
@@ -194,9 +199,7 @@ public class SQLPreviewAction extends AnAction {
         }
         // 添加import
         WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
-            for (String impor : list) {
-                psiJavaFile.getImportList().add(instance.createImportStatement(PsiJavaFileUtil.getPsiClass(impor)));
-            }
+
             if (ObjectUtil.isNotNull(entityClass)) {
                 boolean hashConstructor = isHasConstructor(entityClass);
                 if (!hashConstructor) {
