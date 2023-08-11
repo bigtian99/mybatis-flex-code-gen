@@ -6,7 +6,7 @@ public class CustomConfig {
     /**
      * 全局启用apt开关
      */
-    private boolean enable;
+    private Boolean enable;
 
     /**
      * 是否停止向上级合并配
@@ -79,11 +79,11 @@ public class CustomConfig {
     private String tableDefIgnoreEntitySuffixes;
 
 
-    public boolean isEnable() {
+    public Boolean isEnable() {
         return enable;
     }
 
-    public void setEnable(boolean enable) {
+    public void setEnable(Boolean enable) {
         this.enable = enable;
     }
 
