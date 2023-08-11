@@ -276,7 +276,7 @@ public class SQLPreviewAction extends AnAction {
     public String getImplText(PsiJavaFile psiJavaFile, String selectedText, Map<String, String> qualifiedNameImportMap, ManyFunction<String> consumer) {
         String temVal = "";
         Project project = psiJavaFile.getProject();
-        PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
+        // PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
         PsiClass[] classes = psiJavaFile.getClasses();
         if (StrUtil.startWithAny(selectedText, "query()", "queryChain()", "updateChain()")) {
             String name = StrUtil.subBefore(psiJavaFile.getName(), ".", true);
@@ -315,9 +315,9 @@ public class SQLPreviewAction extends AnAction {
                     String name = sonPsiClass.getName();
                     consumer.applay(genericity, StrUtil.subAfter(text, " ", true));
                     if (text.contains(field.getName())) {
-                        WriteCommandAction.runWriteCommandAction(project, () -> {
-                            psiJavaFile.getImportList().add(elementFactory.createImportStatement(sonPsiClass));
-                        });
+                        // WriteCommandAction.runWriteCommandAction(project, () -> {
+                        //     psiJavaFile.getImportList().add(elementFactory.createImportStatement(sonPsiClass));
+                        // });
                         temVal = StrUtil.format("{}=new {}();\n", text, name);
                     }
                 }

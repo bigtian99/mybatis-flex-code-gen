@@ -7,21 +7,14 @@ import club.bigtian.mf.plugin.core.function.SimpleFunction;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.FileChooserUtil;
-import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.intellij.icons.AllIcons;
-import com.intellij.ide.util.TreeClassChooser;
-import com.intellij.ide.util.TreeClassChooserFactory;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiClass;
 import com.intellij.ui.LanguageTextField;
-import com.intellij.ui.components.fields.ExpandableTextField;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -73,8 +66,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JPanel panel1;
     private JButton restBtn;
     private JCheckBox swagger3CheckBox;
-    private JButton returnBtn;
-    private com.intellij.ui.components.fields.ExpandableTextField logicTF;
+    private com.intellij.openapi.ui.FixedSizeButton returnBtn;
     private JTextField contrPath;
     private JTextField servicePath;
     private JTextField implPath;
@@ -86,10 +78,8 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JCheckBox activeRecordCheckBox;
     private JLabel insideSchema;
     private JCheckBox requiredArgsConstructorCheckBox;
-    private ExpandableTextField tenant;
-    private ExpandableTextField version;
-    private com.intellij.ui.components.fields.ExtendableTextField modelSuperClass;
-    private JTextField dataSource;
+
+    private com.intellij.openapi.ui.FixedSizeButton buttonFixedSizeButton;
     private Project project;
 
     // 是否开启内部模式
@@ -230,27 +220,10 @@ public class MybatisFlexSettingDialog extends JDialog {
             ReturnInfoDialog dialog = new ReturnInfoDialog();
             dialog.show();
         });
-        initSuperClass();
+        buttonFixedSizeButton.addActionListener(e -> new CommonSettingDialog().show());
     }
 
-    public void initSuperClass() {
-        modelSuperClass.setPreferredSize(new Dimension(166, 30));
-        ExtendableTextComponent.Extension browseExtension =
-                ExtendableTextComponent.Extension.create(AllIcons.Actions.Find, AllIcons.Actions.Find,
-                        "选择java类型", () -> {
-                            TreeClassChooserFactory chooserFactory = TreeClassChooserFactory.getInstance(ProjectUtils.getCurrentProject());
-                            TreeClassChooser chooser = chooserFactory.createAllProjectScopeChooser("选择类");
-                            chooser.showDialog();
-                            PsiClass selected = chooser.getSelected();
-                            if (ObjectUtil.isNull(selected)) {
-                                return;
-                            }
-                            String qualifiedName = selected.getQualifiedName();
-                            modelSuperClass.setText(qualifiedName);
-                            // 重新渲染 table 需要重新设置事件
-                        });
-        modelSuperClass.addExtension(browseExtension);
-    }
+
 
     public void init() {
         controllerTemplate.setText(Template.getVmCode(MybatisFlexConstant.CONTROLLER_TEMPLATE));
@@ -277,7 +250,6 @@ public class MybatisFlexSettingDialog extends JDialog {
         cacheCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.CACHE));
         overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
         swagger3CheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER3));
-        logicTF.setText(Template.getConfigData(MybatisFlexConstant.LOGIC_DELETE_FIELD));
         contrPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.CONTR_PATH), contrPath.getText()));
         servicePath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.SERVICE_PATH), servicePath.getText()));
         implPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.IMPL_PATH), implPath.getText()));
@@ -287,10 +259,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         accessorsCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ACCESSORS));
         activeRecordCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
         requiredArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
-        tenant.setText(Template.getSuffix(MybatisFlexConstant.TENANT));
-        version.setText(Template.getSuffix(MybatisFlexConstant.VERSION));
-        dataSource.setText(Template.getSuffix(MybatisFlexConstant.DATA_SOURCE));
-        modelSuperClass.setText(Template.getSuffix(MybatisFlexConstant.MODEL_SUPER_CLASS));
+
         initSinceComBox();
         pathMap = new HashMap<>();
         for (JTextField textField : list) {
@@ -364,7 +333,6 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setCache(cacheCheckBox.isSelected());
         config.setSwagger3(swagger3CheckBox.isSelected());
         config.setOverrideCheckBox(overrideCheckBox.isSelected());
-        config.setLogicDeleteField(logicTF.getText());
         config.setContrPath(contrPath.getText());
         config.setServicePath(servicePath.getText());
         config.setImplPath(implPath.getText());
@@ -374,10 +342,6 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setAccessors(accessorsCheckBox.isSelected());
         config.setActiveRecord(activeRecordCheckBox.isSelected());
         config.setRequiredArgsConstructor(requiredArgsConstructorCheckBox.isSelected());
-        config.setTenant(tenant.getText());
-        config.setVersion(version.getText());
-        config.setModelSuperClass(modelSuperClass.getText());
-        config.setDataSource(dataSource.getText());
         return config;
     }
 

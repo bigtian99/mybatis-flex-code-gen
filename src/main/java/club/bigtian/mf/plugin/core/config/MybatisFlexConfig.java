@@ -205,6 +205,52 @@ public class MybatisFlexConfig {
     private String modelSuperClass;
 
     private String dataSource;
+    private String insertValue;
+    private String updateValue;
+
+    private String onInsert;
+    private String onUpdate;
+    private String onSet;
+
+    public String getOnInsert() {
+        return onInsert;
+    }
+
+    public void setOnInsert(String onInsert) {
+        this.onInsert = onInsert;
+    }
+
+    public String getOnUpdate() {
+        return onUpdate;
+    }
+
+    public void setOnUpdate(String onUpdate) {
+        this.onUpdate = onUpdate;
+    }
+
+    public String getOnSet() {
+        return onSet;
+    }
+
+    public void setOnSet(String onSet) {
+        this.onSet = onSet;
+    }
+
+    public String getInsertValue() {
+        return insertValue;
+    }
+
+    public void setInsertValue(String insertValue) {
+        this.insertValue = insertValue;
+    }
+
+    public String getUpdateValue() {
+        return updateValue;
+    }
+
+    public void setUpdateValue(String updateValue) {
+        this.updateValue = updateValue;
+    }
 
     public String getModelSuperClass() {
         return modelSuperClass;

@@ -484,69 +484,6 @@
                                   <text value="Active Record"/>
                                 </properties>
                               </component>
-                              <component id="f94eb" class="javax.swing.JLabel">
-                                <constraints/>
-                                <properties>
-                                  <text value="逻辑删除："/>
-                                </properties>
-                              </component>
-                              <component id="1e927" class="com.intellij.ui.components.fields.ExpandableTextField" binding="logicTF">
-                                <constraints/>
-                                <properties>
-                                  <preferredSize width="166" height="30"/>
-                                  <toolTipText value="多个以英文逗号分割"/>
-                                </properties>
-                              </component>
-                              <component id="f0156" class="javax.swing.JLabel">
-                                <constraints/>
-                                <properties>
-                                  <text value="多租户："/>
-                                </properties>
-                              </component>
-                              <component id="1caf" class="com.intellij.ui.components.fields.ExpandableTextField" binding="tenant">
-                                <constraints/>
-                                <properties>
-                                  <preferredSize width="166" height="30"/>
-                                  <toolTipText value="多个以英文逗号分割"/>
-                                </properties>
-                              </component>
-                              <component id="5854d" class="javax.swing.JLabel">
-                                <constraints/>
-                                <properties>
-                                  <text value="乐观锁："/>
-                                </properties>
-                              </component>
-                              <component id="a3cc4" class="com.intellij.ui.components.fields.ExpandableTextField" binding="version">
-                                <constraints/>
-                                <properties>
-                                  <preferredSize width="166" height="30"/>
-                                  <toolTipText value="多个以英文逗号分割"/>
-                                </properties>
-                              </component>
-                              <component id="672ae" class="javax.swing.JLabel">
-                                <constraints/>
-                                <properties>
-                                  <text value="实体父类：："/>
-                                </properties>
-                              </component>
-                              <component id="b0eeb" class="com.intellij.ui.components.fields.ExtendableTextField" binding="modelSuperClass">
-                                <constraints/>
-                                <properties>
-                                  <preferredSize width="226" height="30"/>
-                                </properties>
-                              </component>
-                              <component id="4845a" class="javax.swing.JLabel">
-                                <constraints/>
-                                <properties>
-                                  <text value="多数据源："/>
-                                </properties>
-                              </component>
-                              <component id="641ab" class="javax.swing.JTextField" binding="dataSource">
-                                <constraints/>
-                                <properties>
-                                  <preferredSize width="166" height="30"/>
-                                </properties>
-                              </component>
                               <component id="94243" class="javax.swing.JLabel">
                                 <constraints/>
                                 <properties>
@@ -565,6 +502,7 @@
                               <component id="bfec" class="javax.swing.JButton" binding="del">
                                 <constraints/>
                                 <properties>
+                                  <icon value="icons/removeConfig.png"/>
                                   <selected value="false"/>
                                   <text value="删除"/>
                                 </properties>
@@ -572,13 +510,28 @@
                               <component id="10feb" class="javax.swing.JButton" binding="clearAll">
                                 <constraints/>
                                 <properties>
+                                  <icon value="icons/removeConfig.png"/>
                                   <text value="清空"/>
+                                  <visible value="false"/>
                                 </properties>
                               </component>
-                              <component id="337a7" class="javax.swing.JButton" binding="returnBtn">
+                              <component id="14345" class="com.intellij.openapi.ui.FixedSizeButton" binding="returnBtn">
                                 <constraints/>
                                 <properties>
-                                  <text value="统一返回"/>
+                                  <actionCommand value=""/>
+                                  <icon value="icons/return.png"/>
+                                  <text value=""/>
+                                  <toolTipText value="统一返回"/>
+                                </properties>
+                              </component>
+                              <component id="463da" class="com.intellij.openapi.ui.FixedSizeButton" binding="buttonFixedSizeButton" default-binding="true">
+                                <constraints/>
+                                <properties>
+                                  <horizontalTextPosition value="0"/>
+                                  <icon value="icons/class.png"/>
+                                  <text value=""/>
+                                  <toolTipText value="实体类设置"/>
+                                  <verticalAlignment value="0"/>
                                 </properties>
                               </component>
                             </children>

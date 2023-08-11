@@ -126,6 +126,22 @@ public class RenderMybatisFlexTemplate {
                 .collect(Collectors.toSet());
         Set<String> versionSet = Arrays.stream(ObjectUtil.defaultIfNull(config.getVersion(), "").split(";"))
                 .collect(Collectors.toSet());
+        Map<String, String> insertMap = Arrays.stream(config.getInsertValue().split(";"))
+                .map(el -> el.split(":"))
+                .collect(Collectors.toMap(
+                        split -> split[0],
+                        split -> split[1],
+                        (existingValue, newValue) -> newValue
+                ));
+
+        Map<String, String> updateMap = Arrays.stream(config.getUpdateValue().split(";"))
+                .map(el -> el.split(":"))
+                .collect(Collectors.toMap(
+                        split -> split[0],
+                        split -> split[1],
+                        (existingValue, newValue) -> newValue
+                ));
+
         List<String> superFieldList = new ArrayList<>();
         String modelSuperClass = config.getModelSuperClass();
         if (StrUtil.isNotBlank(modelSuperClass)) {
@@ -140,14 +156,34 @@ public class RenderMybatisFlexTemplate {
                 info.setSuperClass(StrUtil.subAfter(config.getModelSuperClass(), ".", true));
                 info.getImportClassList().add(config.getModelSuperClass());
             }
+            if (StrUtil.isNotBlank(config.getOnInsert())) {
+                info.setOnInsert(StrUtil.subAfter(config.getOnInsert(),".",true));
+                info.getImportClassList().add(config.getOnInsert());
+            }
+            if (StrUtil.isNotBlank(config.getOnUpdate())) {
+                info.setOnUpdate(StrUtil.subAfter(config.getOnUpdate(),".",true));
+                info.getImportClassList().add(config.getOnUpdate());
+            }
+            if (StrUtil.isNotBlank(config.getOnSet())) {
+                info.setOnSet(StrUtil.subAfter(config.getOnSet(),".",true));
+                info.getImportClassList().add(config.getOnSet());
+            }
+
             for (ColumnInfo columnInfo : info.getColumnList()) {
                 if (superFieldList.contains(columnInfo.getFieldName())) {
                     info.getColumnList().remove(columnInfo);
                     continue;
                 }
+
                 columnInfo.setLogicDelete(fieldSet.contains(columnInfo.getName()));
                 columnInfo.setTenant(tenantSet.contains(columnInfo.getName()));
                 columnInfo.setVersion(versionSet.contains(columnInfo.getName()));
+                if (insertMap.containsKey(columnInfo.getName())) {
+                    columnInfo.setInsertValue(insertMap.get(columnInfo.getName()));
+                }
+                if (updateMap.containsKey(columnInfo.getName())) {
+                    columnInfo.setUpdateValue(updateMap.get(columnInfo.getName()));
+                }
             }
         }
     }

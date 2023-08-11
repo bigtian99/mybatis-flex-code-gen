@@ -66,8 +66,8 @@ import $classImport;
 #if($config.swagger3)
 @Schema(name = "$table.comment")
 #end
-@Table(value = "$table.name"#if($config.dataSource) , dataSource = "${config.dataSource}" #end)
-public class ${modelName} #if($config.activeRecord) extends Model<${modelName}>  #end #if($config.modelSuperClass) extends ${table.superClass}  #end {
+@Table(value = "$table.name"#if($config.dataSource) , dataSource = "${config.dataSource}" #end#if($table.onInsert) , onInsert = ${table.onInsert}.class #end#if($table.onUpdate) , onUpdate = ${table.onUpdate}.class #end#if($table.onSet) , onSet = ${table.onSet}.class #end)
+public class ${modelName} #if($config.activeRecord) extends Model<${modelName}>  #end #if(${config.modelSuperClass}!="") extends ${table.superClass}  #end {
 
     #foreach($column in $table.columnList)
     #if($column.comment.length()>0)
@@ -84,7 +84,7 @@ public class ${modelName} #if($config.activeRecord) extends Model<${modelName}> 
     #if($column.primaryKey)
     @Id(keyType = KeyType.$config.idType)
     #else
-    @Column(value = "$column.name" #if($column.logicDelete), isLogicDelete = true #end #if($column.tenant), tenantId = true #end #if($column.version), version = true #end)
+    @Column(value = "$column.name" #if($column.logicDelete), isLogicDelete = true #end #if($column.tenant), tenantId = true #end #if($column.version), version = true #end #if($column.insertValue), onInsertValue = "$column.insertValue" #end#if($column.updateValue), onUpdateValue = "$column.updateValue" #end)
     #end
     private $column.fieldType  $column.fieldName;
 

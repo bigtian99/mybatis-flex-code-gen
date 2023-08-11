@@ -53,6 +53,26 @@ public class ColumnInfo {
 
     private boolean version;
 
+    private String insertValue;
+
+    private String updateValue;
+
+    public String getInsertValue() {
+        return insertValue;
+    }
+
+    public void setInsertValue(String insertValue) {
+        this.insertValue = insertValue;
+    }
+
+    public String getUpdateValue() {
+        return updateValue;
+    }
+
+    public void setUpdateValue(String updateValue) {
+        this.updateValue = updateValue;
+    }
+
     public boolean isTenant() {
         return tenant;
     }
