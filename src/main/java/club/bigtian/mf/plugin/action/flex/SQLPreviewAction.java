@@ -138,6 +138,9 @@ public class SQLPreviewAction extends AnAction {
         Map<String, String> qualifiedNameImportMap = PsiJavaFileUtil.getQualifiedNameImportMap(psiJavaFile);
 
         String val = null;
+        if(text.startsWith("this.")){
+            text=StrUtil.subAfter(text,"this.",false);
+        }
         // 处理service里面的链式调用
         String print = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, StrUtil.startWithAny(text, "queryChain()", "query()", "updateChain()") ? "service." + text : text);
         boolean flag = StrUtil.containsAny(text, "queryChain()", "query()", "updateChain()");
