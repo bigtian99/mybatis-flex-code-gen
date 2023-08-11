@@ -361,7 +361,7 @@ public class SQLPreviewAction extends AnAction {
                     protected JavaParameters createJavaParameters() throws ExecutionException {
                         JavaParameters params = new JavaParameters();
                         Sdk projectSdk = ProjectRootManager.getInstance(project).getProjectSdk();
-                        params.configureByProject(project, JavaParameters.JDK_AND_CLASSES, projectSdk);
+                        params.configureByProject(project, JavaParameters.JDK_AND_CLASSES_AND_TESTS, projectSdk);
                         params.setMainClass(packageName + ".MybatisFlexSqlPreview");
                         return params;
                     }

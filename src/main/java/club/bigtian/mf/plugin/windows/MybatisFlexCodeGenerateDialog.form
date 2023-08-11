@@ -65,7 +65,7 @@
             </constraints>
             <properties>
               <icon value="icons/mapping.png"/>
-              <text value="映射配置"/>
+              <text value="映射"/>
             </properties>
           </component>
         </children>

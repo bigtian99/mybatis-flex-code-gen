@@ -18,6 +18,7 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
@@ -100,13 +101,16 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             String suffix = Modules.getProjectTypeSuffix(moduleForFile);
             String fileName = className + suffix;
             PsiFile psiFile = VelocityUtils.render(context, Template.getTemplateContent("AptTemplate" + suffix), fileName);
-            WriteCommandAction.runWriteCommandAction(project, () -> {
-                PsiFile file = psiDirectory.findFile(fileName);
-                if (ObjectUtil.isNotNull(file)) {
-                    file.getViewProvider().getDocument().setText(psiFile.getText());
-                } else {
-                    psiDirectory.add(psiFile);
-                }
+            DumbService.getInstance(project).runWhenSmart(() -> {
+                // 执行需要索引的操作
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    PsiFile file = psiDirectory.findFile(fileName);
+                    if (ObjectUtil.isNotNull(file)) {
+                        file.getViewProvider().getDocument().setText(psiFile.getText());
+                    } else {
+                        psiDirectory.add(psiFile);
+                    }
+                });
             });
         }
     }

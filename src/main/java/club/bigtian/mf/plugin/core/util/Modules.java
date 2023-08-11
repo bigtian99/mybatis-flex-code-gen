@@ -97,6 +97,7 @@ public class Modules {
         }
         getModulePackages();
     }
+
     public static void getModulePackages() {
         modulePackageMap = new HashMap<>();
         Project project = ProjectUtils.getCurrentProject();
@@ -256,6 +257,9 @@ public class Modules {
 
 
     public static CustomConfig moduleConfig(Module module) {
+        if (ObjectUtil.isNull(module)) {
+            return new CustomConfig();
+        }
         String path = getPath(module);
         PsiFile file = null;
         PsiDirectory psiDirectory = VirtualFileUtils.getPsiDirectory(module.getProject(), path);

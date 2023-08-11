@@ -204,8 +204,8 @@ public class ConfirmTableInfoDialog extends JDialog {
                 return;
             }
         }
-        simpleFunction.apply();
         dispose();
+        simpleFunction.apply();
     }
 
     private void onCancel() {
