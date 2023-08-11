@@ -42,6 +42,7 @@
     <li>【新增】支持大部分 mybatis-flex.config 配置</li>
     <li>【新增】自定义 model 父类</li>
     <li>【新增】数据源，租户，乐观锁代码生成适配</li>
+    <li>【优化】支持在 service 实现中直接使用 query()、 queryChain()、updateChain()方法的 SQL 预览</li>
     <li>【优化】支持单元测试预览 SQL</li>
     </ul>
     ]]></change-notes>
