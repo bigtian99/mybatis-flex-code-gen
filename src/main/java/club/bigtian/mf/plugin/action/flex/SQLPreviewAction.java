@@ -307,14 +307,13 @@ public class SQLPreviewAction extends AnAction {
                     // 获取全局搜索范围
                     Collection<PsiClass> implementors = PsiJavaFileUtil.getSonPsiClass(qualifiedName, GlobalSearchScope.allScope(project));
                     if (CollUtil.isEmpty(implementors)) {
-                        LOG.error(StrUtil.format("未找到实现类:{}", qualifiedName));
-                        continue;
+                        //如果没有找到子类，就默认自身是实现类
+                        implementors.add(PsiJavaFileUtil.getPsiClass(qualifiedName));
                     }
                     PsiClass sonPsiClass = implementors.iterator().next();
                     String genericity = PsiJavaFileUtil.getGenericity(sonPsiClass);
                     String name = sonPsiClass.getName();
                     consumer.applay(genericity, StrUtil.subAfter(text, " ", true));
-
                     if (text.contains(field.getName())) {
                         WriteCommandAction.runWriteCommandAction(project, () -> {
                             psiJavaFile.getImportList().add(elementFactory.createImportStatement(sonPsiClass));
