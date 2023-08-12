@@ -4,9 +4,20 @@ public class AptInfo {
     private String name;
     private String columnName;
 
-    public AptInfo(String columnName, String name) {
+    private boolean large;
+
+    public AptInfo(String columnName, String name,boolean large) {
         this.name = name;
         this.columnName = columnName;
+        this.large = large;
+    }
+
+    public boolean isLarge() {
+        return large;
+    }
+
+    public void setLarge(boolean large) {
+        large = large;
     }
 
     public String getName() {

@@ -14,6 +14,8 @@ import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -22,6 +24,8 @@ import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.TextFieldWithAutoCompletion;
+import com.intellij.ui.TextFieldWithAutoCompletionListProvider;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,6 +78,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     private JProgressBar progressBar;
     private JCheckBox strictComBox;
     private JButton button1;
+    private TextFieldWithAutoCompletion textField1;
 
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
@@ -561,4 +566,27 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         }
     }
 
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        List<String> suggestionList = new ArrayList<>();
+        suggestionList.add("Apple");
+        suggestionList.add("Banana");
+        suggestionList.add("Cherry");
+        suggestionList.add("Grape");
+        suggestionList.add("Orange");
+        textField1 = new TextFieldWithAutoCompletion<String>(project,
+                new TextFieldWithAutoCompletionListProvider<String>(suggestionList) {
+                    @Override
+                    protected @NotNull String getLookupString(@NotNull String item) {
+                        return "bigtian";
+                    }
+
+                    @Override
+                    public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull String prefix, @NotNull CompletionResultSet result) {
+                        super.fillCompletionVariants(parameters, prefix, result);
+                    }
+                }, true, "");
+
+
+    }
 }

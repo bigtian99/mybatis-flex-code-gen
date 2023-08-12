@@ -85,9 +85,10 @@
 
                          groupName="Mybatis felx" enabledByDefault="true" level="INFO"
                          implementationClass="club.bigtian.mf.plugin.core.inspection.NoFromInspection"/>
-<!--<intentionAction>-->
-        <!--    <className>club.bigtian.mf.plugin.action.flex.MybatisFlexInternal</className>-->
-        <!--</intentionAction>-->
+<!--        <intentionAction>-->
+<!--            <className>club.bigtian.mf.plugin.action.flex.MybatisFlexInternal</className>-->
+<!--        </intentionAction>-->
+
     </extensions>
 
     <actions>

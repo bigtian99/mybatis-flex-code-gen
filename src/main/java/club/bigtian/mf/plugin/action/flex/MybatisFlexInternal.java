@@ -13,11 +13,11 @@ import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-
 public class MybatisFlexInternal extends AnAction implements IntentionAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+
         System.out.println("进来");
         // TODO: insert action logic here
     }
