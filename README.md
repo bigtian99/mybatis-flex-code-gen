@@ -40,6 +40,8 @@
 
 2 、[新增功能演示](https://www.bilibili.com/video/BV1hj411d7Rq/?vd_source=b6f434af852a6a39fcd34fc2de5cf431)
 
+3 、[1.4.7版本新增功能演示](https://www.bilibili.com/video/BV1WX4y1j7VQ/)
+
 ### 六、请作者喝杯咖啡
 
 ![赞赏](./docs/assets/support.png)
