@@ -93,7 +93,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table");
             PsiDirectory psiDirectory = VirtualFileUtils.createSubDirectory(moduleForFile, path);
             VelocityContext context = new VelocityContext();
-            String className = psiClass.getName() + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
+            String className = getClassName(config, psiClass.getName()) + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
             context.put("className", className);
             context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
             context.put("list", list);
@@ -118,10 +118,8 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
     public static String getDefInstanceName(CustomConfig config, String className) {
         String type = ObjectUtil.defaultIfNull(config.getTableDefPropertiesNameStyle(), "upperCase");
-        String ignoreEntitySuffixes = config.getTableDefIgnoreEntitySuffixes();
-        String[] suffixes = ObjectUtil.defaultIfEmpty(ignoreEntitySuffixes, "").split(",");
-        String target = Arrays.stream(suffixes).filter(s -> className.endsWith(s.trim())).findFirst().orElse("").trim();
-        String instace = StrUtil.toUnderlineCase(className.replace(target, ""));
+        className = getClassName(config, className);
+        String instace = StrUtil.toUnderlineCase(className);
         switch (type) {
             case "upperCase":
                 return instace.toUpperCase();
@@ -134,6 +132,14 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             default:
                 return instace.toUpperCase();
         }
+    }
+
+    @NotNull
+    private static String getClassName(CustomConfig config, String className) {
+        String ignoreEntitySuffixes = config.getTableDefIgnoreEntitySuffixes();
+        String[] suffixes = ObjectUtil.defaultIfEmpty(ignoreEntitySuffixes, "").split(",");
+        String target = Arrays.stream(suffixes).filter(s -> className.endsWith(s.trim())).findFirst().orElse("").trim();
+        return className.replace(target, "");
     }
 
 
