@@ -16,10 +16,10 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2022.2.5")
+    version.set("2023.2")
 //    version.set("2020.3.3")
     type.set("IU") // Target IDE Platform
-    plugins.set(listOf("com.intellij.java", "org.jetbrains.kotlin", "IntelliLang", "com.intellij.database"))
+    plugins.set(listOf("com.intellij.java", "org.jetbrains.kotlin","com.intellij.database"))
 }
 
 dependencies {

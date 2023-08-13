@@ -54,7 +54,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     }
 
     private static void createAptFile(VirtualFile oldFile) {
-        if (ObjectUtil.isNull(oldFile) || !oldFile.getName().endsWith(".java")) {
+        if (ObjectUtil.isNull(oldFile) || !oldFile.getName().endsWith(".java") || !oldFile.isWritable()) {
             return;
         }
         Boolean userData = oldFile.getUserData(CHANGE);

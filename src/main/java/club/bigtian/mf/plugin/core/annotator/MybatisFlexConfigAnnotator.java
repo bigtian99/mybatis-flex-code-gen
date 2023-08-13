@@ -60,9 +60,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         try {
             // 获取当前行号
             PsiFile containingFile = element.getContainingFile();
-            if (ObjectUtil.isNull(containingFile)
-                    || containingFile instanceof LightVirtualFile
-                  ) {
+            if (ObjectUtil.isNull(containingFile) || containingFile instanceof LightVirtualFile) {
                 return;
             }
             Document document = PsiDocumentManager.getInstance(project).getDocument(containingFile);
