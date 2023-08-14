@@ -2,12 +2,10 @@ package club.bigtian.mf.plugin.core.util;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.intellij.ide.util.PackageChooserDialog;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiPackage;
 
 public class Package {
-    private static final Logger LOG = Logger.getInstance(Package.class);
 
     /**
      * 选择包路径

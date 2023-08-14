@@ -2,12 +2,10 @@ package club.bigtian.mf.plugin.core.util;
 
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 
 public class CompilerManagerUtil {
-    private static final Logger LOG = Logger.getInstance(CompilerManagerUtil.class);
 
     /**
      * 编译
@@ -18,7 +16,6 @@ public class CompilerManagerUtil {
     public static void compile(VirtualFile[] files, CompileStatusNotification notification) {
         CompilerManager compilerManager = getCompilerManager();
         compilerManager.compile(files, notification);
-        LOG.info("编译完成");
     }
 
     /**
@@ -27,7 +24,6 @@ public class CompilerManagerUtil {
     public static void rebuild() {
         CompilerManager compilerManager = getCompilerManager();
         compilerManager.rebuild(null);
-        LOG.info("编译完成");
     }
 
     private static CompilerManager getCompilerManager() {

@@ -8,7 +8,6 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -32,7 +31,6 @@ import java.util.stream.Collectors;
  * @date 2023/06/22
  */
 public class Modules {
-    private static final Logger LOG = Logger.getInstance(Modules.class);
     private static Map<String, Module> moduleMap;
     private static Map<String, Map<String, String>> modulePackageMap;
     private static Boolean isManvenProject;
@@ -108,7 +106,6 @@ public class Modules {
             fileIndex.iterateContent(fileOrDir -> {
                 if (fileOrDir.isDirectory() && (fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.SOURCES) || fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.RESOURCES))) {
                     PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
-                    LOG.assertTrue(psiDirectory != null);
                     PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
                     if (aPackage != null) {
                         moduleMap.put(aPackage.getName(), aPackage.getQualifiedName());

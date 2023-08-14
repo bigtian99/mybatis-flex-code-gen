@@ -10,7 +10,6 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.fileChooser.ex.TextFieldAction;
@@ -52,7 +51,6 @@ import java.util.Objects;
 
 @SuppressWarnings("deprecation")
 public class PackageChooserDialogCustom extends PackageChooser {
-    private static final Logger LOG = Logger.getInstance(PackageChooserDialogCustom.class);
     private Tree myTree;
     private DefaultTreeModel myModel;
     private final Project myProject;
@@ -234,7 +232,6 @@ public class PackageChooserDialogCustom extends PackageChooser {
         fileIndex.iterateContent(fileOrDir -> {
             if (fileOrDir.isDirectory() && (fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.SOURCES) || fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.RESOURCES))) {
                 PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
-                LOG.assertTrue(psiDirectory != null);
                 PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
                 if (aPackage != null) {
                     this.addPackage(aPackage);
@@ -355,7 +352,6 @@ public class PackageChooserDialogCustom extends PackageChooser {
                             }
                         } catch (Exception var9) {
                             Messages.showMessageDialog(this.getContentPane(), StringUtil.getMessage(var9), CommonBundle.getErrorTitle(), Messages.getErrorIcon());
-                            LOG.debug(var9);
                         }
 
                     };

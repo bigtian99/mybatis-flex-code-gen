@@ -26,7 +26,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -63,7 +62,6 @@ public class SQLPreviewAction extends AnAction {
     private static final List<String> SERVICE_IMPORT_LIST = Arrays.asList("cn.hutool.core.util.ReflectUtil",
             "com.mybatisflex.core.mybatis.Mappers",
             "java.lang.reflect.Field", "com.mybatisflex.spring.service.impl.ServiceImpl");
-    private static final Logger LOG = Logger.getInstance(SQLPreviewAction.class);
     private static final String SYSTEM_OUT_PRINTLN_TO_SQL = "\nSystem.out.println({}.toSQL());";
     private static final String CLASS_TEMPLATE = "public class MybatisFlexSqlPreview {\n    public static void main(String[] args) { {}\n}\n}";
 
@@ -82,7 +80,6 @@ public class SQLPreviewAction extends AnAction {
             }
             createFile(psiFile, StrUtil.format(CLASS_TEMPLATE, selectedText), psiFile.getPackageName());
         } catch (Exception e) {
-            LOG.error(e);
         } finally {
             function.apply();
         }
@@ -119,7 +116,6 @@ public class SQLPreviewAction extends AnAction {
                 VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
                 showSql(project, packageName, virtualFile);
             } catch (Exception e) {
-                LOG.error("SQLPreviewAction error", e);
             }
         });
     }

@@ -8,7 +8,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
@@ -36,7 +35,6 @@ import java.util.*;
  * @author bigtian
  */
 public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable, FileEditorManagerListener {
-    private static final Logger LOG = Logger.getInstance(MybatisFlexDocumentChangeHandler.class);
     private static final Key<Boolean> CHANGE = Key.create("change");
     private static final Key<Boolean> LISTENER = Key.create("listener");
 
@@ -54,65 +52,69 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     }
 
     private static void createAptFile(VirtualFile oldFile) {
-        if (ObjectUtil.isNull(oldFile) || !oldFile.getName().endsWith(".java") || !oldFile.isWritable()) {
-            return;
-        }
-        Boolean userData = oldFile.getUserData(CHANGE);
-        Project project = ProjectUtils.getCurrentProject();
-        Module moduleForFile = ModuleUtil.findModuleForFile(oldFile, project);
-        CustomConfig config = Modules.moduleConfig(moduleForFile);
-        if (BooleanUtil.isTrue(userData) && checkFile(oldFile) && ObjectUtil.defaultIfNull(config.isEnable(), true)) {
-            // 检查索引是否已准备好
-            oldFile.putUserData(CHANGE, false);
-            PsiClassOwner psiJavaFile = (PsiClassOwner) VirtualFileUtils.getPsiFile(project, oldFile);
-            PsiClass psiClass = psiJavaFile.getClasses()[0];
-            String moduleDirPath = Modules.getPath(moduleForFile);
-            PsiField[] fields = psiClass.getAllFields();
-            List<AptInfo> list = new ArrayList<>();
-            for (PsiField field : fields) {
-                if (field.getName().startsWith("queryWrapper")) {
-                    continue;
-                }
-                PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column");
-                if (ObjectUtil.isNotNull(column)) {
-                    PsiAnnotationMemberValue value = column.findAttributeValue("value");
-                    PsiAnnotationMemberValue isLarge = column.findAttributeValue("isLarge");
-                    String fieldName = value.getText().replace("\"", "");
-
-                    list.add(new AptInfo(fieldName, StrUtil.toUnderlineCase(field.getName()).toUpperCase(), isLarge.getText().contains("true")));
-                } else {
-                    list.add(new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase(), false));
-                }
+        try {
+            if (ObjectUtil.isNull(oldFile) || !oldFile.getName().endsWith(".java") || !oldFile.isWritable()) {
+                return;
             }
-
-            String path = moduleDirPath + CustomConfig.getConfig(config.getGenPath(),
-                    "target/generated-sources/annotations/",
-                    "build/generated/source/kapt/main/", Modules.isManvenProject(moduleForFile))
-                    + psiJavaFile.getPackageName().replace(".", "/") + "/table";
-
-            PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table");
-            PsiDirectory psiDirectory = VirtualFileUtils.createSubDirectory(moduleForFile, path);
-            VelocityContext context = new VelocityContext();
-            String className = getClassName(config, psiClass.getName()) + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
-            context.put("className", className);
-            context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
-            context.put("list", list);
-            context.put("instance", getDefInstanceName(config, psiClass.getName()));
-            context.put("talbeName", table.findAttributeValue("value").getText().replace("\"", ""));
-            String suffix = Modules.getProjectTypeSuffix(moduleForFile);
-            String fileName = className + suffix;
-            PsiFile psiFile = VelocityUtils.render(context, Template.getTemplateContent("AptTemplate" + suffix), fileName);
-            DumbService.getInstance(project).runWhenSmart(() -> {
-                // 执行需要索引的操作
-                WriteCommandAction.runWriteCommandAction(project, () -> {
-                    PsiFile file = psiDirectory.findFile(fileName);
-                    if (ObjectUtil.isNotNull(file)) {
-                        file.getViewProvider().getDocument().setText(psiFile.getText());
-                    } else {
-                        psiDirectory.add(psiFile);
+            Boolean userData = oldFile.getUserData(CHANGE);
+            Project project = ProjectUtils.getCurrentProject();
+            Module moduleForFile = ModuleUtil.findModuleForFile(oldFile, project);
+            CustomConfig config = Modules.moduleConfig(moduleForFile);
+            if (BooleanUtil.isTrue(userData) && checkFile(oldFile) && ObjectUtil.defaultIfNull(config.isEnable(), true)) {
+                // 检查索引是否已准备好
+                oldFile.putUserData(CHANGE, false);
+                PsiClassOwner psiJavaFile = (PsiClassOwner) VirtualFileUtils.getPsiFile(project, oldFile);
+                PsiClass psiClass = psiJavaFile.getClasses()[0];
+                String moduleDirPath = Modules.getPath(moduleForFile);
+                PsiField[] fields = psiClass.getAllFields();
+                List<AptInfo> list = new ArrayList<>();
+                for (PsiField field : fields) {
+                    if (field.getName().startsWith("queryWrapper")) {
+                        continue;
                     }
+                    PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column");
+                    if (ObjectUtil.isNotNull(column)) {
+                        PsiAnnotationMemberValue value = column.findAttributeValue("value");
+                        PsiAnnotationMemberValue isLarge = column.findAttributeValue("isLarge");
+                        String fieldName = value.getText().replace("\"", "");
+
+                        list.add(new AptInfo(fieldName, StrUtil.toUnderlineCase(field.getName()).toUpperCase(), isLarge.getText().contains("true")));
+                    } else {
+                        list.add(new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase(), false));
+                    }
+                }
+
+                String path = moduleDirPath + CustomConfig.getConfig(config.getGenPath(),
+                        "target/generated-sources/annotations/",
+                        "build/generated/source/kapt/main/", Modules.isManvenProject(moduleForFile))
+                        + psiJavaFile.getPackageName().replace(".", "/") + "/table";
+
+                PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table");
+                PsiDirectory psiDirectory = VirtualFileUtils.createSubDirectory(moduleForFile, path);
+                VelocityContext context = new VelocityContext();
+                String className = getClassName(config, psiClass.getName()) + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
+                context.put("className", className);
+                context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
+                context.put("list", list);
+                context.put("instance", getDefInstanceName(config, psiClass.getName()));
+                context.put("talbeName", table.findAttributeValue("value").getText().replace("\"", ""));
+                String suffix = Modules.getProjectTypeSuffix(moduleForFile);
+                String fileName = className + suffix;
+                PsiFile psiFile = VelocityUtils.render(context, Template.getTemplateContent("AptTemplate" + suffix), fileName);
+                DumbService.getInstance(project).runWhenSmart(() -> {
+                    // 执行需要索引的操作
+                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                        PsiFile file = psiDirectory.findFile(fileName);
+                        if (ObjectUtil.isNotNull(file)) {
+                            file.getViewProvider().getDocument().setText(psiFile.getText());
+                        } else {
+                            psiDirectory.add(psiFile);
+                        }
+                    });
                 });
-            });
+            }
+        } catch (Exception e) {
+
         }
     }
 

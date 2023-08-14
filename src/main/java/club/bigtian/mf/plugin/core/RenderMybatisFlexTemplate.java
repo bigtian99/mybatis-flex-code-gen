@@ -9,7 +9,6 @@ import cn.hutool.core.util.StrUtil;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -32,7 +31,6 @@ import java.util.stream.Collectors;
  * @date 2023/06/27
  */
 public class RenderMybatisFlexTemplate {
-    private static final Logger LOG = Logger.getInstance(RenderMybatisFlexTemplate.class);
 
     public static void assembleData(List<TableInfo> selectedTableInfo, MybatisFlexConfig config, @Nullable Project project) {
 
@@ -106,7 +104,6 @@ public class RenderMybatisFlexTemplate {
                             }
                             throw e;
                         } catch (Exception e) {
-                            LOG.error("添加文件失败", e);
                             Messages.showErrorDialog("索引未更新", "错误");
                             throw e;
                         }

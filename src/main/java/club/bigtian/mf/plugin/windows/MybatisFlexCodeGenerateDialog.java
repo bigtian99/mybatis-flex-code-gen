@@ -14,8 +14,6 @@ import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.intellij.codeInsight.completion.CompletionParameters;
-import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -24,8 +22,6 @@ import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.DocumentAdapter;
-import com.intellij.ui.TextFieldWithAutoCompletion;
-import com.intellij.ui.TextFieldWithAutoCompletionListProvider;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,7 +43,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     private JPanel contentPane;
     private JButton generateBtn;
     private JButton cancelBtn;
-    private JComboBox IdTypeCombox;
+    private JComboBox idTypeCombox;
     private JComboBox cotrollerCombox;
     private ExtendableTextField modelPackagePath;
     private JPanel modelPanel;
@@ -78,7 +74,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     private JProgressBar progressBar;
     private JCheckBox strictComBox;
     private JButton button1;
-    private TextFieldWithAutoCompletion textField1;
 
     private AnActionEvent actionEvent;
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
@@ -444,12 +439,12 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         boolean flag = checkTableInfo(selectedTableInfo);
         if (flag) {
             String since = sinceComBox.getSelectedItem().toString();
+            MybatisFlexConfig configData = getConfigData();
             if (!SINCE_CONFIG.equals(since)) {
-                MybatisFlexConfig configData = getConfigData();
                 MybatisFlexPluginConfigData.removeSinceConfig(since);
                 MybatisFlexPluginConfigData.configSince(since, configData);
             }
-
+            MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(configData);
             startGenCode(selectedTableInfo);
         }
     }
@@ -506,7 +501,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         config.setImplPackage(serviceImpPath.getText());
         config.setImplModule(serviceImplComBox.getSelectedItem().toString());
         config.setSync(syncCheckBox.isSelected());
-        config.setIdType(IdTypeCombox.getSelectedItem().toString());
+        config.setIdType(idTypeCombox.getSelectedItem().toString());
         return config;
     }
 
@@ -520,6 +515,9 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             cotrollerCombox.setSelectedItem(controllerModule);
         } else {
             cotrollerCombox.setSelectedIndex(0);
+        }
+        if (StrUtil.isNotEmpty(config.getIdType())) {
+            idTypeCombox.setSelectedItem(config.getIdType());
         }
         serviceIntefacePath.setText(config.getInterfacePackage());
         String interfaceModule = config.getInterfaceModule();
@@ -567,25 +565,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
-        List<String> suggestionList = new ArrayList<>();
-        suggestionList.add("Apple");
-        suggestionList.add("Banana");
-        suggestionList.add("Cherry");
-        suggestionList.add("Grape");
-        suggestionList.add("Orange");
-        textField1 = new TextFieldWithAutoCompletion<String>(project,
-                new TextFieldWithAutoCompletionListProvider<String>(suggestionList) {
-                    @Override
-                    protected @NotNull String getLookupString(@NotNull String item) {
-                        return "bigtian";
-                    }
-
-                    @Override
-                    public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull String prefix, @NotNull CompletionResultSet result) {
-                        super.fillCompletionVariants(parameters, prefix, result);
-                    }
-                }, true, "");
 
 
     }

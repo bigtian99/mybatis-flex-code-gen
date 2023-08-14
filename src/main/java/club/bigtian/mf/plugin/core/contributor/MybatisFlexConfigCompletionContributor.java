@@ -10,7 +10,6 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.LogicalPosition;
@@ -34,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * Author: BigTian
  */
 public class MybatisFlexConfigCompletionContributor extends CompletionContributor {
-    private static final Logger LOG = Logger.getInstance(MybatisFlexConfigCompletionContributor.class);
     PsiElementFactory elementFactory;
     JavaPsiFacade psiFacade;
     PsiManager psiManager;

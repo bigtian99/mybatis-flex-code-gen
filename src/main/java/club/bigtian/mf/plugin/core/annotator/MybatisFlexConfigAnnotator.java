@@ -5,6 +5,7 @@ import club.bigtian.mf.plugin.core.render.SqlPreviewIconRenderer;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -44,6 +45,10 @@ public class MybatisFlexConfigAnnotator implements Annotator {
         removeMethodSet.add("toSQL(");
         allowEndWithMethodSet.add("on");
         allowEndWithMethodSet.add("toQueryWrapper");
+
+    }
+
+    public void init() {
         try {
             initQueryChainMethodHandler();
             analysisMethod();
@@ -80,9 +85,13 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             if (lineNumber == 0 || ObjectUtil.isNull(psiClass) || text.startsWith("import") || iconMap.containsKey(lineNumber)) {
                 return;
             }
+            if(CollUtil.isEmpty(allMethodList)){
+                init();
+            }
 
             if (StrUtil.containsAny(text, "QueryWrapper", "UpdateChain", "QueryChain", "queryChain()", "updateChain()", "query()", "toQueryWrapper()")
                     && text.endsWith(";")) {
+
                 if (text.contains("=")) {
                     text = StrUtil.subAfter(text, "=", false).trim();
                     // 防止用户在自己手写sql的时候，误触发
