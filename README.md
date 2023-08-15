@@ -30,7 +30,7 @@
 
 5、SQL预览
 
-
+<img src="./docs/assets/img.png" alt="image-20230717181012372" style="zoom:67%;" />
 ### 四、功能
 
 1、APT自动编译
