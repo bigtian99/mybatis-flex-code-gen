@@ -225,7 +225,6 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
                 })
                 .collect(Collectors.toSet());
     }
-
     /**
      * 获取相关的TableDef文件
      *
@@ -234,24 +233,28 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
      * @param project
      */
     private void getTableDef(VirtualFile file, Map<String, String> tableDefMap, CustomConfig config) {
-        VirtualFile[] children = file.getChildren();
-        for (VirtualFile child : children) {
-            boolean directory = child.isDirectory();
-            if (directory) {
-                getTableDef(child, tableDefMap, config);
-            } else {
-                String name = child.getName();
-                String tableDefConf = ObjectUtil.defaultIfNull(config.getTableDefClassSuffix(), "TableDef");
-                if (name.contains(tableDefConf)) {
-                    PsiClassOwner psiJavaFile = (PsiClassOwner) psiManager.findFile(child);
-                    assert psiJavaFile != null;
-                    String packageName = psiJavaFile.getPackageName();
-                    String path = StrUtil.subBefore(child.getPath(), ".", true);
-                    String tableDef = StrUtil.subAfter(path, "/", true);
-                    String tableName = MybatisFlexDocumentChangeHandler.getDefInstanceName(config, StrUtil.subBefore(tableDef, tableDefConf, false));
-                    tableDefMap.put(tableName, packageName + "." + tableDef);
+        try {
+            VirtualFile[] children = file.getChildren();
+            for (VirtualFile child : children) {
+                boolean directory = child.isDirectory();
+                if (directory) {
+                    getTableDef(child, tableDefMap, config);
+                } else {
+                    String name = child.getName();
+                    String tableDefConf = ObjectUtil.defaultIfNull(config.getTableDefClassSuffix(), "TableDef");
+                    if (name.contains(tableDefConf)) {
+                        PsiClassOwner psiJavaFile = (PsiClassOwner) psiManager.findFile(child);
+                        assert psiJavaFile != null;
+                        String packageName = psiJavaFile.getPackageName();
+                        String path = StrUtil.subBefore(child.getPath(), ".", true);
+                        String tableDef = StrUtil.subAfter(path, "/", true);
+                        String tableName = MybatisFlexDocumentChangeHandler.getDefInstanceName(config, StrUtil.subBefore(tableDef, tableDefConf, false));
+                        tableDefMap.put(tableName, packageName + "." + tableDef);
+                    }
                 }
             }
+        } catch (Exception e) {
+
         }
     }
 
