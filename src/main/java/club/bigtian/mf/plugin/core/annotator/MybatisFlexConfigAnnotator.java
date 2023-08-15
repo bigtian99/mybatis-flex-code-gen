@@ -85,7 +85,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             if (lineNumber == 0 || ObjectUtil.isNull(psiClass) || text.startsWith("import") || iconMap.containsKey(lineNumber)) {
                 return;
             }
-            if(CollUtil.isEmpty(allMethodList)){
+            if (CollUtil.isEmpty(allMethodList)) {
                 init();
             }
 
@@ -146,6 +146,9 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             }
             String[] betweenAll = StrUtil.subBetweenAll(text, StrUtil.format(".{}(", methodName), ")");
             for (String s : betweenAll) {
+                if (!text.contains(s)) {
+                    continue;
+                }
                 String compute = compute(text, s, "(", ")", "");
                 String newKey = getKey(methodName, "?");
                 String oldKey = getKey(methodName, compute);
@@ -334,7 +337,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             if (split.length > 1) {
                 newKey = getKey(key, StrUtil.format("{},el->true", getSymbol(split[0])));
             }
-            newKey = newKey.replace("\"?\"", "new Object[]{\"?\"}");
+                newKey = newKey.replace("\"?\"", "new Object[]{\"?\"}");
             String oldKey = getKey(key, compute);
             sql = sql.replace(oldKey, newKey);
         }

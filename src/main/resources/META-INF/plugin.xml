@@ -40,7 +40,7 @@
     <h3>1.4.7.1-RELEASE</h3>
     <ul>
     <li>【修复】sql 预览icon丢失</li>
-
+    <li>【修复】sql 预览可能会导致StackOverflowError</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
