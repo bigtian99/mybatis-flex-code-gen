@@ -240,6 +240,9 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 continue;
             }
             for (String s : betweenAll) {
+                if (!text.contains(s)) {
+                    continue;
+                }
                 String compute = compute(text, s, "(", ")", "");
                 String newKey = "";
                 if (compute.contains(",")) {
