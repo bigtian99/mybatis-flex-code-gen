@@ -57,6 +57,25 @@ public class Template {
         if (ObjectUtil.isNull(config.getMapperSuffix())) {
             config.setMapperSuffix(MybatisFlexConstant.MAPPER);
         }
+
+        if(ObjectUtil.isNull(config.getContrPath())){
+            config.setContrPath(MybatisFlexConstant.CONTROLLER.toLowerCase());
+        }
+        if(ObjectUtil.isNull(config.getDomainPath())){
+            config.setDomainPath(MybatisFlexConstant.DOMAIN.toLowerCase());
+        }
+        if(ObjectUtil.isNull(config.getImplPath())){
+            config.setImplPath(MybatisFlexConstant.IMPL.toLowerCase());
+        }
+        if(ObjectUtil.isNull(config.getServicePath())){
+            config.setServicePath(MybatisFlexConstant.SERVICE.toLowerCase());
+        }
+        if(ObjectUtil.isNull(config.getMapperPath())){
+            config.setMapperPath(MybatisFlexConstant.MAPPER.toLowerCase());
+        }
+        if(ObjectUtil.isNull(config.getXmlPath())){
+            config.setXmlPath(MybatisFlexConstant.MAPPERS.toLowerCase());
+        }
         return config;
     }
 

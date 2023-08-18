@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 public class NotificationUtils {
     public static final String URL = "https://plugins.jetbrains.com/plugin/22165-mybatis-flex-helper/reviews";
     static ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-
     private static final String GROUP_LINK = "http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=U0ufvKB9ogRAqBazz1Zxwkf_kMVJjeHB&authKey=wQC13%2Fj5Sr2c1ZaJg%2Fyz5LZNij%2FBK9D98C2OOf3thBFsV4gL6svCUNUPddCLC6cG&noverify=0&group_code=872707845";
     private static final String GITEE_LINK = "https://gitee.com/djxchi/mybatis-flex-code-gen";
     public static final String CONTENT = "如果Mybatis Flex Helper插件能减轻您一些繁琐的工作，麻烦您给个免费的star ⭐️";

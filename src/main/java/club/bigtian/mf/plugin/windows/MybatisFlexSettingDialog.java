@@ -250,12 +250,14 @@ public class MybatisFlexSettingDialog extends JDialog {
         cacheCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.CACHE));
         overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
         swagger3CheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER3));
-        contrPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.CONTR_PATH), contrPath.getText()));
-        servicePath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.SERVICE_PATH), servicePath.getText()));
-        implPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.IMPL_PATH), implPath.getText()));
-        domainPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.DOMAIN_PATH), domainPath.getText()));
-        xmlPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.XML_PATH), xmlPath.getText()));
-        mapperPath.setText(ObjectUtil.defaultIfBlank(Template.getConfigData(MybatisFlexConstant.MAPPER_PATH), mapperPath.getText()));
+
+        contrPath.setText(Template.getConfigData(MybatisFlexConstant.CONTR_PATH));
+        servicePath.setText(Template.getConfigData(MybatisFlexConstant.SERVICE_PATH));
+        implPath.setText(Template.getConfigData(MybatisFlexConstant.IMPL_PATH));
+        domainPath.setText(Template.getConfigData(MybatisFlexConstant.DOMAIN_PATH));
+        xmlPath.setText(Template.getConfigData(MybatisFlexConstant.XML_PATH));
+        mapperPath.setText(Template.getConfigData(MybatisFlexConstant.MAPPER_PATH));
+
         accessorsCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ACCESSORS));
         activeRecordCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
         requiredArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
@@ -328,7 +330,6 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setImplSuffix(implSuffix.getText());
         config.setModelSuffix(modelSuffix.getText());
         config.setMapperSuffix(mapperSuffix.getText());
-
 
         config.setCache(cacheCheckBox.isSelected());
         config.setSwagger3(swagger3CheckBox.isSelected());
