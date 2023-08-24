@@ -70,6 +70,11 @@ public class SQLPreviewAction extends AnAction {
     List<String> list;
     PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
 
+    /**
+     * 排除 import 导入包
+     */
+    private final List<String> excludeImportList = Arrays.asList("org.mapstruct.factory.Mappers");
+
     public void preview(String selectedText, PsiJavaFile psiFile, SimpleFunction function) {
         try {
             if (selectedText.startsWith("QueryWrapper")) {
@@ -80,6 +85,7 @@ public class SQLPreviewAction extends AnAction {
             }
             createFile(psiFile, StrUtil.format(CLASS_TEMPLATE, selectedText), psiFile.getPackageName());
         } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             function.apply();
         }
@@ -99,12 +105,18 @@ public class SQLPreviewAction extends AnAction {
         PsiImportList importList = psiFile.getImportList();
         PsiDirectory containingDirectory = psiFile.getContainingDirectory();
         WriteCommandAction.runWriteCommandAction(project, () -> {
+            PsiImportList psiJavaFileImportList = psiJavaFile.getImportList();
             if (ObjectUtil.isNotNull(importList)) {
-                psiJavaFile.getImportList().add(importList);
+                Arrays.stream(importList.getAllImportStatements())
+                        .filter(el -> {
+                            String anImport = StrUtil.subBetween(el.getText(), "import ", ";").trim();
+                            return !excludeImportList.contains(anImport);
+                        })
+                        .forEach(el -> psiJavaFileImportList.add(el));
             }
             if (CollUtil.isNotEmpty(list)) {
                 for (String impor : list) {
-                    psiJavaFile.getImportList().add(instance.createImportStatement(PsiJavaFileUtil.getPsiClass(impor)));
+                    psiJavaFileImportList.add(instance.createImportStatement(PsiJavaFileUtil.getPsiClass(impor)));
                 }
             }
             try {
@@ -134,8 +146,8 @@ public class SQLPreviewAction extends AnAction {
         Map<String, String> qualifiedNameImportMap = PsiJavaFileUtil.getQualifiedNameImportMap(psiJavaFile);
 
         String val = null;
-        if(text.startsWith("this.")){
-            text=StrUtil.subAfter(text,"this.",false);
+        if (text.startsWith("this.")) {
+            text = StrUtil.subAfter(text, "this.", false);
         }
         // 处理service里面的链式调用
         String print = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, StrUtil.startWithAny(text, "queryChain()", "query()", "updateChain()") ? "service." + text : text);
@@ -198,7 +210,6 @@ public class SQLPreviewAction extends AnAction {
         }
         // 添加import
         WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
-
             if (ObjectUtil.isNotNull(entityClass)) {
                 boolean hashConstructor = isHasConstructor(entityClass);
                 if (!hashConstructor) {
@@ -275,7 +286,6 @@ public class SQLPreviewAction extends AnAction {
     public String getImplText(PsiJavaFile psiJavaFile, String selectedText, Map<String, String> qualifiedNameImportMap, ManyFunction<String> consumer) {
         String temVal = "";
         Project project = psiJavaFile.getProject();
-        // PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
         PsiClass[] classes = psiJavaFile.getClasses();
         if (StrUtil.startWithAny(selectedText, "query()", "queryChain()", "updateChain()")) {
             String name = StrUtil.subBefore(psiJavaFile.getName(), ".", true);
@@ -306,7 +316,7 @@ public class SQLPreviewAction extends AnAction {
                     // 获取全局搜索范围
                     Collection<PsiClass> implementors = PsiJavaFileUtil.getSonPsiClass(qualifiedName, GlobalSearchScope.allScope(project));
                     if (CollUtil.isEmpty(implementors)) {
-                        //如果没有找到子类，就默认自身是实现类
+                        // 如果没有找到子类，就默认自身是实现类
                         implementors.add(PsiJavaFileUtil.getPsiClass(qualifiedName));
                     }
                     PsiClass sonPsiClass = implementors.iterator().next();
@@ -338,7 +348,7 @@ public class SQLPreviewAction extends AnAction {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
                             if (!MybatisFlexSettingDialog.insideSchemaFlag) {
-                                virtualFile.delete(this);
+                                // virtualFile.delete(this);
                             }
                             if (ObjectUtil.isNotNull(entityClass)) {
                                 removeNoArgsConstructor(entityClass);
@@ -376,6 +386,7 @@ public class SQLPreviewAction extends AnAction {
                                 }
                             } else if (ProcessOutputTypes.STDERR.equals(outputType)) {
                                 String text = event1.getText();
+                                System.out.println(text);
                                 if (text.startsWith("Exception in")) {
                                     NotificationUtils.notifyError((StrUtil.subAfter(text, ":", true)), "Mybatis-Flex system tips");
                                 }

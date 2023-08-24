@@ -340,7 +340,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             if (split.length > 1) {
                 newKey = getKey(key, StrUtil.format("{},el->true", getSymbol(split[0])));
             }
-                newKey = newKey.replace("\"?\"", "new Object[]{\"?\"}");
+            newKey = newKey.replace("\"?\"", "new Object[]{\"?\"}");
             String oldKey = getKey(key, compute);
             sql = sql.replace(oldKey, newKey);
         }
@@ -354,6 +354,9 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     private static void initMethodVariable() {
         PsiElement parent = element.getParent();
         while (!(parent instanceof PsiMethod)) {
+            if (ObjectUtil.isNull(parent)) {
+                return;
+            }
             parent = parent.getParent();
         }
         PsiCodeBlock body = ((PsiMethod) parent).getBody();
