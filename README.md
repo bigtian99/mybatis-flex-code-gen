@@ -16,6 +16,7 @@
         <img src="https://img.shields.io/badge/IDEA-2020.2+-green.svg" >
     </a>
 </p>
+
 ### 一、简介
 
 `这是一款深度支持Mybatis-Flex的IDEA插件，它最大的亮点就是可以高度自定义代码生成模板，它可以快速根据表生成代码，可以使用导出/导入把配置分享给同事以便快速开发`
