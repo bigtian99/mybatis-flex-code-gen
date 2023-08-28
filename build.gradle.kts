@@ -16,12 +16,12 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-//    version.set("2023.2")
-    version.set("2022.2.5")
+    version.set("2023.2.1")
+//    version.set("2022.2.5")
 
 //    version.set("2020.3.3")
     type.set("IU") // Target IDE Platform
-    plugins.set(listOf("com.intellij.java", "org.jetbrains.kotlin","com.intellij.database"))
+    plugins.set(listOf("com.intellij.java", "org.jetbrains.kotlin", "com.intellij.database"))
 }
 
 dependencies {
@@ -43,7 +43,7 @@ tasks {
     withType<JavaCompile> {
         sourceCompatibility = "1.8"
         targetCompatibility = "1.8"
-        options.encoding="utf-8"
+        options.encoding = "utf-8"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
