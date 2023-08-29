@@ -128,6 +128,7 @@ public class SQLPreviewAction extends AnAction {
                 VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
                 showSql(project, packageName, virtualFile);
             } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
@@ -354,6 +355,7 @@ public class SQLPreviewAction extends AnAction {
                                 removeNoArgsConstructor(entityClass);
                             }
                         } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     });
                 }, ModalityState.defaultModalityState());

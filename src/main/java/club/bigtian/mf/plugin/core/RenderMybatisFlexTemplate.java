@@ -75,11 +75,11 @@ public class RenderMybatisFlexTemplate {
             }
             renderTemplate(templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules, factory);
         }
-        WriteCommandAction.runWriteCommandAction(project, () -> {
-            for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
-                List<PsiElement> list = entry.getValue();
-                PsiDirectory directory = entry.getKey();
-                DumbService.getInstance(project).runWithAlternativeResolveEnabled(() -> {
+        DumbService.getInstance(project).runWhenSmart(() -> {
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
+                    List<PsiElement> list = entry.getValue();
+                    PsiDirectory directory = entry.getKey();
                     // 如果勾选了覆盖，则删除原有文件
                     if (config.isOverrideCheckBox()) {
                         for (PsiElement psiFile : list) {
@@ -108,9 +108,10 @@ public class RenderMybatisFlexTemplate {
                             throw e;
                         }
                     }
-                });
-            }
+                }
+            });
         });
+
         // 生成代码之后，重新构建
         CompilerManagerUtil.make(Modules.getModule(config.getModelModule()));
     }

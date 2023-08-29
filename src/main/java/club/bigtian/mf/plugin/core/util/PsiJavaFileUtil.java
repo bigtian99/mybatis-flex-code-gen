@@ -1,11 +1,14 @@
 package club.bigtian.mf.plugin.core.util;
 
+import club.bigtian.mf.plugin.core.MybatisFlexDocumentChangeHandler;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.SearchScope;
+import com.intellij.psi.search.searches.AnnotationTargetsSearch;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 
 import java.util.*;
@@ -56,6 +59,25 @@ public class PsiJavaFileUtil {
         return ClassInheritorsSearch.search(clazz, searchScope, true).findAll();
     }
 
+    public static Collection<PsiClass> getAnnotationPsiClass(String qualifiedName) {
+        return AnnotationTargetsSearch.search(PsiJavaFileUtil.getPsiClass(qualifiedName)).findAll()
+                .stream()
+                .filter(el -> el instanceof PsiClass)
+                .map(el -> (PsiClass) el)
+                .collect(Collectors.toList()
+                );
+    }
+
+    public static Collection<PsiClass> getAllSonPsiClass(String qualifiedName) {
+        PsiClass clazz = getPsiClass(qualifiedName);
+        return ClassInheritorsSearch.search(clazz, GlobalSearchScope.allScope(ProjectUtils.getCurrentProject()), true).findAll();
+    }
+
+    public static Collection<PsiClass> getProjectSonPsiClass(String qualifiedName) {
+        PsiClass clazz = getPsiClass(qualifiedName);
+        return ClassInheritorsSearch.search(clazz, GlobalSearchScope.projectScope(ProjectUtils.getCurrentProject()), true).findAll();
+    }
+
     public static PsiClass getPsiClass(String qualifiedName) {
         Project project = ProjectUtils.getCurrentProject();
         JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
@@ -93,5 +115,25 @@ public class PsiJavaFileUtil {
         return psiJavaFile.getPackageName();
     }
 
+    /**
+     * 生成 apt 文件
+     */
+    public static void createAptFile() {
+        Collection<PsiClass> sonPsiClass = PsiJavaFileUtil.getSonPsiClass("com.mybatisflex.core.table.TableDef",
+                GlobalSearchScope.allScope(ProjectUtils.getCurrentProject()));
+        Collection<PsiClass> annotationPsiClass = PsiJavaFileUtil.getAnnotationPsiClass("com.mybatisflex.annotation.Table");
+        if (sonPsiClass.size() != annotationPsiClass.size()) {
+            List<VirtualFile> virtualFiles = annotationPsiClass.stream()
+                    .filter(el -> !sonPsiClass.contains(el))
+                    .map(el -> {
+                        VirtualFile virtualFile = el.getContainingFile()
+                                .getVirtualFile();
+                        virtualFile.putUserData(MybatisFlexDocumentChangeHandler.CHANGE, true);
+                        return virtualFile;
+                    })
+                    .collect(Collectors.toList());
+            MybatisFlexDocumentChangeHandler.createAptFile(virtualFiles);
+        }
+    }
 
 }

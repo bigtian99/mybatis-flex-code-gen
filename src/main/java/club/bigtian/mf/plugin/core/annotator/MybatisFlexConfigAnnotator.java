@@ -245,11 +245,18 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 }
                 String compute = compute(text, s, "(", ")", "");
                 String newKey = "";
-                if (compute.contains(",")) {
-                    Object symbol = getSymbol(compute.split(",")[0]);
-                    newKey = getKey(key, symbol + ",el->true");
+                String[] split = compute.split(",");
+                if (!key.startsWith("set")) {
+                    //非 set 方法
+                    if (compute.contains(",")) {
+                        newKey = getKey(key, getSymbol(split[0]) + ",el->true");
+                    } else {
+                        newKey = getKey(key, getSymbol(s).toString());
+                    }
                 } else {
-                    newKey = getKey(key, getSymbol(s).toString());
+                    String column = split[0];
+                    String val = split[1];
+                    newKey = getSetKey(key, column, getSymbol(val).toString());
                 }
                 String oldKey = getKey(key, compute);
                 text = text.replace(oldKey, newKey);
@@ -279,6 +286,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
     public static void analysisMethod() {
         PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryColumn");
         PsiClass queryWrapper = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryWrapper");
+        PsiClass propertySetter = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.update.PropertySetter");
 
         Arrays.stream(psiClass.getMethods())
                 .forEach(psiMethod -> {
@@ -309,6 +317,11 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                         }
                     }
                 });
+        Arrays.stream(propertySetter.getMethods())
+                .forEach(psiMehtod -> {
+                    allMethodList.add(psiMehtod.getName());
+                });
+
     }
 
     /**
@@ -479,6 +492,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
 
     @NotNull
     private static Object getSymbol(String string) {
+        string = string.replace(" ", "");
         Object symbol;
         if (string.startsWith("\"")) {
             return string;
@@ -574,5 +588,9 @@ public class MybatisFlexConfigAnnotator implements Annotator {
 
     private static String getKey(String key, String s) {
         return StrUtil.format(".{}({})", key, s);
+    }
+
+    private static String getSetKey(String key, String column, String val) {
+        return StrUtil.format(".{}({},{})", key, column, val);
     }
 }

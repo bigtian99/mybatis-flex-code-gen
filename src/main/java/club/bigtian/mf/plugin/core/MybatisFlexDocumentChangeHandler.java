@@ -23,49 +23,59 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.LightVirtualFile;
 import org.apache.velocity.VelocityContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.KtFile;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 /**
  * @author bigtian
  */
 public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable, FileEditorManagerListener {
-    private static final Key<Boolean> CHANGE = Key.create("change");
+    public static final Key<Boolean> CHANGE = Key.create("change");
     private static final Key<Boolean> LISTENER = Key.create("listener");
+    ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     @Override
     public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        // try {
-        //     FileEditor oldEditor = event.getOldEditor();
-        //     if (ObjectUtil.isNotNull(oldEditor)) {
-        //         VirtualFile oldFile = event.getOldFile();
-        //         createAptFile(oldFile);
-        //     }
-        // } catch (Exception e) {
-        //
-        // }
+
     }
 
-    private static void createAptFile(VirtualFile oldFile) {
+    public static void createAptFile(List<VirtualFile> virtualFiles) {
+        Project project = ProjectUtils.getCurrentProject();
+        virtualFiles = virtualFiles.stream()
+                .filter(oldFile -> {
+                    Boolean userData = oldFile.getUserData(CHANGE);
+                    return !(ObjectUtil.isNull(oldFile) || !oldFile.getName().endsWith(".java") || !oldFile.isWritable()) && BooleanUtil.isTrue(userData) && checkFile(oldFile);
+                }).collect(Collectors.toList());
+        Map<PsiDirectory, List<PsiFile>> psiDirectoryMap = new HashMap<>();
         try {
-            if (ObjectUtil.isNull(oldFile) || !oldFile.getName().endsWith(".java") || !oldFile.isWritable()) {
-                return;
-            }
-            Boolean userData = oldFile.getUserData(CHANGE);
-            Project project = ProjectUtils.getCurrentProject();
-            Module moduleForFile = ModuleUtil.findModuleForFile(oldFile, project);
-            CustomConfig config = Modules.moduleConfig(moduleForFile);
-            if (BooleanUtil.isTrue(userData) && checkFile(oldFile) && ObjectUtil.defaultIfNull(config.isEnable(), true)) {
-                // 检查索引是否已准备好
-                oldFile.putUserData(CHANGE, false);
-                PsiClassOwner psiJavaFile = (PsiClassOwner) VirtualFileUtils.getPsiFile(project, oldFile);
-                PsiClass psiClass = psiJavaFile.getClasses()[0];
+            // 检查索引是否已准备好
+            for (VirtualFile oldFile : virtualFiles) {
+                Module moduleForFile = ModuleUtil.findModuleForFile(oldFile, project);
+                CustomConfig config = Modules.moduleConfig(moduleForFile);
+                if (!ObjectUtil.defaultIfNull(config.isEnable(), true)) {
+                    continue;
+                }
                 String moduleDirPath = Modules.getPath(moduleForFile);
+                PsiClassOwner psiJavaFile = (PsiClassOwner) VirtualFileUtils.getPsiFile(project, oldFile);
+
+                String path = moduleDirPath + CustomConfig.getConfig(config.getGenPath(),
+                        "target/generated-sources/annotations/",
+                        "build/generated/source/kapt/main/", Modules.isManvenProject(moduleForFile))
+                        + psiJavaFile.getPackageName().replace(".", "/") + "/table";
+
+                PsiDirectory psiDirectory = VirtualFileUtils.createSubDirectory(moduleForFile, path);
+                oldFile.putUserData(CHANGE, false);
+                PsiClass psiClass = psiJavaFile.getClasses()[0];
                 PsiField[] fields = psiClass.getAllFields();
                 List<AptInfo> list = new ArrayList<>();
                 for (PsiField field : fields) {
@@ -83,14 +93,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                         list.add(new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase(), false));
                     }
                 }
-
-                String path = moduleDirPath + CustomConfig.getConfig(config.getGenPath(),
-                        "target/generated-sources/annotations/",
-                        "build/generated/source/kapt/main/", Modules.isManvenProject(moduleForFile))
-                        + psiJavaFile.getPackageName().replace(".", "/") + "/table";
-
                 PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table");
-                PsiDirectory psiDirectory = VirtualFileUtils.createSubDirectory(moduleForFile, path);
                 VelocityContext context = new VelocityContext();
                 String className = getClassName(config, psiClass.getName()) + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
                 context.put("className", className);
@@ -101,20 +104,28 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 String suffix = Modules.getProjectTypeSuffix(moduleForFile);
                 String fileName = className + suffix;
                 PsiFile psiFile = VelocityUtils.render(context, Template.getTemplateContent("AptTemplate" + suffix), fileName);
-                DumbService.getInstance(project).runWhenSmart(() -> {
-                    // 执行需要索引的操作
-                    WriteCommandAction.runWriteCommandAction(project, () -> {
-                        PsiFile file = psiDirectory.findFile(fileName);
-                        if (ObjectUtil.isNotNull(file)) {
-                            file.getViewProvider().getDocument().setText(psiFile.getText());
-                        } else {
-                            psiDirectory.add(psiFile);
-                        }
-                    });
-                });
+                psiDirectoryMap.computeIfAbsent(psiDirectory, k -> new ArrayList<>()).add(psiFile);
             }
-        } catch (Exception e) {
+            // 执行需要索引的操作
+            DumbService.getInstance(project).runWhenSmart(() -> {
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    for (Map.Entry<PsiDirectory, List<PsiFile>> entry : psiDirectoryMap.entrySet()) {
+                        PsiDirectory psiDirectory = entry.getKey();
+                        List<PsiFile> psiFiles = entry.getValue();
+                        for (PsiFile tmpFile : psiFiles) {
+                            PsiFile file = psiDirectory.findFile(tmpFile.getName());
+                            if (ObjectUtil.isNotNull(file)) {
+                                file.getViewProvider().getDocument().setText(tmpFile.getText());
+                            } else {
+                                psiDirectory.add(tmpFile);
+                            }
+                        }
+                    }
+                });
 
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -147,6 +158,15 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
     public MybatisFlexDocumentChangeHandler() {
         super();
+        scheduler.scheduleAtFixedRate(() -> {
+            Collection<PsiClass> sonPsiClass = PsiJavaFileUtil.getSonPsiClass("com.mybatisflex.core.table.TableDef",
+                    GlobalSearchScope.allScope(ProjectUtils.getCurrentProject()));
+            System.out.println("进来");
+            if (sonPsiClass.size() == 0) {
+                System.out.println("创建apt文件");
+                PsiJavaFileUtil.createAptFile();
+            }
+        }, 30, 5, TimeUnit.SECONDS);
         try {
             NotificationUtils.start();
             // 所有的文档监听
@@ -160,7 +180,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 editor.addEditorMouseListener(new EditorMouseListener() {
                     @Override
                     public void mouseExited(@NotNull EditorMouseEvent event) {
-                        createAptFile(VirtualFileUtils.getVirtualFile(editor.getDocument()));
+                        createAptFile(Arrays.asList(VirtualFileUtils.getVirtualFile(editor.getDocument())));
                     }
                 });
             }
@@ -170,10 +190,11 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             }
             FileEditorManager.getInstance(project).addFileEditorManagerListener(this);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
     }
+
 
     @Override
     public void editorReleased(@NotNull EditorFactoryEvent event) {
@@ -193,7 +214,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             editor.addEditorMouseListener(new EditorMouseListener() {
                 @Override
                 public void mouseExited(@NotNull EditorMouseEvent event) {
-                    createAptFile(VirtualFileUtils.getVirtualFile(editor.getDocument()));
+                    createAptFile(Arrays.asList(VirtualFileUtils.getVirtualFile(editor.getDocument())));
                 }
             });
             Document document = editor.getDocument();
@@ -239,13 +260,9 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         }
         VirtualFile currentFile = VirtualFileUtils.getVirtualFile(document);
         if (ObjectUtil.isNotNull(currentFile)) {
+
             currentFile.putUserData(CHANGE, true);
         }
-    }
-
-    private void compile(@NotNull Editor editor) {
-        VirtualFile currentFile = VirtualFileUtils.getVirtualFile(editor.getDocument());
-        CompilerManagerUtil.compile(new VirtualFile[]{currentFile}, null);
     }
 
 
