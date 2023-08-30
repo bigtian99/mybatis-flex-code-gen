@@ -1,7 +1,6 @@
 package club.bigtian.mf.plugin.core;
 
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
-import club.bigtian.mf.plugin.core.listener.MybatisFlexListener;
 import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
@@ -16,7 +15,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
 import com.intellij.util.IncorrectOperationException;
-import com.intellij.util.messages.Topic;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +31,6 @@ import java.util.stream.Collectors;
  * @date 2023/06/27
  */
 public class RenderMybatisFlexTemplate {
-    public static final Topic<MybatisFlexListener> VFS_CHANGES = new Topic<>(MybatisFlexListener.class, Topic.BroadcastDirection.TO_CHILDREN, true);
 
     public static void assembleData(List<TableInfo> selectedTableInfo, MybatisFlexConfig config, @Nullable Project project) {
 
