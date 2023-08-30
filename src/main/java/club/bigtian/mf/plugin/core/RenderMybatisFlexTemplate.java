@@ -1,6 +1,7 @@
 package club.bigtian.mf.plugin.core;
 
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
+import club.bigtian.mf.plugin.core.listener.MybatisFlexListener;
 import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
@@ -15,6 +16,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
 import com.intellij.util.IncorrectOperationException;
+import com.intellij.util.messages.Topic;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.jetbrains.annotations.Nullable;
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
  * @date 2023/06/27
  */
 public class RenderMybatisFlexTemplate {
+    public static final Topic<MybatisFlexListener> VFS_CHANGES = new Topic<>(MybatisFlexListener.class, Topic.BroadcastDirection.TO_CHILDREN, true);
 
     public static void assembleData(List<TableInfo> selectedTableInfo, MybatisFlexConfig config, @Nullable Project project) {
 
@@ -42,6 +45,7 @@ public class RenderMybatisFlexTemplate {
 //        } catch (Exception e) {
 //            LOG.error("Velocity初始化失败；如果不影响生成，请忽略");
 //        }
+
         VelocityContext context = new VelocityContext();
         HashMap<PsiDirectory, List<PsiElement>> templateMap = new HashMap<>();
         Map<String, String> templates = new ConcurrentHashMap<>(config.getTemplates());
@@ -73,8 +77,9 @@ public class RenderMybatisFlexTemplate {
                 config.setMethodName(StrUtil.subBefore(methodName, "(", false));
                 context.put("resutlClass", qualifiedName.substring(qualifiedName.lastIndexOf(".") + 1));
             }
-            renderTemplate(templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules, factory);
+            renderTemplate(templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules, factory, project);
         }
+
         DumbService.getInstance(project).runWhenSmart(() -> {
             WriteCommandAction.runWriteCommandAction(project, () -> {
                 for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
@@ -92,8 +97,7 @@ public class RenderMybatisFlexTemplate {
                             }
                         }
                     }
-//                // 提交所有待处理的文档,防止出现索引未更新的情况
-                    PsiDocumentManager.getInstance(project).commitAllDocuments();
+
                     for (PsiElement psiFile : list) {
                         try {
                             directory.add(psiFile);
@@ -111,9 +115,9 @@ public class RenderMybatisFlexTemplate {
                 }
             });
         });
-
-        // 生成代码之后，重新构建
-        CompilerManagerUtil.make(Modules.getModule(config.getModelModule()));
+        //
+        // // 生成代码之后，重新构建
+        // CompilerManagerUtil.make(Modules.getModule(config.getModelModule()));
     }
 
     private static void logicDelete(List<TableInfo> selectedTableInfo, MybatisFlexConfig config) {
@@ -223,7 +227,9 @@ public class RenderMybatisFlexTemplate {
             Map<String, String> packages,
             Map<String, String> suffixMap,
             Map<String, String> modules,
-            PsiFileFactory factory) {
+            PsiFileFactory factory,
+            Project project
+    ) {
 
         for (Map.Entry<String, String> entry : templates.entrySet()) {
             StringWriter sw = new StringWriter();
@@ -231,10 +237,12 @@ public class RenderMybatisFlexTemplate {
             velocityEngine.evaluate(context, sw, "mybatis-flex", entry.getValue());
             Module module = Modules.getModule(modules.get(entry.getKey()));
             PsiDirectory packageDirectory = VirtualFileUtils.getPsiDirectory(module, packages.get(entry.getKey()), entry.getKey());
-            String classPrefix = ObjectUtil.equal("Service", entry.getKey()) ? "I" : "";
-            String fileName = classPrefix + className + suffixMap.get(entry.getKey()) + (StrUtil.isEmpty(entry.getKey()) ? ".xml" : ".java");
-            PsiFile file = factory.createFileFromText(fileName, StrUtil.isEmpty(entry.getKey()) ? XmlFileType.INSTANCE : JavaFileType.INSTANCE, sw.toString());
-            templateMap.computeIfAbsent(packageDirectory, k -> new ArrayList<>()).add(CodeReformat.reformat(file));
+            DumbService.getInstance(project).runWhenSmart(() -> {
+                String classPrefix = ObjectUtil.equal("Service", entry.getKey()) ? "I" : "";
+                String fileName = classPrefix + className + suffixMap.get(entry.getKey()) + (StrUtil.isEmpty(entry.getKey()) ? ".xml" : ".java");
+                PsiFile file = factory.createFileFromText(fileName, StrUtil.isEmpty(entry.getKey()) ? XmlFileType.INSTANCE : JavaFileType.INSTANCE, sw.toString());
+                templateMap.computeIfAbsent(packageDirectory, k -> new ArrayList<>()).add(CodeReformat.reformat(file));
+            });
         }
     }
 

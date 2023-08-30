@@ -132,6 +132,7 @@ public class PsiJavaFileUtil {
                         return virtualFile;
                     })
                     .collect(Collectors.toList());
+
             MybatisFlexDocumentChangeHandler.createAptFile(virtualFiles);
         }
     }

@@ -71,7 +71,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     private JCheckBox selectAllChexBox;
     private JTextField tableSearch;
     private FixedSizeButton sortBtn;
-    private JProgressBar progressBar;
     private JCheckBox strictComBox;
     private JButton button1;
 
@@ -450,7 +449,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     }
 
     private void startGenCode(List<TableInfo> selectedTableInfo) {
-        progressBar.setMaximum(selectedTableInfo.size());
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
         NotificationUtils.notifySuccess("代码生成成功", project);
         onCancel();

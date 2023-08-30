@@ -109,7 +109,8 @@ public class VirtualFileUtils {
             WriteCommandAction.runWriteCommandAction(module.getProject(), () -> {
                 subPsiDirectory.set(createSubDirectory(module, javaResourceRootTypes, packageName));
             });
-            return subPsiDirectory.get();
+            psiDirectory = subPsiDirectory.get();
+            PSI_DIRECTORY_MAP.put(packageName, psiDirectory);
         }
         return psiDirectory;
     }
@@ -137,7 +138,7 @@ public class VirtualFileUtils {
         String path = Modules.getPath(module);
         targetDirectory = getPsiDirectory(module.getProject(), path);
         if (targetDirectory != null) {
-            String[] directories = StrUtil.subAfter(packageName, path, false).split("/" );
+            String[] directories = StrUtil.subAfter(packageName, path, false).split("/");
             for (String directoryName : directories) {
                 AtomicReference<PsiDirectory> subdirectory = new AtomicReference<>(targetDirectory.findSubdirectory(directoryName));
                 if (subdirectory.get() == null) {

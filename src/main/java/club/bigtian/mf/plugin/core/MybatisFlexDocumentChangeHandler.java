@@ -23,7 +23,6 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.testFramework.LightVirtualFile;
 import org.apache.velocity.VelocityContext;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +41,7 @@ import java.util.stream.Collectors;
 public class MybatisFlexDocumentChangeHandler implements DocumentListener, EditorFactoryListener, Disposable, FileEditorManagerListener {
     public static final Key<Boolean> CHANGE = Key.create("change");
     private static final Key<Boolean> LISTENER = Key.create("listener");
-    ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Override
     public void selectionChanged(@NotNull FileEditorManagerEvent event) {
@@ -58,6 +57,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 }).collect(Collectors.toList());
         Map<PsiDirectory, List<PsiFile>> psiDirectoryMap = new HashMap<>();
         try {
+
             // 检查索引是否已准备好
             for (VirtualFile oldFile : virtualFiles) {
                 Module moduleForFile = ModuleUtil.findModuleForFile(oldFile, project);
@@ -74,40 +74,45 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                         + psiJavaFile.getPackageName().replace(".", "/") + "/table";
 
                 PsiDirectory psiDirectory = VirtualFileUtils.createSubDirectory(moduleForFile, path);
-                oldFile.putUserData(CHANGE, false);
-                PsiClass psiClass = psiJavaFile.getClasses()[0];
-                PsiField[] fields = psiClass.getAllFields();
-                List<AptInfo> list = new ArrayList<>();
-                for (PsiField field : fields) {
-                    if (field.getName().startsWith("queryWrapper")) {
-                        continue;
+                // 等待索引准备好
+                DumbService.getInstance(project).runWhenSmart(() -> {
+                    // 在智能模式下，执行需要等待索引准备好的操作，比如创建文件
+                    // 创建文件等操作代码
+                    oldFile.putUserData(CHANGE, false);
+                    PsiClass psiClass = psiJavaFile.getClasses()[0];
+                    PsiField[] fields = psiClass.getAllFields();
+                    List<AptInfo> list = new ArrayList<>();
+                    for (PsiField field : fields) {
+                        if (field.getName().startsWith("queryWrapper")) {
+                            continue;
+                        }
+                        PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column");
+                        if (ObjectUtil.isNotNull(column)) {
+                            PsiAnnotationMemberValue value = column.findAttributeValue("value");
+                            PsiAnnotationMemberValue isLarge = column.findAttributeValue("isLarge");
+                            String fieldName = value.getText().replace("\"", "");
+                            list.add(new AptInfo(fieldName, StrUtil.toUnderlineCase(field.getName()).toUpperCase(), isLarge.getText().contains("true")));
+                        } else {
+                            list.add(new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase(), false));
+                        }
                     }
-                    PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column");
-                    if (ObjectUtil.isNotNull(column)) {
-                        PsiAnnotationMemberValue value = column.findAttributeValue("value");
-                        PsiAnnotationMemberValue isLarge = column.findAttributeValue("isLarge");
-                        String fieldName = value.getText().replace("\"", "");
-
-                        list.add(new AptInfo(fieldName, StrUtil.toUnderlineCase(field.getName()).toUpperCase(), isLarge.getText().contains("true")));
-                    } else {
-                        list.add(new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase(), false));
-                    }
-                }
-                PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table");
-                VelocityContext context = new VelocityContext();
-                String className = getClassName(config, psiClass.getName()) + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
-                context.put("className", className);
-                context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
-                context.put("list", list);
-                context.put("instance", getDefInstanceName(config, psiClass.getName()));
-                context.put("talbeName", table.findAttributeValue("value").getText().replace("\"", ""));
-                String suffix = Modules.getProjectTypeSuffix(moduleForFile);
-                String fileName = className + suffix;
-                PsiFile psiFile = VelocityUtils.render(context, Template.getTemplateContent("AptTemplate" + suffix), fileName);
-                psiDirectoryMap.computeIfAbsent(psiDirectory, k -> new ArrayList<>()).add(psiFile);
+                    PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table");
+                    VelocityContext context = new VelocityContext();
+                    String className = getClassName(config, psiClass.getName()) + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
+                    context.put("className", className);
+                    context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
+                    context.put("list", list);
+                    context.put("instance", getDefInstanceName(config, psiClass.getName()));
+                    context.put("talbeName", table.findAttributeValue("value").getText().replace("\"", ""));
+                    String suffix = Modules.getProjectTypeSuffix(moduleForFile);
+                    String fileName = className + suffix;
+                    PsiFile psiFile = VelocityUtils.render(context, Template.getTemplateContent("AptTemplate" + suffix), fileName);
+                    psiDirectoryMap.computeIfAbsent(psiDirectory, k -> new ArrayList<>()).add(psiFile);
+                });
             }
-            // 执行需要索引的操作
+            // 等待索引准备好
             DumbService.getInstance(project).runWhenSmart(() -> {
+                // 执行需要索引的操作
                 WriteCommandAction.runWriteCommandAction(project, () -> {
                     for (Map.Entry<PsiDirectory, List<PsiFile>> entry : psiDirectoryMap.entrySet()) {
                         PsiDirectory psiDirectory = entry.getKey();
@@ -122,8 +127,8 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                         }
                     }
                 });
-
             });
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -158,15 +163,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
     public MybatisFlexDocumentChangeHandler() {
         super();
-        scheduler.scheduleAtFixedRate(() -> {
-            Collection<PsiClass> sonPsiClass = PsiJavaFileUtil.getSonPsiClass("com.mybatisflex.core.table.TableDef",
-                    GlobalSearchScope.allScope(ProjectUtils.getCurrentProject()));
-            System.out.println("进来");
-            if (sonPsiClass.size() == 0) {
-                System.out.println("创建apt文件");
-                PsiJavaFileUtil.createAptFile();
-            }
-        }, 30, 5, TimeUnit.SECONDS);
+
         try {
             NotificationUtils.start();
             // 所有的文档监听
@@ -189,6 +186,16 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 return;
             }
             FileEditorManager.getInstance(project).addFileEditorManagerListener(this);
+            scheduler.scheduleAtFixedRate(() -> {
+                try {
+                    DumbService.getInstance(project).runWhenSmart(() -> {
+                        PsiJavaFileUtil.createAptFile();
+                    });
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }, 10, 2, TimeUnit.SECONDS);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
