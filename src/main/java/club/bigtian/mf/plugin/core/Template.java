@@ -108,10 +108,15 @@ public class Template {
         return getConfigData(property);
     }
 
-    public static boolean getChecBoxConfig(String property) {
+    public static boolean getCheckBoxConfig(String property) {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
         return (boolean) ObjectUtil.defaultIfNull(fieldValue, false);
+    }
+    public static Boolean getCheckBoxConfig(String property,boolean defaultValue) {
+        MybatisFlexConfig config = getMybatisFlexConfig();
+        Object fieldValue = ReflectUtil.getFieldValue(config, property);
+        return (boolean) ObjectUtil.defaultIfNull(fieldValue, defaultValue);
     }
 
     public static String getTablePrefix() {

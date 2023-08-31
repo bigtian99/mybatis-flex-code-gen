@@ -80,6 +80,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JCheckBox requiredArgsConstructorCheckBox;
 
     private com.intellij.openapi.ui.FixedSizeButton buttonFixedSizeButton;
+    private JCheckBox fromCheckBox;
     private Project project;
 
     // 是否开启内部模式
@@ -235,11 +236,11 @@ public class MybatisFlexSettingDialog extends JDialog {
         tablePrefix.setText(Template.getTablePrefix());
         author.setText(Template.getAuthor());
         since.setText(Template.getSince());
-        builderCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_BUILDER));
-        dataCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_DATA));
-        allArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ALL_ARGS_CONSTRUCTOR));
-        noArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_NO_ARGS_CONSTRUCTOR));
-        swaggerCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER));
+        builderCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.LOMBOK_BUILDER));
+        dataCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.LOMBOK_DATA));
+        allArgsConstructorCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.LOMBOK_ALL_ARGS_CONSTRUCTOR));
+        noArgsConstructorCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.LOMBOK_NO_ARGS_CONSTRUCTOR));
+        swaggerCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.SWAGGER));
 
         controllerSuffix.setText(Template.getSuffix(MybatisFlexConstant.CONTROLLER_SUFFIX));
         interfaceSuffix.setText(Template.getSuffix(MybatisFlexConstant.INTERFACE_SUFFIX));
@@ -247,9 +248,9 @@ public class MybatisFlexSettingDialog extends JDialog {
         modelSuffix.setText(Template.getSuffix(MybatisFlexConstant.MODEL_SUFFIX));
         mapperSuffix.setText(Template.getSuffix(MybatisFlexConstant.MAPPER_SUFFIX));
 
-        cacheCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.CACHE));
-        overrideCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.OVERRIDE));
-        swagger3CheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.SWAGGER3));
+        cacheCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.CACHE));
+        overrideCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.OVERRIDE));
+        swagger3CheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.SWAGGER3));
 
         contrPath.setText(Template.getConfigData(MybatisFlexConstant.CONTR_PATH));
         servicePath.setText(Template.getConfigData(MybatisFlexConstant.SERVICE_PATH));
@@ -258,10 +259,10 @@ public class MybatisFlexSettingDialog extends JDialog {
         xmlPath.setText(Template.getConfigData(MybatisFlexConstant.XML_PATH));
         mapperPath.setText(Template.getConfigData(MybatisFlexConstant.MAPPER_PATH));
 
-        accessorsCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_ACCESSORS));
-        activeRecordCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
-        requiredArgsConstructorCheckBox.setSelected(Template.getChecBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
-
+        accessorsCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.LOMBOK_ACCESSORS));
+        activeRecordCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
+        requiredArgsConstructorCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
+        fromCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.FROM,true));
         initSinceComBox();
         pathMap = new HashMap<>();
         for (JTextField textField : list) {
@@ -343,6 +344,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setAccessors(accessorsCheckBox.isSelected());
         config.setActiveRecord(activeRecordCheckBox.isSelected());
         config.setRequiredArgsConstructor(requiredArgsConstructorCheckBox.isSelected());
+        config.setFromCheck(fromCheckBox.isSelected());
         return config;
     }
 

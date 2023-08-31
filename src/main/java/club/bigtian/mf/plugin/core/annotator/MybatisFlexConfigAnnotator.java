@@ -247,10 +247,11 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 String newKey = "";
                 String[] split = compute.split(",");
                 if (!key.startsWith("set")) {
-                    //非 set 方法
+                    // 非 set 方法
                     if (compute.contains(",")) {
                         newKey = getKey(key, getSymbol(split[0]) + ",el->true");
                     } else {
+                        s = s.contains("(") ? compute : s;
                         newKey = getKey(key, getSymbol(s).toString());
                     }
                 } else {
@@ -348,10 +349,10 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             String variableValue = methodVariableMap.get(split[0]);
             String newKey = getKey(key, getSymbol(val).toString());
             if (StrUtil.isNotBlank(variableValue)) {
-                newKey = getKey(key, compute.replace(split[0], handlerVariable(variableValue)) + ",el->true");
+                newKey = getKey(key, compute.replace(split[0], handlerVariable(variableValue)) + ",true");
             }
             if (split.length > 1) {
-                newKey = getKey(key, StrUtil.format("{},el->true", getSymbol(split[0])));
+                newKey = getKey(key, StrUtil.format("{},true", getSymbol(split[0])));
             }
             newKey = newKey.replace("\"?\"", "new Object[]{\"?\"}");
             String oldKey = getKey(key, compute);

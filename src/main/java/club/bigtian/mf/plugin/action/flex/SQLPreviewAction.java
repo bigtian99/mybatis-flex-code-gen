@@ -34,8 +34,13 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.sun.tools.javac.api.JavacTool;
 import org.jetbrains.annotations.NotNull;
 
+import javax.tools.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -87,6 +92,7 @@ public class SQLPreviewAction extends AnAction {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            // new File("MybatisFlexSqlPreview").delete();
             function.apply();
         }
     }
@@ -124,9 +130,13 @@ public class SQLPreviewAction extends AnAction {
                 if (ObjectUtil.isNotNull(file)) {
                     file.delete();
                 }
+
                 PsiElement element = containingDirectory.add(CodeReformat.reformat(psiJavaFile));
                 VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
                 showSql(project, packageName, virtualFile);
+                // compileJavaCode(psiJavaFile.getText());
+                // showSql(project, packageName, null);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -325,9 +335,6 @@ public class SQLPreviewAction extends AnAction {
                     String name = sonPsiClass.getName();
                     consumer.applay(genericity, StrUtil.subAfter(text, " ", true));
                     if (text.contains(field.getName())) {
-                        // WriteCommandAction.runWriteCommandAction(project, () -> {
-                        //     psiJavaFile.getImportList().add(elementFactory.createImportStatement(sonPsiClass));
-                        // });
                         temVal = StrUtil.format("{}=new {}();\n", text, name);
                     }
                 }
@@ -344,7 +351,7 @@ public class SQLPreviewAction extends AnAction {
         }
         virtualFiles.add(virtualFile);
         CompilerManagerUtil.compile(virtualFiles.toArray(new VirtualFile[0]), (b, i, i1, compileContext) -> {
-            try {
+        try {
                 ApplicationManager.getApplication().invokeLater(() -> {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         try {
@@ -359,49 +366,91 @@ public class SQLPreviewAction extends AnAction {
                         }
                     });
                 }, ModalityState.defaultModalityState());
-                // 执行配置
-                ProgramRunner runner = ProgramRunner.PROGRAM_RUNNER_EP.getExtensions()[0];
-                Executor instance = MyBatisLogExecutor.getInstance();
-                RunManagerEx runManager = (RunManagerEx) RunManager.getInstance(project);
-                RunnerAndConfigurationSettings defaultSettings = runManager.getSelectedConfiguration();
-                ExecutionEnvironment environment = new ExecutionEnvironment(instance, runner, defaultSettings, project);
-                // 创建 Java 执行配置
-                JavaCommandLineState commandLineState = new JavaCommandLineState(environment) {
+            // 执行配置
+            ProgramRunner runner = ProgramRunner.PROGRAM_RUNNER_EP.getExtensions()[0];
+            Executor instance = MyBatisLogExecutor.getInstance();
+            RunManagerEx runManager = (RunManagerEx) RunManager.getInstance(project);
+            RunnerAndConfigurationSettings defaultSettings = runManager.getSelectedConfiguration();
+            ExecutionEnvironment environment = new ExecutionEnvironment(instance, runner, defaultSettings, project);
+            // 创建 Java 执行配置
+            JavaCommandLineState commandLineState = new JavaCommandLineState(environment) {
+                @Override
+                protected JavaParameters createJavaParameters() throws ExecutionException {
+                    JavaParameters params = new JavaParameters();
+                    Sdk projectSdk = ProjectRootManager.getInstance(project).getProjectSdk();
+                    params.configureByProject(project, JavaParameters.JDK_AND_CLASSES_AND_TESTS, projectSdk);
+                    // params.setMainClass(packageName + ".MybatisFlexSqlPreview");
+                    params.setMainClass(packageName + ".MybatisFlexSqlPreview");
+                    return params;
+                }
+            };
+            ExecutionResult executionResult = commandLineState.execute(instance, runner);
+            if (ObjectUtil.isNotNull(executionResult) && ObjectUtil.isNotNull(executionResult)) {
+                ProcessHandler processHandler = executionResult.getProcessHandler();
+                processHandler.addProcessListener(new ProcessAdapter() {
                     @Override
-                    protected JavaParameters createJavaParameters() throws ExecutionException {
-                        JavaParameters params = new JavaParameters();
-                        Sdk projectSdk = ProjectRootManager.getInstance(project).getProjectSdk();
-                        params.configureByProject(project, JavaParameters.JDK_AND_CLASSES_AND_TESTS, projectSdk);
-                        params.setMainClass(packageName + ".MybatisFlexSqlPreview");
-                        return params;
-                    }
-                };
-                ExecutionResult executionResult = commandLineState.execute(instance, runner);
-                if (ObjectUtil.isNotNull(executionResult) && ObjectUtil.isNotNull(executionResult)) {
-                    ProcessHandler processHandler = executionResult.getProcessHandler();
-                    processHandler.addProcessListener(new ProcessAdapter() {
-                        @Override
-                        public void onTextAvailable(ProcessEvent event1, Key outputType) {
-                            if (ProcessOutputTypes.STDOUT.equals(outputType)) {
-                                if (StrUtil.startWithAnyIgnoreCase(event1.getText(), "SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP", "ALTER", "TRUNCATE")) {
-                                    new SQLPreviewDialog(event1.getText()).setVisible(true);
-                                }
-                            } else if (ProcessOutputTypes.STDERR.equals(outputType)) {
-                                String text = event1.getText();
-                                System.out.println(text);
-                                if (text.startsWith("Exception in")) {
-                                    NotificationUtils.notifyError((StrUtil.subAfter(text, ":", true)), "Mybatis-Flex system tips");
-                                }
+                    public void onTextAvailable(ProcessEvent event1, Key outputType) {
+                        if (ProcessOutputTypes.STDOUT.equals(outputType)) {
+                            if (StrUtil.startWithAnyIgnoreCase(event1.getText(), "SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP", "ALTER", "TRUNCATE")) {
+                                new SQLPreviewDialog(event1.getText()).setVisible(true);
+                            }
+                        } else if (ProcessOutputTypes.STDERR.equals(outputType)) {
+                            String text = event1.getText();
+                            System.out.println(text);
+                            if (text.startsWith("Exception in")) {
+                                NotificationUtils.notifyError((StrUtil.subAfter(text, ":", true)), "Mybatis-Flex system tips");
                             }
                         }
-                    });
-                    processHandler.startNotify();
-                }
-            } catch (
-                    Exception e) {
-                Messages.showErrorDialog("Error executing code:\n" + e.getMessage(), "Code Execution Error");
+                    }
+                });
+                processHandler.startNotify();
             }
+        } catch (
+                Exception e) {
+            Messages.showErrorDialog("Error executing code:\n" + e.getMessage(), "Code Execution Error");
+        }
         });
+    }
+
+    public static void compileJavaCode(String javaCode) {
+        JavaCompiler compiler = JavacTool.create() ;
+        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+        try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null)) {
+            String className = "MybatisFlexSqlPreview";
+            String fileName = className + ".java";
+
+            // 创建一个临时文件来保存 Java 代码
+            File tempFile = new File(fileName);
+            try (PrintWriter writer = new PrintWriter(tempFile)) {
+                writer.println(javaCode);
+            }
+
+            // 获取要编译的 Java 文件
+            Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(tempFile);
+
+            // 设置编译选项
+            Iterable<String> options = Arrays.asList("-d", "target/classes");
+
+            // 创建编译任务
+            JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options, null, compilationUnits);
+
+            // 执行编译任务
+            boolean success = task.call();
+
+            // 检查编译结果
+            if (success) {
+                System.out.println("Java code compiled successfully!");
+            } else {
+                System.out.println("Java code compilation failed!");
+                for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+                    System.out.println(diagnostic.getMessage(null));
+                }
+            }
+            // 删除临时文件
+            tempFile.delete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

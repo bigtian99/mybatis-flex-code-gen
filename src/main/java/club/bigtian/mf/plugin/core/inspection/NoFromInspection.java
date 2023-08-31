@@ -1,5 +1,7 @@
 package club.bigtian.mf.plugin.core.inspection;
 
+import club.bigtian.mf.plugin.core.Template;
+import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.LocalQuickFix;
@@ -25,6 +27,9 @@ public class NoFromInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+        if(!Template.getCheckBoxConfig(MybatisFlexConstant.FROM,true)){
+            return new PsiElementVisitor() {};
+        }
         return new PsiElementVisitor() {
             @Override
             public void visitElement(@NotNull PsiElement element) {

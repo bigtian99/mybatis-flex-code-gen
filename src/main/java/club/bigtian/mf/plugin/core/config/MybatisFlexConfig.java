@@ -212,6 +212,16 @@ public class MybatisFlexConfig {
     private String onUpdate;
     private String onSet;
 
+    private Boolean fromCheck;
+
+    public Boolean isFromCheck() {
+        return fromCheck;
+    }
+
+    public void setFromCheck(Boolean fromCheck) {
+        this.fromCheck = fromCheck;
+    }
+
     public String getOnInsert() {
         return onInsert;
     }
