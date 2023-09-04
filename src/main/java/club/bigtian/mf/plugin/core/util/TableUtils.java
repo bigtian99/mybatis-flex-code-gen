@@ -97,7 +97,7 @@ public class TableUtils {
                 ColumnInfo columnInfo = new ColumnInfo();
                 DasColumn dasColumn = (DasColumn) column;
                 columnInfo.setName(dasColumn.getName());
-                columnInfo.setFieldName(StrUtil.toCamelCase(dasColumn.getName()));
+                columnInfo.setFieldName(StrUtil.toCamelCase(dasColumn.getName().toLowerCase()));
                 String jdbcTypeStr = dasColumn.getDataType().toString();
                 int jdbc = dialect.getJavaTypeForNativeType(jdbcTypeStr);
                 String jdbcTypeName = JdbcUtil.getJdbcTypeName(jdbc);
