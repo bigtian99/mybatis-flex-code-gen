@@ -385,7 +385,7 @@ public class SQLPreviewAction extends AnAction {
                 }
             };
             ExecutionResult executionResult = commandLineState.execute(instance, runner);
-            if (ObjectUtil.isNotNull(executionResult) && ObjectUtil.isNotNull(executionResult)) {
+            if (ObjectUtil.isNotNull(executionResult)) {
                 ProcessHandler processHandler = executionResult.getProcessHandler();
                 processHandler.addProcessListener(new ProcessAdapter() {
                     @Override

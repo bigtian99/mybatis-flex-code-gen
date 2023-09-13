@@ -373,7 +373,8 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             }
             parent = parent.getParent();
         }
-        PsiCodeBlock body = ((PsiMethod) parent).getBody();
+        PsiMethod psiMethod = (PsiMethod) parent;
+        PsiCodeBlock body = psiMethod.getBody();
         methodVariableMap = Arrays.stream(body.getStatements())
                 .filter(el -> {
                     if (el instanceof PsiDeclarationStatement) {
@@ -455,7 +456,6 @@ public class MybatisFlexConfigAnnotator implements Annotator {
             newKey = getKey(key, StrUtil.format(template, compute + s));
         } else {
             String variableValue = methodVariableMap.get(compute);
-
             if (StrUtil.isNotBlank(variableValue)) {
                 newKey = getKey(key, StrUtil.format(template, handlerVariable(variableValue) + s));
             } else if (compute.endsWith(".class")) {

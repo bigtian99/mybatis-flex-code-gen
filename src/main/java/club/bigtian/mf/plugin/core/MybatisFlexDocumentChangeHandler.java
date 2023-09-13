@@ -31,7 +31,6 @@ import org.jetbrains.kotlin.psi.KtFile;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -52,6 +51,9 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         Project project = ProjectUtils.getCurrentProject();
         virtualFiles = virtualFiles.stream()
                 .filter(oldFile -> {
+                    if (ObjectUtil.isNull(oldFile)) {
+                        return false;
+                    }
                     Boolean userData = oldFile.getUserData(CHANGE);
                     return !(ObjectUtil.isNull(oldFile) || !oldFile.getName().endsWith(".java") || !oldFile.isWritable()) && BooleanUtil.isTrue(userData) && checkFile(oldFile);
                 }).collect(Collectors.toList());
@@ -186,15 +188,19 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 return;
             }
             FileEditorManager.getInstance(project).addFileEditorManagerListener(this);
-            scheduler.scheduleAtFixedRate(() -> {
-                try {
-                    DumbService.getInstance(project).runWhenSmart(() -> {
-                        PsiJavaFileUtil.createAptFile();
-                    });
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }, 10, 2, TimeUnit.SECONDS);
+            // new Thread(() -> {
+            //     scheduler.scheduleAtFixedRate(() -> {
+            //         try {
+            //             DumbService.getInstance(project).runWhenSmart(() -> {
+            //                 ApplicationManager.getApplication().invokeLater(() -> {
+            //                     PsiJavaFileUtil.createAptFile();
+            //                 });
+            //             });
+            //         } catch (Exception e) {
+            //             throw new RuntimeException(e);
+            //         }
+            //     }, 10, 2, TimeUnit.SECONDS);
+            // }).start();
 
         } catch (Exception e) {
             e.printStackTrace();
