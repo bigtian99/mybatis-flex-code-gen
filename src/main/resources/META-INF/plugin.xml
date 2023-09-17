@@ -38,9 +38,9 @@
 
 
     <change-notes><![CDATA[
-    <h3>1.4.8.1-RELEASE</h3>
+    <h3>1.4.8.2-RELEASE</h3>
     <ul>
-    <li>【修复】SQL 预览增加对字段 getName 的适配</li>
+    <li>【修复】实体类生成bug close #I7YCLR</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
