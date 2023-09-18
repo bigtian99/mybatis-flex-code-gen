@@ -137,4 +137,21 @@ public class PsiJavaFileUtil {
         }
     }
 
+    /**
+     * 判断是否是静态或者final字段
+     *
+     * @param psiField
+     * @return
+     */
+    public static boolean checkFieldModifiers(PsiField psiField) {
+        // 获取字段的修饰符列表
+        PsiModifierList modifierList = psiField.getModifierList();
+        if (ObjectUtil.isNull(modifierList)) {
+            return true;
+        }
+        // 使用PsiModifier类来检查字段的修饰符
+        boolean isStatic = modifierList.hasModifierProperty(PsiModifier.STATIC);
+        boolean isFinal = modifierList.hasModifierProperty(PsiModifier.FINAL);
+        return isStatic || isFinal;
+    }
 }

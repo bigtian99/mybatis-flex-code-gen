@@ -83,27 +83,32 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                     oldFile.putUserData(CHANGE, false);
                     PsiClass psiClass = psiJavaFile.getClasses()[0];
                     PsiField[] fields = psiClass.getAllFields();
-                    List<AptInfo> list = new ArrayList<>();
+                    Map<String, AptInfo> fieldMap = new HashMap<>();
                     for (PsiField field : fields) {
-                        if (field.getName().startsWith("queryWrapper")) {
+                        if (field.getName().startsWith("queryWrapper") || PsiJavaFileUtil.checkFieldModifiers(field)) {
                             continue;
                         }
+                        AptInfo aptInfo;
                         PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column");
                         if (ObjectUtil.isNotNull(column)) {
                             PsiAnnotationMemberValue value = column.findAttributeValue("value");
                             PsiAnnotationMemberValue isLarge = column.findAttributeValue("isLarge");
                             String fieldName = value.getText().replace("\"", "");
-                            list.add(new AptInfo(fieldName, StrUtil.toUnderlineCase(field.getName()).toUpperCase(), isLarge.getText().contains("true")));
+                            aptInfo = new AptInfo(fieldName, StrUtil.toUnderlineCase(field.getName()).toUpperCase(), isLarge.getText().contains("true"));
                         } else {
-                            list.add(new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase(), false));
+                            aptInfo = new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase(), false);
                         }
+                        if (fieldMap.containsKey(aptInfo.getColumnName())) {
+                            continue;
+                        }
+                        fieldMap.computeIfAbsent(aptInfo.getName(), k -> aptInfo);
                     }
                     PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table");
                     VelocityContext context = new VelocityContext();
                     String className = getClassName(config, psiClass.getName()) + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
                     context.put("className", className);
                     context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
-                    context.put("list", list);
+                    context.put("list", fieldMap.values());
                     context.put("instance", getDefInstanceName(config, psiClass.getName()));
                     context.put("talbeName", table.findAttributeValue("value").getText().replace("\"", ""));
                     String suffix = Modules.getProjectTypeSuffix(moduleForFile);
