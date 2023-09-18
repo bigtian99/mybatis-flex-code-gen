@@ -248,7 +248,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
                         String packageName = psiJavaFile.getPackageName();
                         String path = StrUtil.subBefore(child.getPath(), ".", true);
                         String tableDef = StrUtil.subAfter(path, "/", true);
-                        String tableName = MybatisFlexDocumentChangeHandler.getDefInstanceName(config, StrUtil.subBefore(tableDef, tableDefConf, false));
+                        String tableName = MybatisFlexDocumentChangeHandler.getDefInstanceName(config, StrUtil.subBefore(tableDef, tableDefConf, false),true);
                         tableDefMap.put(tableName, packageName + "." + tableDef);
                     }
                 }

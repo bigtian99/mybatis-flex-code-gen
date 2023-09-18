@@ -94,9 +94,9 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                             PsiAnnotationMemberValue value = column.findAttributeValue("value");
                             PsiAnnotationMemberValue isLarge = column.findAttributeValue("isLarge");
                             String fieldName = value.getText().replace("\"", "");
-                            aptInfo = new AptInfo(fieldName, StrUtil.toUnderlineCase(field.getName()).toUpperCase(), isLarge.getText().contains("true"));
+                            aptInfo = new AptInfo(fieldName, getDefInstanceName(config,field.getName(),false), isLarge.getText().contains("true"));
                         } else {
-                            aptInfo = new AptInfo(field.getName(), StrUtil.toUnderlineCase(field.getName()).toUpperCase(), false);
+                            aptInfo = new AptInfo(field.getName(), getDefInstanceName(config,field.getName(),false), false);
                         }
                         if (fieldMap.containsKey(aptInfo.getColumnName())) {
                             continue;
@@ -109,7 +109,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                     context.put("className", className);
                     context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
                     context.put("list", fieldMap.values());
-                    context.put("instance", getDefInstanceName(config, psiClass.getName()));
+                    context.put("instance", getDefInstanceName(config, psiClass.getName(),true));
                     context.put("talbeName", table.findAttributeValue("value").getText().replace("\"", ""));
                     String suffix = Modules.getProjectTypeSuffix(moduleForFile);
                     String fileName = className + suffix;
@@ -141,22 +141,32 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         }
     }
 
-    public static String getDefInstanceName(CustomConfig config, String className) {
+    public static String getDefInstanceName(CustomConfig config, String className, boolean clasVar) {
         String type = ObjectUtil.defaultIfNull(config.getTableDefPropertiesNameStyle(), "upperCase");
+        String instanceSuffix = "";
+        if (clasVar) {
+            instanceSuffix = ObjectUtil.defaultIfNull(config.getTableDefInstanceSuffix(), "");
+        }
         className = getClassName(config, className);
         String instace = StrUtil.toUnderlineCase(className);
         switch (type) {
             case "upperCase":
-                return instace.toUpperCase();
+                instace = instace.toUpperCase();
+                break;
             case "lowerCase":
-                return instace.toLowerCase();
+                instace = instace.toLowerCase();
+                break;
             case "upperCamelCase":
-                return StrUtil.upperFirst(StrUtil.toCamelCase(instace));
+                instace = StrUtil.upperFirst(StrUtil.toCamelCase(instace));
+                break;
             case "lowerCamelCase":
-                return StrUtil.lowerFirst(StrUtil.toCamelCase(instace));
+                instace = StrUtil.lowerFirst(StrUtil.toCamelCase(instace));
+                break;
             default:
-                return instace.toUpperCase();
+                instace = instace.toUpperCase();
+                break;
         }
+        return instace + instanceSuffix;
     }
 
     @NotNull
