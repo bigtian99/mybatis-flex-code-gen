@@ -7,6 +7,7 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -31,6 +32,7 @@ import org.jetbrains.kotlin.psi.KtFile;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -88,15 +90,19 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                         if (field.getName().startsWith("queryWrapper") || PsiJavaFileUtil.checkFieldModifiers(field)) {
                             continue;
                         }
-                        AptInfo aptInfo;
                         PsiAnnotation column = field.getAnnotation("com.mybatisflex.annotation.Column");
+                        AptInfo aptInfo;
                         if (ObjectUtil.isNotNull(column)) {
+                            PsiAnnotationMemberValue ignore = column.findAttributeValue("ignore");
+                            if (ignore.textMatches("true")) {
+                                continue;
+                            }
                             PsiAnnotationMemberValue value = column.findAttributeValue("value");
                             PsiAnnotationMemberValue isLarge = column.findAttributeValue("isLarge");
                             String fieldName = value.getText().replace("\"", "");
-                            aptInfo = new AptInfo(fieldName, getDefInstanceName(config,field.getName(),false), isLarge.getText().contains("true"));
+                            aptInfo = new AptInfo(fieldName, getDefInstanceName(config, field.getName(), false), isLarge.getText().contains("true"));
                         } else {
-                            aptInfo = new AptInfo(field.getName(), getDefInstanceName(config,field.getName(),false), false);
+                            aptInfo = new AptInfo(field.getName(), getDefInstanceName(config, field.getName(), false), false);
                         }
                         if (fieldMap.containsKey(aptInfo.getColumnName())) {
                             continue;
@@ -109,7 +115,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                     context.put("className", className);
                     context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
                     context.put("list", fieldMap.values());
-                    context.put("instance", getDefInstanceName(config, psiClass.getName(),true));
+                    context.put("instance", getDefInstanceName(config, psiClass.getName(), true));
                     context.put("talbeName", table.findAttributeValue("value").getText().replace("\"", ""));
                     String suffix = Modules.getProjectTypeSuffix(moduleForFile);
                     String fileName = className + suffix;
@@ -203,24 +209,23 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 return;
             }
             FileEditorManager.getInstance(project).addFileEditorManagerListener(this);
-            // new Thread(() -> {
-            //     scheduler.scheduleAtFixedRate(() -> {
-            //         try {
-            //             DumbService.getInstance(project).runWhenSmart(() -> {
-            //                 ApplicationManager.getApplication().invokeLater(() -> {
-            //                     PsiJavaFileUtil.createAptFile();
-            //                 });
-            //             });
-            //         } catch (Exception e) {
-            //             throw new RuntimeException(e);
-            //         }
-            //     }, 10, 2, TimeUnit.SECONDS);
-            // }).start();
+            new Thread(() -> {
+                scheduler.scheduleAtFixedRate(() -> {
+                    try {
+                        DumbService.getInstance(project).runWhenSmart(() -> {
+                            ApplicationManager.getApplication().invokeLater(() -> {
+                                PsiJavaFileUtil.createAptFile();
+                            });
+                        });
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }, 10, 1, TimeUnit.MINUTES);
+            }).start();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
 
@@ -288,7 +293,6 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         }
         VirtualFile currentFile = VirtualFileUtils.getVirtualFile(document);
         if (ObjectUtil.isNotNull(currentFile)) {
-
             currentFile.putUserData(CHANGE, true);
         }
     }
