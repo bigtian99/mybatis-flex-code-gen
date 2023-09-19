@@ -56,6 +56,9 @@ public class PsiJavaFileUtil {
      */
     public static Collection<PsiClass> getSonPsiClass(String qualifiedName, SearchScope searchScope) {
         PsiClass clazz = getPsiClass(qualifiedName);
+        if (ObjectUtil.isNull(clazz)) {
+            return Collections.emptyList();
+        }
         return ClassInheritorsSearch.search(clazz, searchScope, true).findAll();
     }
 
