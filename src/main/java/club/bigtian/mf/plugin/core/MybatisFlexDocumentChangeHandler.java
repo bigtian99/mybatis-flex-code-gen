@@ -231,6 +231,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
     @Override
     public void editorReleased(@NotNull EditorFactoryEvent event) {
+
         Editor editor = event.getEditor();
         Document document = editor.getDocument();
         if (Boolean.TRUE.equals(document.getUserData(LISTENER))) {
@@ -242,6 +243,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
     @Override
     public void editorCreated(@NotNull EditorFactoryEvent event) {
         try {
+
             EditorFactoryListener.super.editorCreated(event);
             Editor editor = event.getEditor();
             editor.addEditorMouseListener(new EditorMouseListener() {
@@ -286,6 +288,9 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
     @Override
     public void documentChanged(@NotNull DocumentEvent event) {
+        if (MybatisFlexUtil.isFlexProject()) {
+            return;
+        }
         Document document = event.getDocument();
         CharSequence newFragment = event.getNewFragment();
         if ((StrUtil.isBlank(newFragment) && StrUtil.isBlank(event.getOldFragment()))) {

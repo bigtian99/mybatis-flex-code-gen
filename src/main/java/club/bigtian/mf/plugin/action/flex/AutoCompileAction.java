@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.action.flex;
 
+import club.bigtian.mf.plugin.core.util.MybatisFlexUtil;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -12,6 +13,9 @@ public class AutoCompileAction extends AnAction {
     public void actionPerformed(AnActionEvent e) {
         Project project = e.getProject();
         ProjectUtils.setCurrentProject(project);
+        if (MybatisFlexUtil.isFlexProject()) {
+            return;
+        }
         PsiJavaFileUtil.createAptFile();
     }
 }

@@ -2,6 +2,7 @@ package club.bigtian.mf.plugin.core.annotator;
 
 import club.bigtian.mf.plugin.core.function.BigFunction;
 import club.bigtian.mf.plugin.core.render.SqlPreviewIconRenderer;
+import club.bigtian.mf.plugin.core.util.MybatisFlexUtil;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
@@ -60,6 +61,9 @@ public class MybatisFlexConfigAnnotator implements Annotator {
 
     @Override
     public void annotate(PsiElement element, AnnotationHolder holder) {
+        if (MybatisFlexUtil.isFlexProject()) {
+            return;
+        }
         Project project = element.getProject();
         ProjectUtils.setCurrentProject(project);
         try {

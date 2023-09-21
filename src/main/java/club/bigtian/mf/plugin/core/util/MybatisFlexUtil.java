@@ -1,6 +1,7 @@
 package club.bigtian.mf.plugin.core.util;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
@@ -19,6 +20,9 @@ public class MybatisFlexUtil {
      */
     private static void initSqlDialectMap() {
         PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.dialect.DbType");
+        if (ObjectUtil.isNull(psiClass)) {
+            return;
+        }
         SQL_DIALECT_MAP = Arrays.stream(psiClass.getFields())
                 .filter(el -> StrUtil.isUpperCase(el.getName()))
                 .collect(Collectors.toMap(el -> {
@@ -55,7 +59,9 @@ public class MybatisFlexUtil {
         return SQL_DIALECT_MAP.getOrDefault(sqlName, "MYSQL");
     }
 
-    /** 根据类型获取数据库方言类型
+    /**
+     * 根据类型获取数据库方言类型
+     *
      * @param type
      * @return {@code String}
      */
@@ -73,4 +79,13 @@ public class MybatisFlexUtil {
 
     }
 
+    /**
+     * 判断是不是 flex 项目
+     *
+     * @return {@code Boolean}
+     */
+    public static Boolean isFlexProject() {
+        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.dialect.DbType");
+        return ObjectUtil.isNull(psiClass);
+    }
 }
