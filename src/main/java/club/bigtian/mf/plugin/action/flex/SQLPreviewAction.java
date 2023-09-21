@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.action.flex;
 
+import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.function.ManyFunction;
 import club.bigtian.mf.plugin.core.function.SimpleFunction;
@@ -50,6 +51,7 @@ public class SQLPreviewAction extends AnAction {
             "com.mybatisflex.core.mybatis.FlexConfiguration",
             "org.springframework.jdbc.datasource.DelegatingDataSource",
             "org.apache.ibatis.mapping.Environment",
+            "com.mybatisflex.core.dialect.DbType",
             "org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory");
 
     private static final String COMMON_CODE =
@@ -58,7 +60,8 @@ public class SQLPreviewAction extends AnAction {
                     "        FlexGlobalConfig globalConfig = FlexGlobalConfig.getDefaultConfig();\n" +
                     "        globalConfig.setConfiguration(configuration);\n" +
                     "        FlexGlobalConfig.setConfig(\"mybatisFlex\", globalConfig, true);\n" +
-                    "        configuration.addMapper({}.class);\n";
+                    "        configuration.addMapper({}.class);\n"+
+                    "           globalConfig.setDbType(DbType.{});\n";
     private static final String TEMPLATE = "" +
             "        {} baseMapper = Mappers.ofMapperClass({}.class);\n" +
             "        Field field = ReflectUtil.getField(ServiceImpl.class, \"mapper\");\n" +
@@ -229,13 +232,16 @@ public class SQLPreviewAction extends AnAction {
                 }
             }
         });
-        if (StrUtil.isNotBlank(val)) {
-            // 添加Mapper
-            text = StrUtil.format(COMMON_CODE, val) + text + print;
+        text = StrUtil.format(COMMON_CODE, ObjectUtil.defaultIfNull(val,
+                "Object"), Template.getConfigData(MybatisFlexConstant.SQL_DIALECT,"SQLSERVER")) + text + print;
 
-        } else {
-            text += print;
-        }
+        // if (StrUtil.isNotBlank(val)) {
+        //     // 添加Mapper
+        //     text = StrUtil.format(COMMON_CODE, val) + text + print;
+        //
+        // } else {
+        //     text += print;
+        // }
 
         return text;
     }

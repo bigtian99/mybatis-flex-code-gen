@@ -1,0 +1,76 @@
+package club.bigtian.mf.plugin.core.util;
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiField;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class MybatisFlexUtil {
+    private static Map<String, String> SQL_DIALECT_MAP = new HashMap<>();
+
+    /**
+     * 初始化数据库方言 map
+     */
+    private static void initSqlDialectMap() {
+        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.dialect.DbType");
+        SQL_DIALECT_MAP = Arrays.stream(psiClass.getFields())
+                .filter(el -> StrUtil.isUpperCase(el.getName()))
+                .collect(Collectors.toMap(el -> {
+                    if (el.getName().contains("2005")) {
+                        return "SQLServer_2005 数据库";
+                    }
+                    return StrUtil.subBetween(el.getText(), ", \"", "\"");
+                }, PsiField::getName));
+    }
+
+    /**
+     * 获取数据库方言（中文描述）
+     *
+     * @return
+     */
+    public static Collection<String> getTargetClassFieldRemark() {
+        if (CollUtil.isEmpty(SQL_DIALECT_MAP)) {
+            initSqlDialectMap();
+        }
+        return SQL_DIALECT_MAP.keySet();
+    }
+
+    /**
+     * 根据 dbType 的中文描述获取类型
+     *
+     * @param sqlName
+     * @return
+     */
+
+    public static String getDialectType(String sqlName) {
+        if (CollUtil.isEmpty(SQL_DIALECT_MAP)) {
+            initSqlDialectMap();
+        }
+        return SQL_DIALECT_MAP.getOrDefault(sqlName, "MYSQL");
+    }
+
+    /** 根据类型获取数据库方言类型
+     * @param type
+     * @return {@code String}
+     */
+    public static String getDialectChinese(String type) {
+        if (CollUtil.isEmpty(SQL_DIALECT_MAP)) {
+            initSqlDialectMap();
+        }
+        Map<String, String> chineseMap = SQL_DIALECT_MAP.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getValue, // 使用原始值作为新的键
+                        Map.Entry::getKey    // 使用原始键作为新的值
+                ));
+        return chineseMap.get(type);
+
+    }
+
+}

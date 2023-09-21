@@ -99,9 +99,12 @@ public class Template {
 
 
     public static String getConfigData(String property) {
+        return getConfigData(property, "");
+    }
+    public static String getConfigData(String property,String defaultValue) {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
-        return ObjectUtil.defaultIfNull(fieldValue, "").toString();
+        return ObjectUtil.defaultIfNull(fieldValue, defaultValue).toString();
     }
 
     public static String getSuffix(String property) {

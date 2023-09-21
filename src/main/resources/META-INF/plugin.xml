@@ -37,11 +37,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
-    <h3>1.4.8.3-RELEASE</h3>
+    <h3>1.4.9-RELEASE</h3>
     <ul>
-    <li>【修复】可以根据配置文件生成TableDef  #I81GJE</li>
-    <li>【修复】生成了 serialVersionUID 字段，并且如果有继承，会生成重复的字段  #I81GGM</li>
-    <li>【优化】自动APT支持Colum ignore</li>
+    <li>【优化】支持自定义数据库方言进行 SQL 预览</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.

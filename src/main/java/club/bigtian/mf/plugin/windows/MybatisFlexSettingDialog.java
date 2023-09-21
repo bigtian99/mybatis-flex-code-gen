@@ -7,6 +7,7 @@ import club.bigtian.mf.plugin.core.function.SimpleFunction;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.FileChooserUtil;
+import club.bigtian.mf.plugin.core.util.MybatisFlexUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.lang.java.JavaLanguage;
@@ -81,6 +82,7 @@ public class MybatisFlexSettingDialog extends JDialog {
 
     private com.intellij.openapi.ui.FixedSizeButton buttonFixedSizeButton;
     private JCheckBox fromCheckBox;
+    private JComboBox sqlDialect;
     private Project project;
 
     // 是否开启内部模式
@@ -225,7 +227,6 @@ public class MybatisFlexSettingDialog extends JDialog {
     }
 
 
-
     public void init() {
         controllerTemplate.setText(Template.getVmCode(MybatisFlexConstant.CONTROLLER_TEMPLATE));
         modelTemplate.setText(Template.getVmCode(MybatisFlexConstant.MODEL_TEMPLATE));
@@ -262,7 +263,10 @@ public class MybatisFlexSettingDialog extends JDialog {
         accessorsCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.LOMBOK_ACCESSORS));
         activeRecordCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
         requiredArgsConstructorCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
-        fromCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.FROM,true));
+        fromCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.FROM, true));
+        initDialectComBox();
+        String dialectChinese = MybatisFlexUtil.getDialectChinese(Template.getConfigData(MybatisFlexConstant.SQL_DIALECT, "MYSQL"));
+        sqlDialect.setSelectedItem(dialectChinese);
         initSinceComBox();
         pathMap = new HashMap<>();
         for (JTextField textField : list) {
@@ -281,6 +285,12 @@ public class MybatisFlexSettingDialog extends JDialog {
         }
         sinceConfigComBox.revalidate();
         sinceConfigComBox.repaint();
+    }
+
+    public void initDialectComBox() {
+        MybatisFlexUtil.getTargetClassFieldRemark().forEach(el -> sqlDialect.addItem(el));
+        sqlDialect.revalidate();
+        sqlDialect.repaint();
     }
 
 
@@ -345,6 +355,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setActiveRecord(activeRecordCheckBox.isSelected());
         config.setRequiredArgsConstructor(requiredArgsConstructorCheckBox.isSelected());
         config.setFromCheck(fromCheckBox.isSelected());
+        config.setSqlDialect(MybatisFlexUtil.getDialectType(sqlDialect.getSelectedItem().toString()));
         return config;
     }
 

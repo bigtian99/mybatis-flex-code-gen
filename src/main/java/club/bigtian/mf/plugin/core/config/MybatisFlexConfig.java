@@ -214,6 +214,11 @@ public class MybatisFlexConfig {
 
     private Boolean fromCheck;
 
+    /**
+     * sql 方言
+     */
+    private String sqlDialect;
+
     public Boolean isFromCheck() {
         return fromCheck;
     }
@@ -287,10 +292,10 @@ public class MybatisFlexConfig {
 //        data.put(MybatisFlexConstant.MAPPER, ObjectUtil.defaultIfBlank(mapperSuffix, MybatisFlexConstant.MAPPER));
 //        data.put("", ObjectUtil.defaultIfBlank(mapperSuffix, MybatisFlexConstant.MAPPER));
 
-        data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix,""));
-        data.put(MybatisFlexConstant.ENTITY, ObjectUtil.defaultIfBlank(modelSuffix,""));
-        data.put(MybatisFlexConstant.SERVICE, ObjectUtil.defaultIfBlank(interfaceSuffix,""));
-        data.put(MybatisFlexConstant.SERVICE_IMPL, ObjectUtil.defaultIfBlank(implSuffix,""));
+        data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, ""));
+        data.put(MybatisFlexConstant.ENTITY, ObjectUtil.defaultIfBlank(modelSuffix, ""));
+        data.put(MybatisFlexConstant.SERVICE, ObjectUtil.defaultIfBlank(interfaceSuffix, ""));
+        data.put(MybatisFlexConstant.SERVICE_IMPL, ObjectUtil.defaultIfBlank(implSuffix, ""));
         data.put(MybatisFlexConstant.MAPPER, ObjectUtil.defaultIfBlank(mapperSuffix, ""));
         data.put("", ObjectUtil.defaultIfBlank(mapperSuffix, ""));
         return data;
@@ -747,5 +752,17 @@ public class MybatisFlexConfig {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Boolean getFromCheck() {
+        return fromCheck;
+    }
+
+    public String getSqlDialect() {
+        return sqlDialect;
+    }
+
+    public void setSqlDialect(String sqlDialect) {
+        this.sqlDialect = sqlDialect;
     }
 }
