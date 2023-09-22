@@ -219,6 +219,11 @@ public class MybatisFlexConfig {
      */
     private String sqlDialect;
 
+    /**
+     * mapper xml 生成类型（java/resource）
+     */
+    private String mapperXmlType;
+
     public Boolean isFromCheck() {
         return fromCheck;
     }
@@ -764,5 +769,13 @@ public class MybatisFlexConfig {
 
     public void setSqlDialect(String sqlDialect) {
         this.sqlDialect = sqlDialect;
+    }
+
+    public String getMapperXmlType() {
+        return mapperXmlType;
+    }
+
+    public void setMapperXmlType(String mapperXmlType) {
+        this.mapperXmlType = mapperXmlType;
     }
 }

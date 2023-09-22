@@ -1,6 +1,7 @@
 package club.bigtian.mf.plugin.core;
 
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
+import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
@@ -233,7 +234,11 @@ public class RenderMybatisFlexTemplate {
             context.put("className", className);
             velocityEngine.evaluate(context, sw, "mybatis-flex", entry.getValue());
             Module module = Modules.getModule(modules.get(entry.getKey()));
-            PsiDirectory packageDirectory = VirtualFileUtils.getPsiDirectory(module, packages.get(entry.getKey()), entry.getKey());
+            String key = entry.getKey();
+            if (StrUtil.isEmpty(key)) {
+                key = "resource".equals(Template.getConfigData(MybatisFlexConstant.MAPPER_XML_TYPE, "resource")) ? "" : "xml";
+            }
+            PsiDirectory packageDirectory = VirtualFileUtils.getPsiDirectory(module, packages.get(entry.getKey()), key);
             DumbService.getInstance(project).runWhenSmart(() -> {
                 String classPrefix = ObjectUtil.equal("Service", entry.getKey()) ? "I" : "";
                 String fileName = classPrefix + className + suffixMap.get(entry.getKey()) + (StrUtil.isEmpty(entry.getKey()) ? ".xml" : ".java");

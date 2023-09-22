@@ -78,4 +78,5 @@ public class MybatisFlexConstant {
     public static final String MODEL_SUPER_CLASS = "modelSuperClass";
     public static final String FROM = "fromCheck";
     public static final String SQL_DIALECT = "sqlDialect";
+    public static String MAPPER_XML_TYPE= "mapperXmlType";
 }

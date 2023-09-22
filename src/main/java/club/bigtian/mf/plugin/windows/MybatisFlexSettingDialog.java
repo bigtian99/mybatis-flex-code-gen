@@ -83,6 +83,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private com.intellij.openapi.ui.FixedSizeButton buttonFixedSizeButton;
     private JCheckBox fromCheckBox;
     private JComboBox sqlDialect;
+    private JComboBox mapperXmlType;
     private Project project;
 
     // 是否开启内部模式
@@ -264,6 +265,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         activeRecordCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.ACTIVE_RECORD));
         requiredArgsConstructorCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
         fromCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.FROM, true));
+        mapperXmlType.setSelectedItem(Template.getConfigData(MybatisFlexConstant.MAPPER_XML_TYPE, "resource"));
         initDialectComBox();
         String dialectChinese = MybatisFlexUtil.getDialectChinese(Template.getConfigData(MybatisFlexConstant.SQL_DIALECT, "MYSQL"));
         sqlDialect.setSelectedItem(dialectChinese);
@@ -356,6 +358,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setRequiredArgsConstructor(requiredArgsConstructorCheckBox.isSelected());
         config.setFromCheck(fromCheckBox.isSelected());
         config.setSqlDialect(MybatisFlexUtil.getDialectType(sqlDialect.getSelectedItem().toString()));
+        config.setMapperXmlType(mapperXmlType.getSelectedItem().toString());
         return config;
     }
 

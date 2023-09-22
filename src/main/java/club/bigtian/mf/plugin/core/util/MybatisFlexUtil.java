@@ -25,6 +25,7 @@ public class MybatisFlexUtil {
         }
         SQL_DIALECT_MAP = Arrays.stream(psiClass.getFields())
                 .filter(el -> StrUtil.isUpperCase(el.getName()))
+                .peek(System.out::println)
                 .collect(Collectors.toMap(el -> {
                     if (el.getName().contains("2005")) {
                         return "SQLServer_2005 数据库";
