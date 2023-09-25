@@ -34,6 +34,7 @@
                         <constraints border-constraint="Center"/>
                         <properties>
                           <preferredSize width="504" height="300"/>
+                          <visible value="true"/>
                         </properties>
                         <border type="none"/>
                         <children>

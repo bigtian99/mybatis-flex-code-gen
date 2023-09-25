@@ -1,10 +1,10 @@
 package club.bigtian.mf.plugin.core.util;
 
+import club.bigtian.mf.plugin.core.enums.DbType;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiField;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,19 +19,18 @@ public class MybatisFlexUtil {
      * 初始化数据库方言 map
      */
     private static void initSqlDialectMap() {
-        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.dialect.DbType");
-        if (ObjectUtil.isNull(psiClass)) {
-            return;
-        }
-        SQL_DIALECT_MAP = Arrays.stream(psiClass.getFields())
-                .filter(el -> StrUtil.isUpperCase(el.getName()))
-                .peek(System.out::println)
+
+        SQL_DIALECT_MAP = Arrays.stream(DbType.values())
                 .collect(Collectors.toMap(el -> {
                     if (el.getName().contains("2005")) {
                         return "SQLServer_2005 数据库";
                     }
-                    return StrUtil.subBetween(el.getText(), ", \"", "\"");
-                }, PsiField::getName));
+                    String text = el.getRemarks();
+                    if (text.contains(",")) {
+                        return StrUtil.subBetween(text, ", \"", "\"");
+                    }
+                    return text;
+                }, DbType::getName));
     }
 
     /**

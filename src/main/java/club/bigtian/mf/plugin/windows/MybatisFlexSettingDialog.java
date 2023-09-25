@@ -267,7 +267,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         fromCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.FROM, true));
         mapperXmlType.setSelectedItem(Template.getConfigData(MybatisFlexConstant.MAPPER_XML_TYPE, "resource"));
         initDialectComBox();
-        String dialectChinese = MybatisFlexUtil.getDialectChinese(Template.getConfigData(MybatisFlexConstant.SQL_DIALECT, "MYSQL"));
+        String dialectChinese = MybatisFlexUtil.getDialectChinese(Template.getConfigData(MybatisFlexConstant.SQL_DIALECT, "mysql"));
         sqlDialect.setSelectedItem(dialectChinese);
         initSinceComBox();
         pathMap = new HashMap<>();
@@ -306,18 +306,23 @@ public class MybatisFlexSettingDialog extends JDialog {
         implTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
         mapperTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
         xmlTemplate = new LanguageTextField(XMLLanguage.INSTANCE, project, "", false);
+
         scrollPane1 = new JScrollPane();
         scrollPane2 = new JScrollPane();
         scrollPane3 = new JScrollPane();
         scrollPane4 = new JScrollPane();
         scrollPane5 = new JScrollPane();
         scrollPane6 = new JScrollPane();
+        // scrollPane7 = new JScrollPane();
+        // scrollPane8 = new JScrollPane();
         scrollPane1.getVerticalScrollBar().setUnitIncrement(10);
         scrollPane2.getVerticalScrollBar().setUnitIncrement(10);
         scrollPane3.getVerticalScrollBar().setUnitIncrement(10);
         scrollPane4.getVerticalScrollBar().setUnitIncrement(10);
         scrollPane5.getVerticalScrollBar().setUnitIncrement(10);
         scrollPane6.getVerticalScrollBar().setUnitIncrement(10);
+        // scrollPane7.getVerticalScrollBar().setUnitIncrement(10);
+        // scrollPane8.getVerticalScrollBar().setUnitIncrement(10);
     }
 
 
