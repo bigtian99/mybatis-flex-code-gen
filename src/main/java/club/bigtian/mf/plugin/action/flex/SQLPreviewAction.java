@@ -232,8 +232,9 @@ public class SQLPreviewAction extends AnAction {
                 }
             }
         });
+
         text = StrUtil.format(COMMON_CODE, ObjectUtil.defaultIfNull(val,
-                "Object"), Template.getConfigData(MybatisFlexConstant.SQL_DIALECT,"SQLSERVER")) + text + print;
+                "Object"), Template.getConfigData(MybatisFlexConstant.SQL_DIALECT,"mysql")) + text + print;
 
         // if (StrUtil.isNotBlank(val)) {
         //     // 添加Mapper

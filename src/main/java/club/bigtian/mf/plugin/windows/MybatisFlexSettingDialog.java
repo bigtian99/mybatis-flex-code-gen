@@ -267,7 +267,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         fromCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.FROM, true));
         mapperXmlType.setSelectedItem(Template.getConfigData(MybatisFlexConstant.MAPPER_XML_TYPE, "resource"));
         initDialectComBox();
-        String dialectChinese = MybatisFlexUtil.getDialectChinese(Template.getConfigData(MybatisFlexConstant.SQL_DIALECT, "mysql"));
+        String dialectChinese = MybatisFlexUtil.getDialectChinese(Template.getConfigData(MybatisFlexConstant.SQL_DIALECT, "MYSQL"));
         sqlDialect.setSelectedItem(dialectChinese);
         initSinceComBox();
         pathMap = new HashMap<>();
