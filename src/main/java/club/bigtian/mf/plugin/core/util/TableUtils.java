@@ -60,7 +60,11 @@ public class TableUtils {
         assert tableParent != null;
         List<DasTable> list = tableParent.getDasChildren(ObjectKind.TABLE).map(el -> (DasTable) el)
                 .toList();
-        return  getTableInfoList(list);
+        List<DasTable> viewList = tableParent.getDasChildren(ObjectKind.VIEW).map(el -> (DasTable) el)
+                .toList();
+        List<DasTable> dasTables = new ArrayList<>(list);
+        dasTables.addAll(viewList);
+        return getTableInfoList(dasTables);
     }
 
 
@@ -82,7 +86,7 @@ public class TableUtils {
      * @param selectedTableList 选择表列表
      * @param tableInfoList     表信息列表
      */
-    private static List<TableInfo> getTableInfoList(List<DasTable> selectedTableList) {
+    public static List<TableInfo> getTableInfoList(List<DasTable> selectedTableList) {
         List<TableInfo> tableInfoList = new ArrayList<>();
         DasTable dasTable = selectedTableList.get(0);
         DatabaseDialectEx dialect = getDialect(dasTable);
