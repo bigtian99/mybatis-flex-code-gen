@@ -63,6 +63,7 @@ public class TableUtils {
         List<DasTable> viewList = tableParent.getDasChildren(ObjectKind.VIEW).map(el -> (DasTable) el)
                 .toList();
         List<DasTable> dasTables = new ArrayList<>(list);
+
         dasTables.addAll(viewList);
         return getTableInfoList(dasTables);
     }
