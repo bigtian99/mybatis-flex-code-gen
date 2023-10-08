@@ -1,6 +1,5 @@
 package club.bigtian.mf.plugin.action.flex;
 
-import club.bigtian.mf.plugin.core.util.MybatisFlexUtil;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateDialog;
 import com.intellij.database.model.DasTable;
@@ -33,11 +32,6 @@ public class TableAction extends AnAction {
     @Override
     public void update(AnActionEvent e) {
         ProjectUtils.setCurrentProject(e.getProject());
-        if (MybatisFlexUtil.isFlexProject()) {
-            // 如果不是 flex 项目则不显示
-            e.getPresentation().setVisible(false);
-            return;
-        }
         Object selectedElement = e.getData(CommonDataKeys.PSI_ELEMENT);
         boolean isSelectedTable = selectedElement instanceof DasTable;
         e.getPresentation().setVisible(isSelectedTable);

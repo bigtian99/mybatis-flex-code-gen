@@ -61,9 +61,6 @@ public class MybatisFlexConfigAnnotator implements Annotator {
 
     @Override
     public void annotate(PsiElement element, AnnotationHolder holder) {
-        if (MybatisFlexUtil.isFlexProject()) {
-            return;
-        }
         Project project = element.getProject();
         ProjectUtils.setCurrentProject(project);
         try {

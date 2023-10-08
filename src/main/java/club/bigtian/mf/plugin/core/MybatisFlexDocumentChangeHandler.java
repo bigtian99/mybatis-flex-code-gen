@@ -288,9 +288,9 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
     @Override
     public void documentChanged(@NotNull DocumentEvent event) {
-        if (MybatisFlexUtil.isFlexProject()) {
-            return;
-        }
+        // if (MybatisFlexUtil.isFlexProject()) {
+        //     return;
+        // }
         Document document = event.getDocument();
         CharSequence newFragment = event.getNewFragment();
         if ((StrUtil.isBlank(newFragment) && StrUtil.isBlank(event.getOldFragment()))) {

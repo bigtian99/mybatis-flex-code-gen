@@ -2,9 +2,14 @@ package club.bigtian.mf.plugin.core.util;
 
 import club.bigtian.mf.plugin.core.enums.DbType;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.intellij.psi.PsiClass;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.LogicalPosition;
+import com.intellij.openapi.editor.SelectionModel;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -76,7 +81,6 @@ public class MybatisFlexUtil {
                         Map.Entry::getKey    // 使用原始键作为新的值
                 ));
         return chineseMap.get(type);
-
     }
 
     /**
@@ -84,8 +88,28 @@ public class MybatisFlexUtil {
      *
      * @return {@code Boolean}
      */
-    public static Boolean isFlexProject() {
-        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.dialect.DbType");
-        return ObjectUtil.isNull(psiClass);
+    // public static Boolean isFlexProject() {
+    //     PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.dialect.DbType");
+    //     return ObjectUtil.isNull(psiClass);
+    // }
+    public static String getSelectedText(AnActionEvent event) {
+        // 根据AnActionEvent获取选择的编辑器选中文本
+        Editor editor = getEditor(event);
+        SelectionModel selectionModel = editor.getSelectionModel();
+        System.out.println(selectionModel.getLeadSelectionOffset());
+        return selectionModel.getSelectedText();
+    }
+
+    @Nullable
+    public static Editor getEditor(AnActionEvent event) {
+        DataContext dataContext = event.getDataContext();
+        Editor editor = CommonDataKeys.EDITOR.getData(dataContext);
+        return editor;
+    }
+
+    public static int getLine(AnActionEvent event) {
+        Editor editor = getEditor(event);
+        LogicalPosition logicalPosition = editor.getCaretModel().getLogicalPosition();
+        return logicalPosition.line;
     }
 }

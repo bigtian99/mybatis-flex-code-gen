@@ -41,7 +41,6 @@ public class RenderMybatisFlexTemplate {
 //        try {
 //            velocityEngine.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM, new NullLogChute());
 //        } catch (Exception e) {
-//            LOG.error("Velocity初始化失败；如果不影响生成，请忽略");
 //        }
 
         VelocityContext context = new VelocityContext();

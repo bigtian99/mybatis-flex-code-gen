@@ -435,17 +435,17 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         for (String tableName : selectedTabeList) {
             selectedTableInfo.add(tableInfoMap.get(tableName));
         }
-        boolean flag = checkTableInfo(selectedTableInfo);
-        if (flag) {
-            String since = sinceComBox.getSelectedItem().toString();
-            MybatisFlexConfig configData = getConfigData();
-            if (!SINCE_CONFIG.equals(since)) {
-                MybatisFlexPluginConfigData.removeSinceConfig(since);
-                MybatisFlexPluginConfigData.configSince(since, configData);
-            }
-            MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(configData);
-            startGenCode(selectedTableInfo);
+        // boolean flag = checkTableInfo(selectedTableInfo);
+        // if (flag) {
+        String since = sinceComBox.getSelectedItem().toString();
+        MybatisFlexConfig configData = getConfigData();
+        if (!SINCE_CONFIG.equals(since)) {
+            MybatisFlexPluginConfigData.removeSinceConfig(since);
+            MybatisFlexPluginConfigData.configSince(since, configData);
         }
+        MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(configData);
+        startGenCode(selectedTableInfo);
+        // }
     }
 
     private void startGenCode(List<TableInfo> selectedTableInfo) {
