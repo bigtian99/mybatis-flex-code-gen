@@ -62,7 +62,7 @@ public class SQLPreviewAction extends AnAction {
                     "        FlexGlobalConfig.setConfig(\"mybatisFlex\", globalConfig, true);\n" +
                     "        configuration.addMapper({}.class);\n"+
                     "           globalConfig.setDbType(DbType.{});\n";
-    private static final String TEMPLATE = "" +
+    private static final String TEMPLATE =
             "        {} baseMapper = Mappers.ofMapperClass({}.class);\n" +
             "        Field field = ReflectUtil.getField(ServiceImpl.class, \"mapper\");\n" +
             "        ReflectUtil.setFieldValue({}, field, baseMapper);";

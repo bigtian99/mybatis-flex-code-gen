@@ -2,9 +2,11 @@ package club.bigtian.mf.plugin.core.contributor;
 
 import club.bigtian.mf.plugin.core.MybatisFlexDocumentChangeHandler;
 import club.bigtian.mf.plugin.core.config.CustomConfig;
-import club.bigtian.mf.plugin.core.util.*;
+import club.bigtian.mf.plugin.core.util.KtFileUtil;
+import club.bigtian.mf.plugin.core.util.Modules;
+import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
+import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.codeInsight.completion.CompletionContributor;
@@ -24,7 +26,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.psi.KtFile;
 
 import java.util.*;
@@ -37,7 +38,6 @@ import java.util.stream.Collectors;
  * @author BigTian
  */
 public class MybatisFlexCompletionContributor extends CompletionContributor {
-
 
     PsiElementFactory elementFactory;
     JavaPsiFacade psiFacade;
@@ -95,7 +95,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
             VirtualFile virtualFile = null;
             for (VirtualFile contentRoot : contentRoots) {
                 config = Modules.moduleConfig(dependency);
-                virtualFile = getVirtualFile(contentRoot, config);
+                virtualFile = VirtualFileUtils.getVirtualFile(contentRoot, config);
                 if (ObjectUtil.isNotNull(virtualFile)) {
                     break;
                 }
@@ -230,7 +230,6 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
      *
      * @param file
      * @param tableDefMap
-     * @param project
      */
     private void getTableDef(VirtualFile file, Map<String, String> tableDefMap, CustomConfig config) {
         try {
@@ -258,42 +257,5 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
         }
     }
 
-    /**
-     * 只获取target/build目录下的文件
-     *
-     * @param baseDir
-     * @param config
-     * @return
-     */
-    @Nullable
-    private static VirtualFile getVirtualFile(VirtualFile baseDir, CustomConfig config) {
-        String genPath = config.getGenPath();
-        if (StrUtil.isNotBlank(genPath)) {
-            PsiDirectory psiDirectory = VirtualFileUtils.getPsiDirectory(ProjectUtils.getCurrentProject(), genPath);
-            if (ObjectUtil.isNotNull(psiDirectory)) {
-                return psiDirectory.getVirtualFile();
-            }
-        }
-        VirtualFile file = baseDir.findChild("target");
-        if (ObjectUtil.isNull(file)) {
-            file = baseDir.findChild("build");
-            if (baseDir.getPath().contains("kapt")) {
-                return baseDir;
-            }
-        }
-        if (ObjectUtil.isNull(file)) {
-            return null;
-        }
-        VirtualFile[] children = file.getChildren();
-        if (ArrayUtil.isEmpty(children)) {
-            return null;
-        }
-        for (VirtualFile child : children) {
-            if (child.getName().startsWith("generated")) {
-                return child;
-            }
-        }
-        return file;
-    }
 
 }

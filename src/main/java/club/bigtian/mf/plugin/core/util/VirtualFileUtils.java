@@ -1,5 +1,7 @@
 package club.bigtian.mf.plugin.core.util;
 
+import club.bigtian.mf.plugin.core.config.CustomConfig;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -13,6 +15,7 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import java.util.HashMap;
@@ -37,6 +40,45 @@ public class VirtualFileUtils {
     public static VirtualFile getVirtualFile(Document document) {
         return fileDocumentManager.getFile(document);
 
+    }
+
+
+    /**
+     * 只获取target/build目录下的文件
+     *
+     * @param baseDir
+     * @param config
+     * @return
+     */
+    @Nullable
+    public static VirtualFile getVirtualFile(VirtualFile baseDir, CustomConfig config) {
+        String genPath = config.getGenPath();
+        if (StrUtil.isNotBlank(genPath)) {
+            PsiDirectory psiDirectory = VirtualFileUtils.getPsiDirectory(ProjectUtils.getCurrentProject(), genPath);
+            if (ObjectUtil.isNotNull(psiDirectory)) {
+                return psiDirectory.getVirtualFile();
+            }
+        }
+        VirtualFile file = baseDir.findChild("target");
+        if (ObjectUtil.isNull(file)) {
+            file = baseDir.findChild("build");
+            if (baseDir.getPath().contains("kapt")) {
+                return baseDir;
+            }
+        }
+        if (ObjectUtil.isNull(file)) {
+            return null;
+        }
+        VirtualFile[] children = file.getChildren();
+        if (ArrayUtil.isEmpty(children)) {
+            return null;
+        }
+        for (VirtualFile child : children) {
+            if (child.getName().startsWith("generated")) {
+                return child;
+            }
+        }
+        return file;
     }
 
     /**
