@@ -17,7 +17,6 @@ import com.intellij.psi.search.searches.ReferencesSearch;
 import org.jetbrains.kotlin.psi.KtFile;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -46,8 +45,7 @@ public class RenameAptAction extends AnAction {
             NotificationUtils.notifyError("请选择kt或者java文件", "提示", project);
             return;
         }
-        Map<String, PsiClassOwner> tableDefMap = new HashMap<>();
-        TableDefUtils.getDependenciesTableDef(psiFile.getVirtualFile(), project, tableDefMap);
+        Map<String, PsiClassOwner> tableDefMap =  TableDefUtils.getDependenciesTableDef(psiFile.getVirtualFile());
         PsiClassOwner classOwner = (PsiClassOwner) psiFile;
         String key = classOwner.getPackageName() + "." + classOwner.getClasses()[0].getName();
         PsiClassOwner javaFile = tableDefMap.get(key);
@@ -92,7 +90,7 @@ public class RenameAptAction extends AnAction {
                 .findAny()
                 .ifPresent(el -> {
                     WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
-                        el.getLastChild().getPrevSibling().replace(identifier);
+                        el.getNameIdentifier().replace(identifier);
                     });
                 });
     }

@@ -97,6 +97,14 @@ public class PsiJavaFileUtil {
         PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
         return instance.createImportStatement(psiClass);
     }
+    public static PsiImportStaticStatement createImportStaticStatement(PsiClass psiClass, String name) {
+        PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
+        return         instance.createImportStaticStatement(psiClass, name);
+    }
+    public static PsiImportStatement createImportStatement(String text) {
+        PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
+        return instance.createImportStatementOnDemand(text);
+    }
 
     public static String getGenericity(PsiClass psiClass) {
         String text = psiClass.getText();

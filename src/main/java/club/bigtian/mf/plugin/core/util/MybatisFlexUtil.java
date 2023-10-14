@@ -110,6 +110,7 @@ public class MybatisFlexUtil {
     public static int getLine(AnActionEvent event) {
         Editor editor = getEditor(event);
         LogicalPosition logicalPosition = editor.getCaretModel().getLogicalPosition();
-        return logicalPosition.line;
+
+        return  editor.logicalPositionToOffset(new LogicalPosition(logicalPosition.line+1, logicalPosition.column));
     }
 }

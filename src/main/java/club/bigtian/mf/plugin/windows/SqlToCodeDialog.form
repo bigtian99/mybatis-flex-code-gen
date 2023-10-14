@@ -89,7 +89,9 @@
                 <preferred-size width="150" height="50"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <foreground color="-2728527"/>
+            </properties>
           </component>
         </children>
       </grid>
