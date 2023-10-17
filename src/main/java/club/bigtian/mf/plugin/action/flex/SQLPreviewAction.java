@@ -35,13 +35,8 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.sun.tools.javac.api.JavacTool;
 import org.jetbrains.annotations.NotNull;
 
-import javax.tools.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -419,46 +414,46 @@ public class SQLPreviewAction extends AnAction {
         });
     }
 
-    public static void compileJavaCode(String javaCode) {
-        JavaCompiler compiler = JavacTool.create() ;
-        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-        try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null)) {
-            String className = "MybatisFlexSqlPreview";
-            String fileName = className + ".java";
-
-            // 创建一个临时文件来保存 Java 代码
-            File tempFile = new File(fileName);
-            try (PrintWriter writer = new PrintWriter(tempFile)) {
-                writer.println(javaCode);
-            }
-
-            // 获取要编译的 Java 文件
-            Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(tempFile);
-
-            // 设置编译选项
-            Iterable<String> options = Arrays.asList("-d", "target/classes");
-
-            // 创建编译任务
-            JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options, null, compilationUnits);
-
-            // 执行编译任务
-            boolean success = task.call();
-
-            // 检查编译结果
-            if (success) {
-                System.out.println("Java code compiled successfully!");
-            } else {
-                System.out.println("Java code compilation failed!");
-                for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-                    System.out.println(diagnostic.getMessage(null));
-                }
-            }
-            // 删除临时文件
-            tempFile.delete();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    // public static void compileJavaCode(String javaCode) {
+    //     JavaCompiler compiler = JavacTool.create() ;
+    //     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+    //     try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null)) {
+    //         String className = "MybatisFlexSqlPreview";
+    //         String fileName = className + ".java";
+    //
+    //         // 创建一个临时文件来保存 Java 代码
+    //         File tempFile = new File(fileName);
+    //         try (PrintWriter writer = new PrintWriter(tempFile)) {
+    //             writer.println(javaCode);
+    //         }
+    //
+    //         // 获取要编译的 Java 文件
+    //         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(tempFile);
+    //
+    //         // 设置编译选项
+    //         Iterable<String> options = Arrays.asList("-d", "target/classes");
+    //
+    //         // 创建编译任务
+    //         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options, null, compilationUnits);
+    //
+    //         // 执行编译任务
+    //         boolean success = task.call();
+    //
+    //         // 检查编译结果
+    //         if (success) {
+    //             System.out.println("Java code compiled successfully!");
+    //         } else {
+    //             System.out.println("Java code compilation failed!");
+    //             for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+    //                 System.out.println(diagnostic.getMessage(null));
+    //             }
+    //         }
+    //         // 删除临时文件
+    //         tempFile.delete();
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {

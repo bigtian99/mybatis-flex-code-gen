@@ -1,6 +1,9 @@
 package club.bigtian.mf.plugin.windows;
 
 import club.bigtian.mf.plugin.core.util.*;
+import club.bigtian.mf.plugin.core.visitor.JoinConditionVisitor;
+import club.bigtian.mf.plugin.core.visitor.WhereConditionVisitor;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -8,9 +11,18 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.*;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -21,12 +33,13 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SqlToCodeDialog extends JDialog {
     private JPanel contentPane;
@@ -142,26 +155,43 @@ public class SqlToCodeDialog extends JDialog {
         if (text.endsWith(";")) {
             text = text.substring(0, text.length() - 1);
         }
-        String tableName = StrUtil.subBetween(text, "from\n", "\n").trim();
+        Statement parse = null;
+        try {
+            parse = CCJSqlParserUtil.parse(text);
+        } catch (JSQLParserException e) {
+            throw new RuntimeException(e);
+        }
+
+        PlainSelect select = (PlainSelect) parse;
+
+        Table fromItem = (Table) select.getFromItem();
+        String tableName = fromItem.getNameParts().get(0);
 
         int line = MybatisFlexUtil.getLine(event);
         Editor editor = MybatisFlexUtil.getEditor(event);
         Document document = editor.getDocument();
         PsiJavaFile psiClassOwner = (PsiJavaFile) VirtualFileUtils.getPsiFile(document);
         Map<String, Map<String, String>> tableDefKeyTable = TableDefUtils.getDependenciesTableDefKeyTable(psiClassOwner.getVirtualFile());
+        if (CollUtil.isEmpty(tableDefKeyTable)) {
+            Messages.showWarningDialog("请先生成TableDef文件，再使用该功能", "提示");
+            return;
+        }
         Map<String, String> tableDefMappingMap = TableDefUtils.getTableDefMappingMap();
         Map<String, String> tableClounmMap = tableDefKeyTable.get(tableName);
 
         String tableDefImport = tableDefMappingMap.get(tableClounmMap.get(null));
         String finalText = text;
+        HashMap<String, String> tableDefMap = new HashMap<>();
         WriteCommandAction.runWriteCommandAction(event.getProject(), () -> {
             PsiDocumentManager.getInstance(event.getProject()).commitDocument(document);
-            document.insertString(line, transfrom(finalText, tableClounmMap));
+            document.insertString(line, transfrom(finalText, tableClounmMap, tableDefKeyTable, tableDefMappingMap, tableDefMap));
             // 保存文档
             PsiDocumentManager.getInstance(event.getProject()).commitDocument(document);
             checkHasImport(psiClassOwner, "com.mybatisflex.core.query.QueryWrapper");
             checkHasStaticImport(psiClassOwner, tableDefImport, tableClounmMap.get(null));
-
+            for (Map.Entry<String, String> entry : tableDefMap.entrySet()) {
+                checkHasStaticImport(psiClassOwner, entry.getValue(), entry.getKey());
+            }
             PsiFile psiFile = VirtualFileUtils.getPsiFile(document);
             CodeReformat.reformat(psiFile);
 
@@ -169,52 +199,121 @@ public class SqlToCodeDialog extends JDialog {
     }
 
 
-    private String transfrom(String sql, Map<String, String> tableClounmMap) {
+    private String transfrom(String sql, Map<String, String> tableClounmMap, Map<String, Map<String, String>> tableDefKeyTable, Map<String, String> tableDefMappingMap, HashMap<String, String> tableDefMap) {
         StringBuilder builder = new StringBuilder("QueryWrapper wrapper=QueryWrapper.create()\n");
 
         Assert.isTrue(sql.startsWith("select"), "sql must start with select");
         // 需要查询的列
         String tableDef = tableClounmMap.get(null);
-        String columns = StrUtil.subBetween(sql, "select", "from").replace(" ", "");
-        StringJoiner joiner = new StringJoiner(",");
-        for (String s : columns.split(",")) {
-            joiner.add(StrUtil.format("{}", tableDef + "." + tableClounmMap.get(s.trim())));
-        }
-        builder.append(StrUtil.format(".select({})\n", joiner));
-        builder.append(StrUtil.format(".from({})\n", tableDef));
-        String where = StrUtil.subAfter(sql, "where", false);
-        AtomicReference<StringBuilder> temp = new AtomicReference<>(new StringBuilder(""));
-        AtomicBoolean flag = new AtomicBoolean(false);
-        Arrays.stream(where.split(" "))
-                .filter(StrUtil::isNotBlank)
-                .map(StrUtil::trim)
-                .forEach(el -> {
-                    Consumer<StringBuilder> consumer = METHOD_MAP.get(el);
-                    StringBuilder stringBuilder = temp.get();
-                    if (ObjectUtil.isNotEmpty(consumer)) {
-                        consumer.accept(builder);
-                        flag.set(true);
-                        return;
-                    }
-                    Function<StringBuilder, String> operation = OPERATION_MAP.get(el);
-                    if (ObjectUtil.isNotEmpty(operation)) {
-                        String tmpStr = tableDef + operation.apply(stringBuilder);
-                        if (flag.get()) {
-                            builder.append(tmpStr);
-                            builder.append(")\n");
-                            flag.set(false);
-                        } else {
-                            builder.append(StrUtil.format(".where({})\n", tmpStr));
-                        }
-                        temp.set(new StringBuilder());
-                        return;
-                    }
-                    String s = tableClounmMap.get(el);
-                    if (StrUtil.isEmpty(s)) {
-                        return;
-                    }
-                    stringBuilder.append(s);
+        Map<String, String> flexCloumMap = tableClounmMap.entrySet().stream()
+                .filter(el -> StrUtil.isNotEmpty(el.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+        try {
+            Statement parse = CCJSqlParserUtil.parse(sql);
+
+            PlainSelect select = (PlainSelect) parse;
+
+            List<SelectItem<?>> selectItems = select.getSelectItems();
+            StringJoiner joiner = new StringJoiner(",");
+            Map<String, String> aliasMap = new HashMap<>();
+            Alias alias = select.getFromItem().getAlias();
+            if (ObjectUtil.isNotNull(alias)) {
+                String name = alias.getName();
+                aliasMap.put(name, tableDef);
+            }
+            List<Join> joins = select.getJoins();
+            if (CollUtil.isNotEmpty(joins)) {
+                joins.forEach(el -> {
+                    Table fromItem = (Table) el.getRightItem();
+                    String joinAlias = fromItem.getAlias().getName();
+                    String joinName = fromItem.getNameParts().get(0);
+                    String joinTableDef = tableDefKeyTable.get(joinName).get(null);
+                    aliasMap.put(joinAlias, joinTableDef);
                 });
+            }
+
+            for (SelectItem<?> selectItem : selectItems) {
+                Expression expression = selectItem.getExpression();
+                String aliasName = tableDef;
+                String columnName;
+                if (expression instanceof AllTableColumns) {
+                    AllTableColumns allColumns = (AllTableColumns) expression;
+                    Table table = allColumns.getTable();
+                    aliasName = aliasMap.get(table.getName());
+                    columnName = tableClounmMap.get("*");
+                } else {
+                    Column column = (Column) expression;
+                    if (ObjectUtil.isNotNull(column.getTable())) {
+                        aliasName = aliasMap.get(column.getTable().getName());
+                    }
+                    columnName = tableClounmMap.get(column.getColumnName());
+                }
+                joiner.add(StrUtil.format("{}", aliasName + "." + columnName));
+            }
+            builder.append(StrUtil.format(".select({})\n", joiner));
+            builder.append(StrUtil.format(".from({})", tableDef));
+
+            if (CollUtil.isNotEmpty(joins)) {
+
+                joins.forEach(el -> {
+                    Table fromItem = (Table) el.getRightItem();
+                    String joinName = fromItem.getNameParts().get(0);
+                    String joinTableDef = tableDefKeyTable.get(joinName).get(null);
+                    tableDefMap.put(joinTableDef, tableDefMappingMap.get(joinTableDef));
+                    if (el.isLeft()) {
+                        builder.append(StrUtil.format("\n.leftJoin({})", joinTableDef));
+                    } else if (el.isRight()) {
+                        builder.append(StrUtil.format("\n.rightJoin({})", joinTableDef));
+                    } else if (el.isInner()) {
+                        builder.append(StrUtil.format("\n.innerJoin({})", joinTableDef));
+                    } else if (el.isOuter()) {
+                        builder.append(StrUtil.format("\n.outerJoin({})", joinTableDef));
+                    } else if (el.isFull()) {
+                        builder.append(StrUtil.format("\n.fullJoin({})", joinTableDef));
+                    } else if (el.isCross()) {
+                        builder.append(StrUtil.format("\n.crossJoin({})", joinTableDef));
+                    } else {
+                        builder.append(StrUtil.format("\n.join({})", joinTableDef));
+                    }
+                    Collection<Expression> onList = el.getOnExpressions();
+                    if (CollUtil.isNotEmpty(onList)) {
+                        onList.forEach(exp -> {
+                            builder.append("\n.on(");
+                            exp.accept(new JoinConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableClounmMap, aliasMap));
+                            builder.append(")");
+                        });
+                    }
+                });
+            }
+            Expression where = select.getWhere();
+            WhereConditionVisitor expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableClounmMap, ObjectUtil.isNotNull(where), aliasMap);
+            if (ObjectUtil.isNotNull(where)) {
+                where.accept(expressionVisitor);
+            }
+
+            GroupByElement groupBy = select.getGroupBy();
+
+            if (ObjectUtil.isNotNull(groupBy)) {
+                groupBy.accept(expressionVisitor);
+            }
+            Expression having = select.getHaving();
+            if (ObjectUtil.isNotNull(having)) {
+                builder.append("\n.having(");
+                having.accept(expressionVisitor);
+                builder.append(")");
+            }
+            List<OrderByElement> orderByElements = select.getOrderByElements();
+            if (CollUtil.isNotEmpty(orderByElements)) {
+                orderByElements.forEach(el -> {
+                    builder.append("\n.orderBy(");
+                    builder.append(StrUtil.format("{}.{}.{}()", tableDef, tableClounmMap.get(el.getExpression().toString()), el.isAsc() ? "asc" : "desc"));
+                    builder.append(")");
+                });
+            }
+
+        } catch (JSQLParserException e) {
+            throw new RuntimeException(e);
+        }
         builder.append(";");
         return builder.toString();
     }

@@ -1,3 +1,6 @@
+import org.gradle.internal.impldep.org.bouncycastle.cms.RecipientId.password
+import org.gradle.internal.impldep.org.eclipse.jgit.lib.ObjectChecker.type
+
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.0"
@@ -25,9 +28,10 @@ intellij {
 }
 
 dependencies {
-    implementation("com.alibaba.fastjson2:fastjson2:2.0.34")
-    implementation("cn.hutool:hutool-core:5.8.21")
-    implementation("cn.hutool:hutool-http:5.8.21")
+    implementation("com.alibaba.fastjson2:fastjson2:2.0.41")
+    implementation("cn.hutool:hutool-core:5.8.22")
+    implementation("cn.hutool:hutool-http:5.8.22")
+    implementation("com.github.jsqlparser:jsqlparser:4.7")
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -37,16 +41,22 @@ java {
 tasks {
     runIde {
         // 启用热重载功能，使用Build菜单编译项目后无需重启调试进程即可完成, 仅支持JBR
-        jvmArgs = listOf("-XX:+AllowEnhancedClassRedefinition")
+        jvmArgs = listOf(
+//            "-XX:+AllowEnhancedClassRedefinition",
+            "-javaagent:/Users/daijunxiong/Desktop/ja-netfilter-all/ja-netfilter.jar=jetbrains",
+            "--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED",
+            "--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED"
+        )
+
     }
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "1.8"
-        targetCompatibility = "1.8"
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
         options.encoding = "utf-8"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "17"
     }
 
     patchPluginXml {
