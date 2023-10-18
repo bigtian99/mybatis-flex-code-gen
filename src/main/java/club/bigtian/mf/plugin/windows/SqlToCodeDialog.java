@@ -23,6 +23,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -37,8 +38,6 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SqlToCodeDialog extends JDialog {
@@ -50,16 +49,6 @@ public class SqlToCodeDialog extends JDialog {
     private static final BasicFormatter FORMATTER = new BasicFormatter();
     private AnActionEvent event;
 
-    private static Map<String, Consumer<StringBuilder>> METHOD_MAP = new HashMap<>();
-    private static Map<String, Function<StringBuilder, String>> OPERATION_MAP = new HashMap<>();
-
-    static {
-        METHOD_MAP.put("and", SqlToCodeDialog::and);
-        METHOD_MAP.put("or", SqlToCodeDialog::or);
-        OPERATION_MAP.put("=", SqlToCodeDialog::eq);
-
-
-    }
 
     public SqlToCodeDialog(AnActionEvent event) {
         this.event = event;
@@ -178,7 +167,10 @@ public class SqlToCodeDialog extends JDialog {
         }
         Map<String, String> tableDefMappingMap = TableDefUtils.getTableDefMappingMap();
         Map<String, String> tableClounmMap = tableDefKeyTable.get(tableName);
-
+        if (ObjectUtil.isNull(tableClounmMap)) {
+            Messages.showWarningDialog("未找到对应表对应的APT文件，请检查", "提示");
+            return;
+        }
         String tableDefImport = tableDefMappingMap.get(tableClounmMap.get(null));
         String finalText = text;
         HashMap<String, String> tableDefMap = new HashMap<>();
@@ -213,109 +205,149 @@ public class SqlToCodeDialog extends JDialog {
 
             PlainSelect select = (PlainSelect) parse;
 
-            List<SelectItem<?>> selectItems = select.getSelectItems();
             StringJoiner joiner = new StringJoiner(",");
             Map<String, String> aliasMap = new HashMap<>();
             Alias alias = select.getFromItem().getAlias();
+            String aliasTableDef;
             if (ObjectUtil.isNotNull(alias)) {
-                String name = alias.getName();
-                aliasMap.put(name, tableDef);
+                aliasTableDef = alias.getName();
+                aliasMap.put(aliasTableDef, tableDef);
             }
-            List<Join> joins = select.getJoins();
-            if (CollUtil.isNotEmpty(joins)) {
-                joins.forEach(el -> {
-                    Table fromItem = (Table) el.getRightItem();
-                    String joinAlias = fromItem.getAlias().getName();
-                    String joinName = fromItem.getNameParts().get(0);
-                    String joinTableDef = tableDefKeyTable.get(joinName).get(null);
-                    aliasMap.put(joinAlias, joinTableDef);
-                });
-            }
-
-            for (SelectItem<?> selectItem : selectItems) {
-                Expression expression = selectItem.getExpression();
-                String aliasName = tableDef;
-                String columnName;
-                if (expression instanceof AllTableColumns) {
-                    AllTableColumns allColumns = (AllTableColumns) expression;
-                    Table table = allColumns.getTable();
-                    aliasName = aliasMap.get(table.getName());
-                    columnName = tableClounmMap.get("*");
-                } else {
-                    Column column = (Column) expression;
-                    if (ObjectUtil.isNotNull(column.getTable())) {
-                        aliasName = aliasMap.get(column.getTable().getName());
-                    }
-                    columnName = tableClounmMap.get(column.getColumnName());
-                }
-                joiner.add(StrUtil.format("{}", aliasName + "." + columnName));
-            }
+            List<Join> joins = getJoins(tableDefKeyTable, select, aliasMap);
+            select(tableClounmMap, select, tableDef, aliasMap, joiner);
             builder.append(StrUtil.format(".select({})\n", joiner));
             builder.append(StrUtil.format(".from({})", tableDef));
 
-            if (CollUtil.isNotEmpty(joins)) {
-
-                joins.forEach(el -> {
-                    Table fromItem = (Table) el.getRightItem();
-                    String joinName = fromItem.getNameParts().get(0);
-                    String joinTableDef = tableDefKeyTable.get(joinName).get(null);
-                    tableDefMap.put(joinTableDef, tableDefMappingMap.get(joinTableDef));
-                    if (el.isLeft()) {
-                        builder.append(StrUtil.format("\n.leftJoin({})", joinTableDef));
-                    } else if (el.isRight()) {
-                        builder.append(StrUtil.format("\n.rightJoin({})", joinTableDef));
-                    } else if (el.isInner()) {
-                        builder.append(StrUtil.format("\n.innerJoin({})", joinTableDef));
-                    } else if (el.isOuter()) {
-                        builder.append(StrUtil.format("\n.outerJoin({})", joinTableDef));
-                    } else if (el.isFull()) {
-                        builder.append(StrUtil.format("\n.fullJoin({})", joinTableDef));
-                    } else if (el.isCross()) {
-                        builder.append(StrUtil.format("\n.crossJoin({})", joinTableDef));
-                    } else {
-                        builder.append(StrUtil.format("\n.join({})", joinTableDef));
-                    }
-                    Collection<Expression> onList = el.getOnExpressions();
-                    if (CollUtil.isNotEmpty(onList)) {
-                        onList.forEach(exp -> {
-                            builder.append("\n.on(");
-                            exp.accept(new JoinConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableClounmMap, aliasMap));
-                            builder.append(")");
-                        });
-                    }
-                });
-            }
+            joins(tableClounmMap, tableDefKeyTable, tableDefMappingMap, tableDefMap, joins, builder, tableDef, flexCloumMap, aliasMap);
             Expression where = select.getWhere();
             WhereConditionVisitor expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableClounmMap, ObjectUtil.isNotNull(where), aliasMap);
             if (ObjectUtil.isNotNull(where)) {
                 where.accept(expressionVisitor);
             }
 
-            GroupByElement groupBy = select.getGroupBy();
-
-            if (ObjectUtil.isNotNull(groupBy)) {
-                groupBy.accept(expressionVisitor);
-            }
-            Expression having = select.getHaving();
-            if (ObjectUtil.isNotNull(having)) {
-                builder.append("\n.having(");
-                having.accept(expressionVisitor);
-                builder.append(")");
-            }
-            List<OrderByElement> orderByElements = select.getOrderByElements();
-            if (CollUtil.isNotEmpty(orderByElements)) {
-                orderByElements.forEach(el -> {
-                    builder.append("\n.orderBy(");
-                    builder.append(StrUtil.format("{}.{}.{}()", tableDef, tableClounmMap.get(el.getExpression().toString()), el.isAsc() ? "asc" : "desc"));
-                    builder.append(")");
-                });
-            }
+            groupBy(select, expressionVisitor);
+            having(select, builder, expressionVisitor);
+            orderBy(tableClounmMap, tableDefKeyTable, select, builder, tableDef, aliasMap);
 
         } catch (JSQLParserException e) {
             throw new RuntimeException(e);
         }
         builder.append(";");
         return builder.toString();
+    }
+
+    @Nullable
+    private static List<Join> getJoins(Map<String, Map<String, String>> tableDefKeyTable, PlainSelect select, Map<String, String> aliasMap) {
+        List<Join> joins = select.getJoins();
+        if (CollUtil.isNotEmpty(joins)) {
+            joins.forEach(el -> {
+                Table fromItem = (Table) el.getRightItem();
+                String joinAlias = fromItem.getAlias().getName();
+                String joinName = fromItem.getNameParts().get(0);
+                String joinTableDef = tableDefKeyTable.get(joinName).get(null);
+                aliasMap.put(joinAlias, joinTableDef);
+            });
+        }
+        return joins;
+    }
+
+    private static void select(Map<String, String> tableClounmMap, PlainSelect select, String tableDef, Map<String, String> aliasMap, StringJoiner joiner) {
+        List<SelectItem<?>> selectItems = select.getSelectItems();
+        for (SelectItem<?> selectItem : selectItems) {
+            Expression expression = selectItem.getExpression();
+            String aliasName = tableDef;
+            String columnName;
+            if (expression instanceof AllTableColumns) {
+                AllTableColumns allColumns = (AllTableColumns) expression;
+                Table table = allColumns.getTable();
+                aliasName = aliasMap.get(table.getName());
+                columnName = tableClounmMap.get("*");
+            } else {
+                Column column = (Column) expression;
+                if (ObjectUtil.isNotNull(column.getTable())) {
+                    aliasName = aliasMap.get(column.getTable().getName());
+                }
+                columnName = tableClounmMap.get(column.getColumnName());
+            }
+            joiner.add(StrUtil.format("{}", aliasName + "." + columnName));
+        }
+    }
+
+    private void joins(Map<String, String> tableClounmMap, Map<String, Map<String, String>> tableDefKeyTable, Map<String, String> tableDefMappingMap, HashMap<String, String> tableDefMap, List<Join> joins, StringBuilder builder, String tableDef, Map<String, String> flexCloumMap, Map<String, String> aliasMap) {
+        if (CollUtil.isNotEmpty(joins)) {
+
+            joins.forEach(el -> {
+                Table fromItem = (Table) el.getRightItem();
+                String joinName = fromItem.getNameParts().get(0);
+                String joinTableDef = tableDefKeyTable.get(joinName).get(null);
+                tableDefMap.put(joinTableDef, tableDefMappingMap.get(joinTableDef));
+                if (el.isLeft()) {
+                    builder.append(StrUtil.format("\n.leftJoin({})", joinTableDef));
+                } else if (el.isRight()) {
+                    builder.append(StrUtil.format("\n.rightJoin({})", joinTableDef));
+                } else if (el.isInner()) {
+                    builder.append(StrUtil.format("\n.innerJoin({})", joinTableDef));
+                } else if (el.isOuter()) {
+                    builder.append(StrUtil.format("\n.outerJoin({})", joinTableDef));
+                } else if (el.isFull()) {
+                    builder.append(StrUtil.format("\n.fullJoin({})", joinTableDef));
+                } else if (el.isCross()) {
+                    builder.append(StrUtil.format("\n.crossJoin({})", joinTableDef));
+                } else {
+                    builder.append(StrUtil.format("\n.join({})", joinTableDef));
+                }
+                Collection<Expression> onList = el.getOnExpressions();
+                if (CollUtil.isNotEmpty(onList)) {
+                    onList.forEach(exp -> {
+                        builder.append("\n.on(");
+                        exp.accept(new JoinConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableClounmMap, aliasMap));
+                        builder.append(")");
+                    });
+                }
+            });
+        }
+    }
+
+    private static void groupBy(PlainSelect select, WhereConditionVisitor expressionVisitor) {
+        GroupByElement groupBy = select.getGroupBy();
+
+        if (ObjectUtil.isNotNull(groupBy)) {
+            groupBy.accept(expressionVisitor);
+        }
+    }
+
+    private static void having(PlainSelect select, StringBuilder builder, WhereConditionVisitor expressionVisitor) {
+        Expression having = select.getHaving();
+        if (ObjectUtil.isNotNull(having)) {
+            builder.append("\n.having(");
+            having.accept(expressionVisitor);
+            builder.append(")");
+        }
+    }
+
+    private static void orderBy(Map<String, String> tableClounmMap, Map<String, Map<String, String>> tableDefKeyTable, PlainSelect select, StringBuilder builder, String tableDef, Map<String, String> aliasMap) {
+        List<OrderByElement> orderByElements = select.getOrderByElements();
+        Map<String, Map<String, String>> tableDefColumMap = tableDefKeyTable.entrySet().stream()
+                .collect(Collectors.toMap(el -> el.getValue().get(null), Map.Entry::getValue));
+
+        if (CollUtil.isNotEmpty(orderByElements)) {
+            builder.append("\n.orderBy(");
+            StringJoiner orderJoiner = new StringJoiner(",");
+            orderByElements.forEach(el -> {
+                Column column = (Column) el.getExpression();
+                Table table = column.getTable();
+                String aliasOorderName = tableDef;
+                String columnName =  tableClounmMap.get(column.getColumnName());
+                if (ObjectUtil.isNotNull(table)) {
+                    aliasOorderName = aliasMap.get(table.getName());
+                    columnName=tableDefColumMap.get(aliasOorderName).get(column.getColumnName());
+                }
+                orderJoiner.add(StrUtil.format("{}.{}.{}()", aliasOorderName,columnName, el.isAsc() ? "asc" : "desc"));
+            });
+            builder.append(orderJoiner);
+            builder.append(")");
+
+        }
     }
 
 
@@ -329,10 +361,6 @@ public class SqlToCodeDialog extends JDialog {
 
     private static void checkHasStaticImport(PsiJavaFile psiClassOwner, String importText, String field) {
         Set<String> importSet = PsiJavaFileUtil.getQualifiedNameImportSet(psiClassOwner);
-        // 如果没有导入，则导入
-        if (!importSet.contains(importText)) {
-            psiClassOwner.getImportList().add(PsiJavaFileUtil.createImportStaticStatement(PsiJavaFileUtil.getPsiClass(importText), field));
-        }
     }
 
     private void onCancel() {

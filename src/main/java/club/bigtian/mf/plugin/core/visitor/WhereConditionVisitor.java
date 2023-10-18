@@ -144,7 +144,7 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
     public void visit(GreaterThan greaterThan) {
         Expression thanLeftExpression = greaterThan.getLeftExpression();
         if (thanLeftExpression instanceof Function) {
-            function((Function) thanLeftExpression,"gt");
+            function((Function) thanLeftExpression, "gt");
             return;
         }
         Column leftExpression = (Column) thanLeftExpression;
@@ -165,7 +165,7 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
         }
     }
 
-    private void function(Function thanLeftExpression, String key) {
+    private void function(Function thanLeftExpression, String key, Object... args) {
         Function function = thanLeftExpression;
         builder.append(function.getName() + "(");
 
@@ -181,7 +181,12 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
             String leftColumnName = tableClounmMap.get(columnName);
             builder.append(StrUtil.format("{}.{}", leftAlias, leftColumnName));
             builder.append(")");
-            builder.append(StrUtil.format(".{}({})", key, getMethod(leftColumnName)));
+            if(args.length==0){
+                builder.append(StrUtil.format(".{}({})", key, getMethod(leftColumnName)));
+            }else{
+                builder.append(StrUtil.format(".{}()", key));
+
+            }
         }
 
         if (hasWhere) {
@@ -271,7 +276,7 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
     public void visit(IsNullExpression isNullExpression) {
         Expression thanLeftExpression = isNullExpression.getLeftExpression();
         if (thanLeftExpression instanceof Function) {
-            function((Function) thanLeftExpression, isNullExpression.isNot() ? "isNotNull" : "isNull");
+            function((Function) thanLeftExpression, isNullExpression.isNot() ? "isNotNull" : "isNull","");
             return;
         }
         Column leftExpression = (Column) isNullExpression.getLeftExpression();

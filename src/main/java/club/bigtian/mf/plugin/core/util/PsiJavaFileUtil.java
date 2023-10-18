@@ -63,7 +63,11 @@ public class PsiJavaFileUtil {
     }
 
     public static Collection<PsiClass> getAnnotationPsiClass(String qualifiedName) {
-        return AnnotationTargetsSearch.search(PsiJavaFileUtil.getPsiClass(qualifiedName)).findAll()
+        PsiClass psiClass = PsiJavaFileUtil.getPsiClass(qualifiedName);
+        if (ObjectUtil.isNull(psiClass)) {
+            return Collections.emptyList();
+        }
+        return AnnotationTargetsSearch.search(psiClass).findAll()
                 .stream()
                 .filter(el -> el instanceof PsiClass)
                 .map(el -> (PsiClass) el)
@@ -97,10 +101,12 @@ public class PsiJavaFileUtil {
         PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
         return instance.createImportStatement(psiClass);
     }
+
     public static PsiImportStaticStatement createImportStaticStatement(PsiClass psiClass, String name) {
         PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
-        return         instance.createImportStaticStatement(psiClass, name);
+        return instance.createImportStaticStatement(psiClass, name);
     }
+
     public static PsiImportStatement createImportStatement(String text) {
         PsiElementFactory instance = PsiElementFactory.getInstance(ProjectUtils.getCurrentProject());
         return instance.createImportStatementOnDemand(text);
