@@ -354,6 +354,28 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
         }
         inExpression.getRightExpression().accept(this);
     }
+    @Override
+    public void visit(Between between) {
+        Column column = (Column) between.getLeftExpression();
+        String columnName = column.getColumnName();
 
+        Table table = column.getTable();
+        String leftAlias = tableDef;
+        if (ObjectUtil.isNotNull(table)) {
+            leftAlias = aliasMap.get(table.getName());
+        }
+        String startVal = between.getBetweenExpressionStart().toString();
+        String endVal = between.getBetweenExpressionEnd().toString();
+        if (between.isNot()) {
+            builder.append(StrUtil.format("{}.{}.notBetween({},{})", leftAlias, tableClounmMap.get(columnName), startVal, endVal));
+        } else {
+            builder.append(StrUtil.format("{}.{}.between({},{})", leftAlias, tableClounmMap.get(columnName), startVal, endVal));
+        }
+
+        if (hasWhere) {
+            hasWhere = false;
+            builder.append(")");
+        }
+    }
 
 }
