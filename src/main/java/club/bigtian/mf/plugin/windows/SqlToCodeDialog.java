@@ -52,7 +52,7 @@ public class SqlToCodeDialog extends JDialog {
     private JTextArea sql;
     private static final BasicFormatter FORMATTER = new BasicFormatter();
     private AnActionEvent event;
-    static Map<String, String> flexMethodMappingMap = new HashMap<>();
+    public static Map<String, String> flexMethodMappingMap = new HashMap<>();
 
 
     static {
@@ -242,6 +242,9 @@ public class SqlToCodeDialog extends JDialog {
                 joins(tableColunmMap, tableDefKeyTable, tableDefMappingMap, tableDefMap, joins, builder, tableDef, flexCloumMap, aliasMap);
                 where = select.getWhere();
                 expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableColunmMap, ObjectUtil.isNotNull(where), aliasMap, tableDefMap);
+                if (ObjectUtil.isNotNull(where)) {
+                    where.accept(expressionVisitor);
+                }
                 groupBy(select, expressionVisitor);
                 having(select, builder, expressionVisitor);
                 orderBy(tableColunmMap, tableDefKeyTable, select, builder, tableDef, aliasMap);
@@ -265,7 +268,7 @@ public class SqlToCodeDialog extends JDialog {
                 Messages.showWarningDialog("不支持的语法", "提示");
                 return "";
             }
-            if (ObjectUtil.isNotNull(where)) {
+            if (ObjectUtil.isNotNull(where) && (parse instanceof Delete || parse instanceof Update)) {
                 where.accept(expressionVisitor);
             }
             if (parse instanceof Update) {
@@ -324,7 +327,18 @@ public class SqlToCodeDialog extends JDialog {
                 if (CollUtil.isNotEmpty(parameters)) {
                     StringJoiner methodJoin = new StringJoiner(",");
                     for (Object parameter : parameters) {
-                        if (parameter instanceof Column) {
+                        if (parameter instanceof AllColumns) {
+                            columnName = tableClounmMap.get("*");
+                            joiner.add(StrUtil.format("{}", aliasName + "." + columnName));
+
+                        } else if (parameter instanceof AllTableColumns) {
+                            AllTableColumns allColumns = (AllTableColumns) expression;
+                            Table table = allColumns.getTable();
+                            aliasName = aliasMap.get(table.getName());
+                            columnName = tableClounmMap.get("*");
+                            joiner.add(StrUtil.format("{}", aliasName + "." + columnName));
+
+                        } else if (parameter instanceof Column) {
                             Column column = (Column) parameters.get(0);
                             Table table = column.getTable();
                             String leftAlias = tableDef;
@@ -341,7 +355,9 @@ public class SqlToCodeDialog extends JDialog {
                             methodJoin.add(parameter.toString());
                         }
                     }
-                    joiner.add(methodJoin.toString() + ")");
+                    if (StrUtil.isNotEmpty(methodJoin.toString())) {
+                        joiner.add(methodJoin.toString() + ")");
+                    }
                     continue;
                 } else {
                     Column column = (Column) expression;

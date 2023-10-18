@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.core.visitor;
 
+import club.bigtian.mf.plugin.windows.SqlToCodeDialog;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -202,26 +203,46 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
     public void function(Function thanLeftExpression, String key, Object... args) {
         Function function = thanLeftExpression;
         String name = function.getName();
-        builder.append(name + "(");
         tableDefMap.put(name, "com.mybatisflex.core.query.QueryMethods");
         ExpressionList parameters = function.getParameters();
-        if (CollUtil.isNotEmpty(parameters)) {
-            Column column = (Column) parameters.get(0);
-            Table table = column.getTable();
-            String leftAlias = tableDef;
-            if (ObjectUtil.isNotNull(table)) {
-                leftAlias = aliasMap.get(table.getName());
-            }
-            String columnName = column.getColumnName();
-            String leftColumnName = tableClounmMap.get(columnName);
-            builder.append(StrUtil.format("{}.{}", leftAlias, leftColumnName));
-            builder.append(")");
-            if(args.length==0){
-                builder.append(StrUtil.format(".{}({})", key, getMethod(leftColumnName)));
-            }else{
-                builder.append(StrUtil.format(".{}()", key));
+        StringJoiner methodJoin = new StringJoiner(",");
+        for (Object parameter : parameters) {
+            if (parameter instanceof Column) {
+                Column column = (Column) parameters.get(0);
+                Table table = column.getTable();
+                String leftAlias = tableDef;
+                if (ObjectUtil.isNotNull(table)) {
+                    leftAlias = aliasMap.get(table.getName());
+                }
+                String columnsName = column.getColumnName();
+                String leftColumnName = tableClounmMap.get(columnsName);
+                name = SqlToCodeDialog.flexMethodMappingMap.getOrDefault(name, name);
+                methodJoin.add(StrUtil.format("{}({}.{}", name, leftAlias, leftColumnName));
+                tableDefMap.put(name, "com.mybatisflex.core.query.QueryMethods");
+            } else {
+                methodJoin.add(parameter.toString());
             }
         }
+        builder.append(methodJoin);
+        builder.append(")");
+
+        // if (CollUtil.isNotEmpty(parameters)) {
+        Column column = (Column) parameters.get(0);
+        //     Table table = column.getTable();
+        //     String leftAlias = tableDef;
+        //     if (ObjectUtil.isNotNull(table)) {
+        //         leftAlias = aliasMap.get(table.getName());
+        //     }
+        String columnName = column.getColumnName();
+        String leftColumnName = tableClounmMap.get(columnName);
+        //     builder.append(StrUtil.format("{}.{}", leftAlias, leftColumnName));
+        //     builder.append(")");
+        if (args.length == 0) {
+            builder.append(StrUtil.format(".{}({})", key, getMethod(leftColumnName)));
+        } else {
+            builder.append(StrUtil.format(".{}()", key));
+        }
+        // }
 
         if (hasWhere) {
             hasWhere = false;
@@ -310,7 +331,7 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
     public void visit(IsNullExpression isNullExpression) {
         Expression thanLeftExpression = isNullExpression.getLeftExpression();
         if (thanLeftExpression instanceof Function) {
-            function((Function) thanLeftExpression, isNullExpression.isNot() ? "isNotNull" : "isNull","");
+            function((Function) thanLeftExpression, isNullExpression.isNot() ? "isNotNull" : "isNull", "");
             return;
         }
         Column leftExpression = (Column) isNullExpression.getLeftExpression();
@@ -388,6 +409,7 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
         }
         inExpression.getRightExpression().accept(this);
     }
+
     @Override
     public void visit(Between between) {
         Column column = (Column) between.getLeftExpression();
@@ -410,6 +432,12 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
             hasWhere = false;
             builder.append(")");
         }
+    }
+
+    @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    public void visit(Function function) {
+        function(function, null);
     }
 
 }
