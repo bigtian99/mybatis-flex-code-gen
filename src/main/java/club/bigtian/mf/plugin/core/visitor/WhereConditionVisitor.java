@@ -220,7 +220,6 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
                 builder.append(StrUtil.format(".{}({})", key, getMethod(leftColumnName)));
             }else{
                 builder.append(StrUtil.format(".{}()", key));
-
             }
         }
 

@@ -52,6 +52,12 @@ public class SqlToCodeDialog extends JDialog {
     private JTextArea sql;
     private static final BasicFormatter FORMATTER = new BasicFormatter();
     private AnActionEvent event;
+    static Map<String, String> flexMethodMappingMap = new HashMap<>();
+
+
+    static {
+        flexMethodMappingMap.put("substr", "substring");
+    }
 
 
     public SqlToCodeDialog(AnActionEvent event) {
@@ -235,7 +241,7 @@ public class SqlToCodeDialog extends JDialog {
                 List<Join> joins = getJoins(tableDefKeyTable, select, aliasMap);
                 joins(tableColunmMap, tableDefKeyTable, tableDefMappingMap, tableDefMap, joins, builder, tableDef, flexCloumMap, aliasMap);
                 where = select.getWhere();
-                expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableColunmMap, ObjectUtil.isNotNull(where), aliasMap,tableDefMap);
+                expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableColunmMap, ObjectUtil.isNotNull(where), aliasMap, tableDefMap);
                 groupBy(select, expressionVisitor);
                 having(select, builder, expressionVisitor);
                 orderBy(tableColunmMap, tableDefKeyTable, select, builder, tableDef, aliasMap);
@@ -316,17 +322,26 @@ public class SqlToCodeDialog extends JDialog {
                 Function function = (Function) expression;
                 ExpressionList parameters = function.getParameters();
                 if (CollUtil.isNotEmpty(parameters)) {
-                    Column column = (Column) parameters.get(0);
-                    Table table = column.getTable();
-                    String leftAlias = tableDef;
-                    if (ObjectUtil.isNotNull(table)) {
-                        leftAlias = aliasMap.get(table.getName());
+                    StringJoiner methodJoin = new StringJoiner(",");
+                    for (Object parameter : parameters) {
+                        if (parameter instanceof Column) {
+                            Column column = (Column) parameters.get(0);
+                            Table table = column.getTable();
+                            String leftAlias = tableDef;
+                            if (ObjectUtil.isNotNull(table)) {
+                                leftAlias = aliasMap.get(table.getName());
+                            }
+                            String columnsName = column.getColumnName();
+                            String leftColumnName = tableClounmMap.get(columnsName);
+                            String name = function.getName();
+                            name = flexMethodMappingMap.getOrDefault(name, name);
+                            methodJoin.add(StrUtil.format("{}({}.{}", name, leftAlias, leftColumnName));
+                            tableDefMap.put(name, "com.mybatisflex.core.query.QueryMethods");
+                        } else {
+                            methodJoin.add(parameter.toString());
+                        }
                     }
-                    String columnsName = column.getColumnName();
-                    String leftColumnName = tableClounmMap.get(columnsName);
-                    String name = function.getName();
-                    joiner.add(StrUtil.format("{}({}.{})", name, leftAlias, leftColumnName));
-                    tableDefMap.put(name, "com.mybatisflex.core.query.QueryMethods");
+                    joiner.add(methodJoin.toString() + ")");
                     continue;
                 } else {
                     Column column = (Column) expression;
@@ -429,7 +444,7 @@ public class SqlToCodeDialog extends JDialog {
     private static void checkHasStaticImport(PsiJavaFile psiClassOwner, String importText, String field) {
         Set<String> importSet = PsiJavaFileUtil.getQualifiedNameImportSet(psiClassOwner);
         // 如果没有导入，则导入
-        if (!importSet.contains(importText+"."+field)) {
+        if (!importSet.contains(importText + "." + field)) {
             psiClassOwner.getImportList().add(PsiJavaFileUtil.createImportStaticStatement(PsiJavaFileUtil.getPsiClass(importText), field));
         }
     }
