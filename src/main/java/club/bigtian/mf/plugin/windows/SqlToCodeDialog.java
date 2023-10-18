@@ -226,23 +226,23 @@ public class SqlToCodeDialog extends JDialog {
             StringJoiner joiner = new StringJoiner(",");
             Expression where;
             WhereConditionVisitor expressionVisitor;
-
+            tableDefMap.put(tableDef, tableDefMappingMap.get(tableDef));
             if (parse instanceof PlainSelect) {
                 PlainSelect select = (PlainSelect) parse;
-                select(tableColunmMap, select, tableDef, aliasMap, joiner, builder);
-                builder.append(StrUtil.format(".select({})\n", joiner));
+                select(tableColunmMap, select, tableDef, aliasMap, joiner, tableDefMap);
+                builder.append(StrUtil.format("\n.select({})\n", joiner));
                 builder.append(StrUtil.format(".from({})", tableDef));
                 List<Join> joins = getJoins(tableDefKeyTable, select, aliasMap);
                 joins(tableColunmMap, tableDefKeyTable, tableDefMappingMap, tableDefMap, joins, builder, tableDef, flexCloumMap, aliasMap);
                 where = select.getWhere();
-                expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableColunmMap, ObjectUtil.isNotNull(where), aliasMap);
+                expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableColunmMap, ObjectUtil.isNotNull(where), aliasMap,tableDefMap);
                 groupBy(select, expressionVisitor);
                 having(select, builder, expressionVisitor);
                 orderBy(tableColunmMap, tableDefKeyTable, select, builder, tableDef, aliasMap);
             } else if (parse instanceof Delete) {
                 Delete delete = (Delete) parse;
                 where = delete.getWhere();
-                expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableColunmMap, ObjectUtil.isNotNull(where), aliasMap);
+                expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableColunmMap, ObjectUtil.isNotNull(where), aliasMap, tableDefMap);
             } else if (parse instanceof Update) {
                 Update update = (Update) parse;
                 where = update.getWhere();
@@ -254,7 +254,7 @@ public class SqlToCodeDialog extends JDialog {
                         builder.append(text);
                     }
                 }
-                expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableColunmMap, ObjectUtil.isNotNull(where), aliasMap);
+                expressionVisitor = new WhereConditionVisitor(tableDef, builder, flexCloumMap, variable.getText(), tableColunmMap, ObjectUtil.isNotNull(where), aliasMap, tableDefMap);
             } else {
                 Messages.showWarningDialog("不支持的语法", "提示");
                 return "";
@@ -262,7 +262,7 @@ public class SqlToCodeDialog extends JDialog {
             if (ObjectUtil.isNotNull(where)) {
                 where.accept(expressionVisitor);
             }
-            if (parse instanceof Update){
+            if (parse instanceof Update) {
                 builder.append("\n.update()");
             }
             builder.append(";");
@@ -273,11 +273,13 @@ public class SqlToCodeDialog extends JDialog {
 
         return builder.toString();
     }
-    private String getMethod(String column,Map<String, String> flexCloumMap) {
+
+    private String getMethod(String column, Map<String, String> flexCloumMap) {
         String camelCase = StrUtil.toCamelCase(flexCloumMap.get(column));
         String getMethod = StrUtil.format("{}.get{}()", variable.getText(), StrUtil.upperFirst(camelCase));
         return getMethod;
     }
+
     @Nullable
     private static List<Join> getJoins(Map<String, Map<String, String>> tableDefKeyTable, PlainSelect select, Map<String, String> aliasMap) {
         List<Join> joins = select.getJoins();
@@ -293,7 +295,7 @@ public class SqlToCodeDialog extends JDialog {
         return joins;
     }
 
-    private static void select(Map<String, String> tableClounmMap, PlainSelect select, String tableDef, Map<String, String> aliasMap, StringJoiner joiner, StringBuilder builder) {
+    private static void select(Map<String, String> tableClounmMap, PlainSelect select, String tableDef, Map<String, String> aliasMap, StringJoiner joiner, HashMap<String, String> tableDefMap) {
         Alias alias = select.getFromItem().getAlias();
         String aliasTableDef;
         if (ObjectUtil.isNotNull(alias)) {
@@ -322,10 +324,10 @@ public class SqlToCodeDialog extends JDialog {
                     }
                     String columnsName = column.getColumnName();
                     String leftColumnName = tableClounmMap.get(columnsName);
-
-                    joiner.add(StrUtil.format("{}({}.{})", function.getName(), leftAlias, leftColumnName));
-
-                    return;
+                    String name = function.getName();
+                    joiner.add(StrUtil.format("{}({}.{})", name, leftAlias, leftColumnName));
+                    tableDefMap.put(name, "com.mybatisflex.core.query.QueryMethods");
+                    continue;
                 } else {
                     Column column = (Column) expression;
                     if (ObjectUtil.isNotNull(column.getTable())) {
@@ -426,6 +428,10 @@ public class SqlToCodeDialog extends JDialog {
 
     private static void checkHasStaticImport(PsiJavaFile psiClassOwner, String importText, String field) {
         Set<String> importSet = PsiJavaFileUtil.getQualifiedNameImportSet(psiClassOwner);
+        // 如果没有导入，则导入
+        if (!importSet.contains(importText+"."+field)) {
+            psiClassOwner.getImportList().add(PsiJavaFileUtil.createImportStaticStatement(PsiJavaFileUtil.getPsiClass(importText), field));
+        }
     }
 
     private void onCancel() {
@@ -433,15 +439,4 @@ public class SqlToCodeDialog extends JDialog {
         dispose();
     }
 
-    public static void and(StringBuilder builder) {
-        builder.append(".and(");
-    }
-
-    public static void or(StringBuilder builder) {
-        builder.append(".or(");
-    }
-
-    public static String eq(StringBuilder column) {
-        return StrUtil.format(".{}.eq()", column.toString());
-    }
 }

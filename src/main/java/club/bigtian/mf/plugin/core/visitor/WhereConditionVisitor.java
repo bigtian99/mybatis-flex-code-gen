@@ -27,8 +27,16 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
     Map<String, String> tableClounmMap;
     private boolean hasWhere;
     Map<String, String> aliasMap;
+    Map<String, String> tableDefMap;
 
-    public WhereConditionVisitor(String tableDef, StringBuilder builder, Map<String, String> flexCloumMap, String variable, Map<String, String> tableClounmMap, boolean hasWhere, Map<String, String> aliasMap) {
+    public WhereConditionVisitor(String tableDef,
+                                 StringBuilder builder,
+                                 Map<String, String> flexCloumMap,
+                                 String variable,
+                                 Map<String, String> tableClounmMap,
+                                 boolean hasWhere,
+                                 Map<String, String> aliasMap,
+                                 Map<String, String> tableDefMap) {
         this.tableDef = tableDef;
         this.builder = builder;
 
@@ -37,6 +45,7 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
         this.tableClounmMap = tableClounmMap;
         this.hasWhere = hasWhere;
         this.aliasMap = aliasMap;
+        this.tableDefMap = tableDefMap;
         if (hasWhere) {
             builder.append("\n.where(");
         }
@@ -89,6 +98,31 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
             hasWhere = false;
             builder.append(")");
         }
+    }
+
+    @Override
+    public void visit(NotEqualsTo notEqualsTo) {
+        Expression thanLeftExpression = notEqualsTo.getLeftExpression();
+        if (thanLeftExpression instanceof Function) {
+            function((Function) thanLeftExpression, "ne");
+            return;
+        }
+        Column leftExpression = (Column) notEqualsTo.getLeftExpression();
+        String leftColumnName = tableClounmMap.get(leftExpression.getColumnName());
+        Table table = leftExpression.getTable();
+        String leftAlias = tableDef;
+        if (ObjectUtil.isNotNull(table)) {
+            leftAlias = aliasMap.get(table.getName());
+        }
+        String camelCase = getMethod(leftColumnName.toUpperCase());
+        String text = StrUtil.format("{}.{}.ne({})", leftAlias, leftColumnName, camelCase);
+        builder.append(text);
+
+        if (hasWhere) {
+            hasWhere = false;
+            builder.append(")");
+        }
+
     }
 
 
@@ -167,8 +201,9 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
 
     public void function(Function thanLeftExpression, String key, Object... args) {
         Function function = thanLeftExpression;
-        builder.append(function.getName() + "(");
-
+        String name = function.getName();
+        builder.append(name + "(");
+        tableDefMap.put(name, "com.mybatisflex.core.query.QueryMethods");
         ExpressionList parameters = function.getParameters();
         if (CollUtil.isNotEmpty(parameters)) {
             Column column = (Column) parameters.get(0);
