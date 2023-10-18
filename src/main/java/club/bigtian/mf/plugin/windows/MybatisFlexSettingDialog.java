@@ -84,6 +84,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JCheckBox fromCheckBox;
     private JComboBox sqlDialect;
     private JComboBox mapperXmlType;
+    private JTextField interfacePre;
     private Project project;
 
     // 是否开启内部模式
@@ -246,6 +247,7 @@ public class MybatisFlexSettingDialog extends JDialog {
 
         controllerSuffix.setText(Template.getSuffix(MybatisFlexConstant.CONTROLLER_SUFFIX));
         interfaceSuffix.setText(Template.getSuffix(MybatisFlexConstant.INTERFACE_SUFFIX));
+        interfacePre.setText(Template.getSuffix(MybatisFlexConstant.INTERFACE_PRE,"I"));
         implSuffix.setText(Template.getSuffix(MybatisFlexConstant.IMPL_SUFFIX));
         modelSuffix.setText(Template.getSuffix(MybatisFlexConstant.MODEL_SUFFIX));
         mapperSuffix.setText(Template.getSuffix(MybatisFlexConstant.MAPPER_SUFFIX));
@@ -345,6 +347,7 @@ public class MybatisFlexSettingDialog extends JDialog {
 
         config.setControllerSuffix(controllerSuffix.getText());
         config.setInterfaceSuffix(interfaceSuffix.getText());
+        config.setInterfacePre(interfacePre.getText());
         config.setImplSuffix(implSuffix.getText());
         config.setModelSuffix(modelSuffix.getText());
         config.setMapperSuffix(mapperSuffix.getText());

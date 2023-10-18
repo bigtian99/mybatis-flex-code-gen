@@ -61,7 +61,8 @@ public class RenderMybatisFlexTemplate {
             context.put("since", ObjectUtil.defaultIfEmpty(config.getSince(), "1.0"));
             context.put("controllerName", className + ObjectUtil.defaultIfNull(config.getControllerSuffix(), "Controller"));
             context.put("modelName", className + ObjectUtil.defaultIfNull(config.getModelSuffix(), "Entity"));
-            context.put("interfaceName", "I" + className + ObjectUtil.defaultIfNull(config.getInterfaceSuffix(), "Service"));
+            context.put("interfaceName", ObjectUtil.defaultIfNull(Template.getMybatisFlexConfig().getInterfacePre(), "I")
+                    + className + ObjectUtil.defaultIfNull(config.getInterfaceSuffix(), "Service"));
             context.put("interfaceVariable", tableName + ObjectUtil.defaultIfNull(config.getInterfaceSuffix(), "Service"));
             context.put("implName", className + ObjectUtil.defaultIfNull(config.getImplSuffix(), "ServiceImpl"));
             context.put("mapperName", className + ObjectUtil.defaultIfNull(config.getMapperSuffix(), "Mapper"));
@@ -239,7 +240,8 @@ public class RenderMybatisFlexTemplate {
             }
             PsiDirectory packageDirectory = VirtualFileUtils.getPsiDirectory(module, packages.get(entry.getKey()), key);
             DumbService.getInstance(project).runWhenSmart(() -> {
-                String classPrefix = ObjectUtil.equal("Service", entry.getKey()) ? "I" : "";
+                String classPrefix = ObjectUtil.equal(MybatisFlexConstant.SERVICE, entry.getKey())
+                        ? ObjectUtil.defaultIfNull(Template.getMybatisFlexConfig().getInterfacePre(), "I") : "";
                 String fileName = classPrefix + className + suffixMap.get(entry.getKey()) + (StrUtil.isEmpty(entry.getKey()) ? ".xml" : ".java");
                 PsiFile file = factory.createFileFromText(fileName, StrUtil.isEmpty(entry.getKey()) ? XmlFileType.INSTANCE : JavaFileType.INSTANCE, sw.toString());
                 templateMap.computeIfAbsent(packageDirectory, k -> new ArrayList<>()).add(CodeReformat.reformat(file));

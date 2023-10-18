@@ -46,6 +46,7 @@ public class MybatisFlexConstant {
     public static final String SWAGGER3 = "swagger3";
     public static final String CONTROLLER_SUFFIX = "controllerSuffix";
     public static final String INTERFACE_SUFFIX = "interfaceSuffix";
+    public static final String INTERFACE_PRE = "interfacePre";
     public static final String IMPL_SUFFIX = "implSuffix";
     public static final String MODEL_SUFFIX = "modelSuffix";
     public static final String MAPPER_SUFFIX = "mapperSuffix";

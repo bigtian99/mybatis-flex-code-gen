@@ -141,6 +141,7 @@ public class MybatisFlexConfig {
 
     private String controllerSuffix;
     private String interfaceSuffix;
+    private String interfacePre;
     private String implSuffix;
     private String modelSuffix;
     private String mapperSuffix;
@@ -290,12 +291,6 @@ public class MybatisFlexConfig {
 
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
-//        data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, MybatisFlexConstant.CONTROLLER));
-//        data.put(MybatisFlexConstant.ENTITY, ObjectUtil.defaultIfBlank(modelSuffix, MybatisFlexConstant.ENTITY));
-//        data.put(MybatisFlexConstant.SERVICE, ObjectUtil.defaultIfBlank(interfaceSuffix, MybatisFlexConstant.SERVICE));
-//        data.put(MybatisFlexConstant.SERVICE_IMPL, ObjectUtil.defaultIfBlank(implSuffix, MybatisFlexConstant.SERVICE_IMPL));
-//        data.put(MybatisFlexConstant.MAPPER, ObjectUtil.defaultIfBlank(mapperSuffix, MybatisFlexConstant.MAPPER));
-//        data.put("", ObjectUtil.defaultIfBlank(mapperSuffix, MybatisFlexConstant.MAPPER));
 
         data.put(MybatisFlexConstant.CONTROLLER, ObjectUtil.defaultIfBlank(controllerSuffix, ""));
         data.put(MybatisFlexConstant.ENTITY, ObjectUtil.defaultIfBlank(modelSuffix, ""));
@@ -777,5 +772,13 @@ public class MybatisFlexConfig {
 
     public void setMapperXmlType(String mapperXmlType) {
         this.mapperXmlType = mapperXmlType;
+    }
+
+    public String getInterfacePre() {
+        return interfacePre;
+    }
+
+    public void setInterfacePre(String interfacePre) {
+        this.interfacePre = interfacePre;
     }
 }

@@ -58,22 +58,22 @@ public class Template {
             config.setMapperSuffix(MybatisFlexConstant.MAPPER);
         }
 
-        if(ObjectUtil.isNull(config.getContrPath())){
+        if (ObjectUtil.isNull(config.getContrPath())) {
             config.setContrPath(MybatisFlexConstant.CONTROLLER.toLowerCase());
         }
-        if(ObjectUtil.isNull(config.getDomainPath())){
+        if (ObjectUtil.isNull(config.getDomainPath())) {
             config.setDomainPath(MybatisFlexConstant.DOMAIN.toLowerCase());
         }
-        if(ObjectUtil.isNull(config.getImplPath())){
+        if (ObjectUtil.isNull(config.getImplPath())) {
             config.setImplPath(MybatisFlexConstant.IMPL.toLowerCase());
         }
-        if(ObjectUtil.isNull(config.getServicePath())){
+        if (ObjectUtil.isNull(config.getServicePath())) {
             config.setServicePath(MybatisFlexConstant.SERVICE.toLowerCase());
         }
-        if(ObjectUtil.isNull(config.getMapperPath())){
+        if (ObjectUtil.isNull(config.getMapperPath())) {
             config.setMapperPath(MybatisFlexConstant.MAPPER.toLowerCase());
         }
-        if(ObjectUtil.isNull(config.getXmlPath())){
+        if (ObjectUtil.isNull(config.getXmlPath())) {
             config.setXmlPath(MybatisFlexConstant.MAPPERS.toLowerCase());
         }
         return config;
@@ -101,7 +101,8 @@ public class Template {
     public static String getConfigData(String property) {
         return getConfigData(property, "");
     }
-    public static String getConfigData(String property,String defaultValue) {
+
+    public static String getConfigData(String property, String defaultValue) {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
         return ObjectUtil.defaultIfNull(fieldValue, defaultValue).toString();
@@ -111,12 +112,18 @@ public class Template {
         return getConfigData(property);
     }
 
+    public static String getSuffix(String property, String defaultValue) {
+        String data = getConfigData(property);
+        return ObjectUtil.isNull(data) ? defaultValue : data;
+    }
+
     public static boolean getCheckBoxConfig(String property) {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
         return (boolean) ObjectUtil.defaultIfNull(fieldValue, false);
     }
-    public static Boolean getCheckBoxConfig(String property,boolean defaultValue) {
+
+    public static Boolean getCheckBoxConfig(String property, boolean defaultValue) {
         MybatisFlexConfig config = getMybatisFlexConfig();
         Object fieldValue = ReflectUtil.getFieldValue(config, property);
         return (boolean) ObjectUtil.defaultIfNull(fieldValue, defaultValue);
