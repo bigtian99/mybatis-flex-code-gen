@@ -165,7 +165,7 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
         }
     }
 
-    private void function(Function thanLeftExpression, String key, Object... args) {
+    public void function(Function thanLeftExpression, String key, Object... args) {
         Function function = thanLeftExpression;
         builder.append(function.getName() + "(");
 
