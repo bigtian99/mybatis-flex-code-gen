@@ -139,19 +139,19 @@ public class PsiJavaFileUtil {
         Collection<PsiClass> sonPsiClass = PsiJavaFileUtil.getSonPsiClass("com.mybatisflex.core.table.TableDef",
                 GlobalSearchScope.allScope(ProjectUtils.getCurrentProject()));
         Collection<PsiClass> annotationPsiClass = PsiJavaFileUtil.getAnnotationPsiClass("com.mybatisflex.annotation.Table");
-        if (sonPsiClass.size() != annotationPsiClass.size()) {
-            List<VirtualFile> virtualFiles = annotationPsiClass.stream()
-                    .filter(el -> !sonPsiClass.contains(el))
-                    .map(el -> {
-                        VirtualFile virtualFile = el.getContainingFile()
-                                .getVirtualFile();
-                        virtualFile.putUserData(MybatisFlexDocumentChangeHandler.CHANGE, true);
-                        return virtualFile;
-                    })
-                    .collect(Collectors.toList());
+        // if (sonPsiClass.size() != annotationPsiClass.size()) {
+        List<VirtualFile> virtualFiles = annotationPsiClass.stream()
+                .filter(el -> !sonPsiClass.contains(el))
+                .map(el -> {
+                    VirtualFile virtualFile = el.getContainingFile()
+                            .getVirtualFile();
+                    virtualFile.putUserData(MybatisFlexDocumentChangeHandler.CHANGE, true);
+                    return virtualFile;
+                })
+                .collect(Collectors.toList());
 
-            MybatisFlexDocumentChangeHandler.createAptFile(virtualFiles);
-        }
+        MybatisFlexDocumentChangeHandler.createAptFile(virtualFiles);
+        // }
     }
 
     /**

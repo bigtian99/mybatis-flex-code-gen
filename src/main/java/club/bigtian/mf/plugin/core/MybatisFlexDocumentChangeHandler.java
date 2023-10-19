@@ -109,10 +109,13 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                         }
                         fieldMap.computeIfAbsent(aptInfo.getName(), k -> aptInfo);
                     }
+
                     PsiAnnotation table = psiClass.getAnnotation("com.mybatisflex.annotation.Table");
                     VelocityContext context = new VelocityContext();
                     String className = getClassName(config, psiClass.getName()) + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
                     context.put("className", className);
+                    context.put("allColumns", getDefInstanceName(config,"allColumns", false));
+                    context.put("defaultColumns", getDefInstanceName(config,"defaultColumns", false));
                     context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
                     context.put("list", fieldMap.values());
                     context.put("instance", getDefInstanceName(config, psiClass.getName(), true));

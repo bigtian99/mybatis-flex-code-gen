@@ -12,12 +12,12 @@ class ${className} : TableDef("", "${talbeName}") {
     /**
      * 所有字段。
      */
-    val ALL_COLUMNS = QueryColumn(this, "*")
+    val $allColumns = QueryColumn(this, "*")
 
     /**
      * 默认字段，不包含逻辑删除或者 large 等字段。
      */
-    val DEFAULT_COLUMNS = arrayOf(#foreach($column in $list) #if($column.large==false)$column.name #if($foreach.hasNext),#end#end#end)
+    val $defaultColumns = arrayOf(#foreach($column in $list) #if($column.large==false)$column.name #if($foreach.hasNext),#end#end#end)
 
 
     companion object {

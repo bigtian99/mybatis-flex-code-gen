@@ -314,6 +314,7 @@ public class SqlToCodeDialog extends JDialog {
         List<SelectItem<?>> selectItems = select.getSelectItems();
         for (SelectItem<?> selectItem : selectItems) {
             Expression expression = selectItem.getExpression();
+            String asText = "";
             String aliasName = tableDef;
             String columnName = "";
             if (expression instanceof AllColumns) {
@@ -353,12 +354,19 @@ public class SqlToCodeDialog extends JDialog {
                             name = flexMethodMappingMap.getOrDefault(name, name);
                             methodJoin.add(StrUtil.format("{}({}.{}", name, leftAlias, leftColumnName));
                             tableDefMap.put(name, "com.mybatisflex.core.query.QueryMethods");
+                            asText = getColumnAlias(selectItem);
                         } else {
                             methodJoin.add(parameter.toString());
                         }
                     }
-                    if (StrUtil.isNotEmpty(methodJoin.toString())) {
-                        joiner.add(methodJoin.toString() + ")");
+                    String methodText = methodJoin.toString();
+                    if (StrUtil.isNotEmpty(methodText)) {
+                        if (StrUtil.isNotEmpty(asText)) {
+                            methodText += StrUtil.format(").as(\"{}\")", asText);
+                        }else{
+                            methodText += ")";
+                        }
+                        joiner.add(methodText );
                     }
                     continue;
                 } else {
@@ -367,10 +375,31 @@ public class SqlToCodeDialog extends JDialog {
                         aliasName = aliasMap.get(column.getTable().getName());
                     }
                     columnName = tableClounmMap.get(column.getColumnName());
+                    asText = getColumnAlias(selectItem);
                 }
+            } else if (expression instanceof Column) {
+                Column column = (Column) expression;
+                if (ObjectUtil.isNotNull(column.getTable())) {
+                    aliasName = aliasMap.get(column.getTable().getName());
+                }
+                columnName = tableClounmMap.get(column.getColumnName());
+                asText = getColumnAlias(selectItem);
             }
-            joiner.add(StrUtil.format("{}", aliasName + "." + columnName));
+            String text = StrUtil.format("{}", aliasName + "." + columnName);
+            if (StrUtil.isNotEmpty(asText)) {
+                text += StrUtil.format(".as(\"{}\")", asText);
+            }
+
+            joiner.add(text);
         }
+    }
+
+    private static String getColumnAlias(SelectItem<?> selectItem) {
+        Alias columnAs = selectItem.getAlias();
+        if (ObjectUtil.isNotNull(columnAs)) {
+            return columnAs.getName();
+        }
+        return "";
     }
 
     private void joins(Map<String, String> tableClounmMap, Map<String, Map<String, String>> tableDefKeyTable, Map<String, String> tableDefMappingMap, HashMap<String, String> tableDefMap, List<Join> joins, StringBuilder builder, String tableDef, Map<String, String> flexCloumMap, Map<String, String> aliasMap) {
