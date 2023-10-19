@@ -156,7 +156,6 @@ public class CommonSettingDialog extends JDialog {
         for (int i = 0; i < table.getRowCount(); i++) {
             String key = table.getValueAt(i, 0).toString();
             String filed = fieldMap.get(key);
-            System.out.println(table.getValueAt(i, 1));
             ReflectUtil.setFieldValue(config, filed, table.getValueAt(i, 1));
         }
         MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(config);

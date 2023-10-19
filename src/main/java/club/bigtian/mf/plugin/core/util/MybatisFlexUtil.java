@@ -96,7 +96,6 @@ public class MybatisFlexUtil {
         // 根据AnActionEvent获取选择的编辑器选中文本
         Editor editor = getEditor(event);
         SelectionModel selectionModel = editor.getSelectionModel();
-        System.out.println(selectionModel.getLeadSelectionOffset());
         return selectionModel.getSelectedText();
     }
 

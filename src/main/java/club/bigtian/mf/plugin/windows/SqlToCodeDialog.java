@@ -315,8 +315,10 @@ public class SqlToCodeDialog extends JDialog {
         for (SelectItem<?> selectItem : selectItems) {
             Expression expression = selectItem.getExpression();
             String aliasName = tableDef;
-            String columnName;
-            if (expression instanceof AllTableColumns) {
+            String columnName = "";
+            if (expression instanceof AllColumns) {
+                columnName = tableClounmMap.get("*");
+            } else if (expression instanceof AllTableColumns) {
                 AllTableColumns allColumns = (AllTableColumns) expression;
                 Table table = allColumns.getTable();
                 aliasName = aliasMap.get(table.getName());
@@ -366,8 +368,8 @@ public class SqlToCodeDialog extends JDialog {
                     }
                     columnName = tableClounmMap.get(column.getColumnName());
                 }
-                joiner.add(StrUtil.format("{}", aliasName + "." + columnName));
             }
+            joiner.add(StrUtil.format("{}", aliasName + "." + columnName));
         }
     }
 
