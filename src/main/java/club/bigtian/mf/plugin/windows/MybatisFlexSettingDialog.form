@@ -227,7 +227,7 @@
                           </grid>
                         </children>
                       </tabbedpane>
-                      <grid id="c789d" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                      <grid id="c789d" layout-manager="GridLayoutManager" row-count="1" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                         <margin top="0" left="0" bottom="0" right="0"/>
                         <constraints border-constraint="North"/>
                         <properties/>
@@ -244,6 +244,36 @@
                             </constraints>
                             <properties>
                               <text value="模板重置"/>
+                            </properties>
+                          </component>
+                          <component id="cc969" class="com.intellij.openapi.ui.FixedSizeButton" binding="addTab">
+                            <constraints>
+                              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <icon value="icons/add_tab.png"/>
+                              <text value=""/>
+                              <toolTipText value="添加tab页"/>
+                            </properties>
+                          </component>
+                          <component id="2666d" class="com.intellij.openapi.ui.FixedSizeButton" binding="updateTab">
+                            <constraints>
+                              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <icon value="icons/tab_update.png"/>
+                              <text value=""/>
+                              <toolTipText value="修改tab页信息"/>
+                            </properties>
+                          </component>
+                          <component id="8ae20" class="com.intellij.openapi.ui.FixedSizeButton" binding="tabDelete">
+                            <constraints>
+                              <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <icon value="icons/tab_remove.png"/>
+                              <text value=""/>
+                              <toolTipText value="删除tab页"/>
                             </properties>
                           </component>
                         </children>

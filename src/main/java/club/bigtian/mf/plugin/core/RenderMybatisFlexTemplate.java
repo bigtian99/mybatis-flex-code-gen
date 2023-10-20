@@ -4,7 +4,10 @@ import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
+import club.bigtian.mf.plugin.entity.TabInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.ide.highlighter.JavaFileType;
@@ -20,7 +23,11 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -76,6 +83,26 @@ public class RenderMybatisFlexTemplate {
                 context.put("resutlClass", qualifiedName.substring(qualifiedName.lastIndexOf(".") + 1));
             }
             renderTemplate(templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules, factory, project);
+            // 自定义模版渲染
+            List<TabInfo> infoList = config.getTabList();
+            if (CollUtil.isNotEmpty(infoList)) {
+                for (TabInfo info : infoList) {
+                    String genPath = info.getGenPath();
+                    StringWriter sw = new StringWriter();
+                    velocityEngine.evaluate(context, sw, "mybatis-flex", info.getContent());
+                    File file = new File(genPath + File.separator + className + "." + info.getSuffix());
+                    if (!file.getParentFile().exists()) {
+                        Messages.showWarningDialog("自定义模板路径不存在：" + genPath, "警告");
+                        return;
+                    }
+                    try {
+                        FileOutputStream fileOutputStream = new FileOutputStream(file);
+                        IoUtil.write(fileOutputStream, true, sw.toString().getBytes(StandardCharsets.UTF_8));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
         }
 
         DumbService.getInstance(project).runWhenSmart(() -> {

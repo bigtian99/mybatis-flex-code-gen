@@ -4,18 +4,27 @@ import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.function.SimpleFunction;
+import club.bigtian.mf.plugin.core.icons.Icons;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.FileChooserUtil;
 import club.bigtian.mf.plugin.core.util.MybatisFlexUtil;
+import club.bigtian.mf.plugin.entity.TabInfo;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.FixedSizeButton;
+import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.LanguageTextField;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -85,6 +94,9 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JComboBox sqlDialect;
     private JComboBox mapperXmlType;
     private JTextField interfacePre;
+    private com.intellij.openapi.ui.FixedSizeButton addTab;
+    private FixedSizeButton updateTab;
+    private FixedSizeButton tabDelete;
     private Project project;
 
     // 是否开启内部模式
@@ -92,6 +104,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     SimpleFunction simpleFunction;
     List<JTextField> list = Arrays.asList(contrPath, servicePath, implPath, domainPath, xmlPath, mapperPath);
     Map<String, String> pathMap;
+    List<TabInfo> tabList = new ArrayList<>();
 
     public MybatisFlexSettingDialog(Project project, SimpleFunction simpleFunction) {
         this.project = project;
@@ -226,6 +239,79 @@ public class MybatisFlexSettingDialog extends JDialog {
             dialog.show();
         });
         buttonFixedSizeButton.addActionListener(e -> new CommonSettingDialog().show());
+        addTab.addActionListener(e -> {
+            CustomTabDialog dialog = new CustomTabDialog();
+            dialog.setVisible(true);
+            String genPath = dialog.getGenPath();
+            String title = dialog.getTitle();
+            String fileSuffix = dialog.getFileSuffix();
+            if (StrUtil.isEmpty(title) || StrUtil.isEmpty(genPath) || StrUtil.isEmpty(fileSuffix)) {
+                return;
+            }
+            boolean flag = tabList.stream()
+                    .map(TabInfo::getTitle)
+                    .anyMatch(el -> el.equals(title));
+            if (flag) {
+                Messages.showWarningDialog(StrUtil.format("该标题【{}】已经存在,请使用其他名称", title), "提示");
+                return;
+            }
+            tabbedPane1.addTab(title, Icons.DONATE, createTabView(title, "", genPath, fileSuffix, false));
+            int idx = tabbedPane1.indexOfTab(title);
+            tabbedPane1.setSelectedIndex(idx);
+        });
+        updateTab.addActionListener(e -> {
+            checkDefaultTab();
+            int selectedIndex = tabbedPane1.getSelectedIndex();
+            String title = tabbedPane1.getTitleAt(selectedIndex);
+            tabList.stream()
+                    .filter(el -> el.getTitle().equals(title))
+                    .findFirst()
+                    .ifPresent(el -> {
+                        CustomTabDialog dialog = new CustomTabDialog(el.getGenPath(), el.getTitle(), el.getSuffix());
+                        dialog.show();
+                        String genPath = dialog.getGenPath();
+                        if (StrUtil.isEmpty(genPath)) {
+                            return;
+                        }
+                        el.setSuffix(dialog.getFileSuffix());
+                        el.setTitle(dialog.getTitle());
+                        el.setGenPath(dialog.getGenPath());
+                        if (!dialog.getTitle().equals(title)) {
+                            tabbedPane1.remove(selectedIndex);
+                            tabbedPane1.insertTab(el.getTitle(), Icons.DONATE, createTabView(el.getTitle(),
+                                    el.getTextField().getText(),
+                                    el.getGenPath(),
+                                    el.getSuffix(),
+                                    true), "", selectedIndex);
+                            tabbedPane1.setSelectedIndex(selectedIndex);
+                            el.getTextField().requestFocusInWindow();
+                        }
+                    });
+        });
+        tabDelete.addActionListener(e -> {
+            checkDefaultTab();
+            MessageDialogBuilder.YesNo yes = MessageDialogBuilder.yesNo("提示", "确定要删除吗？");
+            int show = yes.show();
+            if (show == 1) {
+                return;
+            }
+            int selectedIndex = tabbedPane1.getSelectedIndex();
+            String title = tabbedPane1.getTitleAt(selectedIndex);
+            tabList.removeIf(el -> el.getTitle().equals(title));
+            tabbedPane1.remove(selectedIndex);
+        });
+
+        for (int i = 0; i < tabbedPane1.getTabCount(); i++) {
+            tabbedPane1.setIconAt(i, Icons.DONATE);
+        }
+    }
+
+    private void checkDefaultTab() {
+        int selectedIndex = tabbedPane1.getSelectedIndex();
+        if (selectedIndex <= 5) {
+            Messages.showWarningDialog("默认模板不能额外操作", "提示");
+            Assert.isTrue(false, "默认模板不能额外操作");
+        }
     }
 
 
@@ -247,7 +333,7 @@ public class MybatisFlexSettingDialog extends JDialog {
 
         controllerSuffix.setText(Template.getSuffix(MybatisFlexConstant.CONTROLLER_SUFFIX));
         interfaceSuffix.setText(Template.getSuffix(MybatisFlexConstant.INTERFACE_SUFFIX));
-        interfacePre.setText(Template.getSuffix(MybatisFlexConstant.INTERFACE_PRE,"I"));
+        interfacePre.setText(Template.getSuffix(MybatisFlexConstant.INTERFACE_PRE, "I"));
         implSuffix.setText(Template.getSuffix(MybatisFlexConstant.IMPL_SUFFIX));
         modelSuffix.setText(Template.getSuffix(MybatisFlexConstant.MODEL_SUFFIX));
         mapperSuffix.setText(Template.getSuffix(MybatisFlexConstant.MAPPER_SUFFIX));
@@ -276,6 +362,13 @@ public class MybatisFlexSettingDialog extends JDialog {
         for (JTextField textField : list) {
             pathMap.put(textField.getName(), textField.getText());
         }
+        MybatisFlexConfig config = Template.getMybatisFlexConfig();
+        List<TabInfo> infoList = config.getTabList();
+        if (CollUtil.isNotEmpty(infoList)) {
+            for (TabInfo tabInfo : infoList) {
+                tabbedPane1.addTab(tabInfo.getTitle(), createTabView(tabInfo.getTitle(), tabInfo.getContent(), tabInfo.getGenPath(), tabInfo.getSuffix(), false));
+            }
+        }
     }
 
     public void initSinceComBox() {
@@ -297,6 +390,27 @@ public class MybatisFlexSettingDialog extends JDialog {
         sqlDialect.repaint();
     }
 
+    public JPanel createTabView(String title, String content, String genPath, String fileSuffix, boolean isUpdate) {
+        JPanel jPanel = new JPanel(new GridLayout());
+        JScrollPane pane = new JScrollPane();
+        LanguageTextField languageTextField = new LanguageTextField(JavaLanguage.INSTANCE, project, content, false);
+        pane.setViewportView(languageTextField);
+        jPanel.add(pane);
+        languageTextField.addDocumentListener(new DocumentListener() {
+            @Override
+            public void documentChanged(@NotNull DocumentEvent event) {
+                // 重新渲染JScrollPane，否则没有滚动条，无法滚动
+                pane.revalidate();
+                pane.repaint();
+            }
+        });
+        if (!isUpdate) {
+            TabInfo tabInfo = new TabInfo(title, content, genPath, fileSuffix, languageTextField);
+            tabList.add(tabInfo);
+        }
+        pane.getVerticalScrollBar().setUnitIncrement(10);
+        return jPanel;
+    }
 
     /**
      * 创建自定义控件
@@ -367,6 +481,10 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setFromCheck(fromCheckBox.isSelected());
         config.setSqlDialect(MybatisFlexUtil.getDialectType(sqlDialect.getSelectedItem().toString()));
         config.setMapperXmlType(mapperXmlType.getSelectedItem().toString());
+        for (TabInfo tabInfo : tabList) {
+            tabInfo.setContent(tabInfo.getTextField().getText());
+        }
+        config.setTabList(tabList);
         return config;
     }
 

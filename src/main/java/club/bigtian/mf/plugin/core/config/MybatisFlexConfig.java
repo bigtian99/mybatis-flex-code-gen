@@ -2,9 +2,12 @@ package club.bigtian.mf.plugin.core.config;
 
 
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
+import club.bigtian.mf.plugin.entity.TabInfo;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson2.JSON;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MybatisFlexConfig {
@@ -224,6 +227,16 @@ public class MybatisFlexConfig {
      * mapper xml 生成类型（java/resource）
      */
     private String mapperXmlType;
+
+    private String tabList;
+
+    public List<TabInfo> getTabList() {
+        return JSON.parseArray(tabList, TabInfo.class);
+    }
+
+    public void setTabList(List<TabInfo> tabList) {
+        this.tabList = JSON.toJSONString(tabList);
+    }
 
     public Boolean isFromCheck() {
         return fromCheck;

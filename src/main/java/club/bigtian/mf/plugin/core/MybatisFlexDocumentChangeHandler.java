@@ -239,7 +239,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         Document document = editor.getDocument();
         if (Boolean.TRUE.equals(document.getUserData(LISTENER))) {
             document.putUserData(LISTENER, false);
-            document.removeDocumentListener(this);
+            // document.removeDocumentListener(this);
         }
     }
 

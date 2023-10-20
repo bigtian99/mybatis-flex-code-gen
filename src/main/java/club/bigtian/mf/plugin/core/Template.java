@@ -129,6 +129,20 @@ public class Template {
         return (boolean) ObjectUtil.defaultIfNull(fieldValue, defaultValue);
     }
 
+    public static <T> T getData(String property, Class<T> clazz) {
+        MybatisFlexConfig config = getMybatisFlexConfig();
+        Object fieldValue = ReflectUtil.getFieldValue(config, property);
+        T defaultValue = null;
+        try {
+            defaultValue = clazz.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return (T) ObjectUtil.defaultIfNull(fieldValue, defaultValue);
+
+    }
+
+
     public static String getTablePrefix() {
         return getConfigData(MybatisFlexConstant.TABLE_PREFIX);
     }
