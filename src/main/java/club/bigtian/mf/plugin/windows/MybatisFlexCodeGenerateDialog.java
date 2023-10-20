@@ -28,9 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -293,6 +291,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                     .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
             setSelectTalbe(actionEvent);
         });
+
     }
 
     private static Set<String> search(String tableName, TableListCellRenderer cellRenderer) {

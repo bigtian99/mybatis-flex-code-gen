@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.mybatisflex.plugin"
-version = "1.5.1-RELEASE"
+version = "1.6-RELEASE"
 
 repositories {
     maven {
