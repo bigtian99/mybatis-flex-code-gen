@@ -1,12 +1,13 @@
 package club.bigtian.mf.plugin.core.search;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class InvertedIndexSearch {
-    private static Map<String, Set<String>> INVERTED_INDEX = new HashMap<>();
+    private static Map<String, Map<String, Set<String>>> INVERTED_INDEX = new HashMap<>();
 
 
     /**
@@ -14,11 +15,15 @@ public class InvertedIndexSearch {
      *
      * @param tableNames 表名
      */
-    public static void indexText(Collection<String> tableNames) {
+    public static void indexText(Collection<String> tableNames, String type) {
         for (String tableName : tableNames) {
             for (int i = 0; i < tableName.length(); i++) {
                 char word = tableName.charAt(i);
-                INVERTED_INDEX.computeIfAbsent((word + "").toLowerCase(), k -> new HashSet<>()).add(tableName);
+                Map<String, Set<String>> setMap = INVERTED_INDEX.get(type);
+                if (ObjectUtil.isNull(setMap)) {
+                    INVERTED_INDEX.put(type, new HashMap<>());
+                }
+                INVERTED_INDEX.get(type).computeIfAbsent((word + "").toLowerCase(), k -> new HashSet<>()).add(tableName);
             }
         }
     }
@@ -26,7 +31,7 @@ public class InvertedIndexSearch {
     /**
      * 清空倒排索引
      */
-    public  static void clear(){
+    public static void clear() {
         INVERTED_INDEX.clear();
     }
 
@@ -36,9 +41,9 @@ public class InvertedIndexSearch {
      * @param keyword 关键字
      * @return {@code Set<String>}
      */
-    public static Set<String> search(String keyword) {
+    public static Set<String> search(String keyword, String type) {
         if (StrUtil.isEmpty(keyword)) {
-            return INVERTED_INDEX.values().stream()
+            return INVERTED_INDEX.get(type).values().stream()
                     .flatMap(el -> el.stream())
                     .collect(Collectors.toSet());
         }
@@ -46,7 +51,7 @@ public class InvertedIndexSearch {
         Set<String> result = new HashSet<>();
         for (int i = 0; i < keyword.length(); i++) {
             char key = keyword.charAt(i);
-            result.addAll(INVERTED_INDEX.getOrDefault(key + "", Collections.emptySet()));
+            result.addAll(INVERTED_INDEX.get(type).getOrDefault(key + "", Collections.emptySet()));
         }
         String finalKeyword = keyword;
         result = result.stream()
@@ -66,13 +71,13 @@ public class InvertedIndexSearch {
     }
 
 
-    public static Map<String, String> highlightKey(String keyword) {
+    public static Map<String, String> highlightKey(String keyword, String type) {
 
-        Set<String> result = search(keyword);
+        Set<String> result = search(keyword, type);
         if (StrUtil.isEmpty(keyword)) {
             return result.stream().collect(Collectors.toMap(el -> el, el -> el));
         }
-        //字符串排序
+        // 字符串排序
 
         Map<String, Integer> idxMap = new HashMap<>();
         Map<String, String> highlightMap = new HashMap<>();

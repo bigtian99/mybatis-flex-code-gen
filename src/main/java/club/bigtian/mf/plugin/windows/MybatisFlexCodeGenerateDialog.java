@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.windows;
 import club.bigtian.mf.plugin.core.RenderMybatisFlexTemplate;
 import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
+import club.bigtian.mf.plugin.core.listener.ComBoxDocumentListener;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.render.TableListCellRenderer;
 import club.bigtian.mf.plugin.core.search.InvertedIndexSearch;
@@ -12,6 +13,7 @@ import club.bigtian.mf.plugin.core.validator.InputValidatorImpl;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.icons.AllIcons;
@@ -28,7 +30,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -111,12 +115,18 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
 
         syncCheckBox.addActionListener(e -> {
             if (syncCheckBox.isSelected()) {
-                Modules.syncModules(list, cotrollerCombox.getSelectedIndex());
+                Modules.syncModules(list, cotrollerCombox.getSelectedItem());
             }
         });
         cotrollerCombox.addActionListener(e -> {
             if (syncCheckBox.isSelected()) {
-                Modules.syncModules(list, cotrollerCombox.getSelectedIndex());
+                Modules.syncModules(list, cotrollerCombox.getSelectedItem());
+            }
+        });
+        JTextField textField = (JTextField) cotrollerCombox.getEditor().getEditorComponent();
+        textField.addActionListener(e -> {
+            if (syncCheckBox.isSelected()) {
+                Modules.syncModules(list, cotrollerCombox.getSelectedItem());
             }
         });
 
@@ -187,7 +197,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         // tableNameSet按照字母降序
         tableNameList = new ArrayList<>(tableInfoMap.keySet());
         // 初始化倒排索引
-        InvertedIndexSearch.indexText(tableNameList);
+        InvertedIndexSearch.indexText(tableNameList,"tableList");
         Collections.sort(tableNameList);
         model.addAll(tableNameList);
         tableList.setModel(model);
@@ -240,6 +250,26 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             generateBtn.setEnabled(strict);
         });
 
+        addComBoxListener();
+        button1.addActionListener(e -> {
+            CustomMappingDialog dialog = new CustomMappingDialog();
+            dialog.show();
+            tableInfoMap = TableUtils.getAllTables(actionEvent)
+                    .stream()
+                    .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
+            setSelectTalbe(actionEvent);
+        });
+
+        for (JComboBox jComboBox : list) {
+            Dimension dimension = jComboBox.getPreferredSize();
+            dimension.width = 250;
+            jComboBox.setPreferredSize(dimension);
+            JTextField field = (JTextField) jComboBox.getEditor().getEditorComponent();
+            textField.getDocument().addDocumentListener(new ComBoxDocumentListener(jComboBox, field));
+        }
+    }
+
+    private void addComBoxListener() {
         cotrollerCombox.addActionListener(e -> {
             if (sinceFlag) {
                 return;
@@ -283,19 +313,11 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             MybatisFlexConfig configData = getConfigData();
             mapperXmlPath.setText(Modules.getPackagePath(xmlComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getXmlPath(), "mappers")));
         });
-        button1.addActionListener(e -> {
-            CustomMappingDialog dialog = new CustomMappingDialog();
-            dialog.show();
-            tableInfoMap = TableUtils.getAllTables(actionEvent)
-                    .stream()
-                    .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
-            setSelectTalbe(actionEvent);
-        });
 
     }
 
     private static Set<String> search(String tableName, TableListCellRenderer cellRenderer) {
-        Map<String, String> highlightKey = InvertedIndexSearch.highlightKey(tableName);
+        Map<String, String> highlightKey = InvertedIndexSearch.highlightKey(tableName,"tableList");
         cellRenderer.setSearchTableName(tableName);
         cellRenderer.setHighlightKey(highlightKey);
         return highlightKey.keySet();
@@ -395,7 +417,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         Set<Boolean> booleanSet = packageList.stream()
                 .map(el -> StrUtil.isNotEmpty(el.getText()))
                 .collect(Collectors.toSet());
-        generateBtn.setEnabled(booleanSet.contains(true) && booleanSet.size() == 1);
+        generateBtn.setEnabled(!booleanSet.contains(false));
     }
 
     private void initBtn() {
@@ -425,6 +447,16 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
      * 生成按钮事件
      */
     private void onGenerate() {
+        list.stream()
+                .forEach(el -> {
+                    JTextField textField = (JTextField) el.getEditor().getEditorComponent();
+                    String moduleName = textField.getText();
+                    if (!Modules.containsModule(moduleName)) {
+                        Messages.showWarningDialog(StrUtil.format("找不到名称为：【{}】的模块",moduleName), "提示");
+                        Assert.isFalse(true, "请选择正确的模块");
+                    }
+                });
+
         List<String> selectedTabeList = tableList.getSelectedValuesList();
         if (CollUtil.isEmpty(selectedTabeList)) {
             Messages.showWarningDialog("请选择要生成的表", "提示");
@@ -488,18 +520,24 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         config.setControllerPackage(controllerPath.getText());
         config.setControllerModule(cotrollerCombox.getSelectedItem().toString());
         config.setMapperPackage(mapperPackagePath.getText());
-        config.setMapperModule(mapperComBox.getSelectedItem().toString());
+
+        config.setMapperModule(getTextFieldVal(mapperComBox));
         config.setXmlPackage(mapperXmlPath.getText());
-        config.setXmlModule(xmlComBox.getSelectedItem().toString());
+        config.setXmlModule(getTextFieldVal(xmlComBox));
         config.setModelPackage(modelPackagePath.getText());
-        config.setModelModule(modelCombox.getSelectedItem().toString());
+        config.setModelModule(getTextFieldVal(modelCombox));
         config.setInterfacePackage(serviceIntefacePath.getText());
-        config.setInterfaceModule(serviceInteCombox.getSelectedItem().toString());
+        config.setInterfaceModule(getTextFieldVal(serviceInteCombox));
         config.setImplPackage(serviceImpPath.getText());
-        config.setImplModule(serviceImplComBox.getSelectedItem().toString());
+        config.setImplModule(getTextFieldVal(serviceImplComBox));
         config.setSync(syncCheckBox.isSelected());
         config.setIdType(idTypeCombox.getSelectedItem().toString());
         return config;
+    }
+
+    public String getTextFieldVal(JComboBox comboBox) {
+        JTextField textField = (JTextField) comboBox.getEditor().getEditorComponent();
+        return textField.getText();
     }
 
     public void initConfigData(MybatisFlexConfig config) {

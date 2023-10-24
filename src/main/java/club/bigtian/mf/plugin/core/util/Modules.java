@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.core.util;
 import club.bigtian.mf.plugin.core.config.CustomConfig;
 import club.bigtian.mf.plugin.core.filter.FilterComboBoxModel;
 import club.bigtian.mf.plugin.core.render.ModuleComBoxRender;
+import club.bigtian.mf.plugin.core.search.InvertedIndexSearch;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -32,8 +33,12 @@ import java.util.stream.Collectors;
  */
 public class Modules {
     private static Map<String, Module> moduleMap;
-    private static Map<String, Map<String, String>> modulePackageMap;
+    public static Map<String, Map<String, String>> modulePackageMap;
     private static Boolean isManvenProject;
+
+    public static boolean containsModule(String moduleName) {
+        return moduleMap.containsKey(moduleName);
+    }
 
     /**
      * 得到包路径
@@ -71,7 +76,6 @@ public class Modules {
         boolean isManvenProject = isManvenProject(modules[0]);
         for (JComboBox modulesCombox : modulesComboxs) {
             modulesCombox.setRenderer(new ModuleComBoxRender());
-
             moduleMap = Arrays.stream(modules)
                     .filter(module -> {
                         if (isManvenProject) {
@@ -88,12 +92,18 @@ public class Modules {
                         }
                         return name;
                     }, module -> module));
-            FilterComboBoxModel model = new FilterComboBoxModel(moduleMap.keySet().stream().collect(Collectors.toList()));
+            List<String> moduleList = moduleMap.keySet().stream().collect(Collectors.toList());
+            FilterComboBoxModel model = new FilterComboBoxModel(moduleList);
             modulesCombox.setModel(model);
-
-            modulesCombox.setSelectedIndex(0);
+            setModuleText(modulesCombox);
         }
         getModulePackages();
+    }
+
+    public static void setModuleText(JComboBox comboBox) {
+        List<String> moduleList = moduleMap.keySet().stream().collect(Collectors.toList());
+        JTextField field = (JTextField) comboBox.getEditor().getEditorComponent();
+        field.setText(moduleList.get(0));
     }
 
     public static void getModulePackages() {
@@ -120,6 +130,7 @@ public class Modules {
             }
             modulePackageMap.put(name, moduleMap);
         }
+        InvertedIndexSearch.indexText(modulePackageMap.keySet(),"module");
     }
 
     /**
@@ -212,13 +223,13 @@ public class Modules {
      */
     public static void comBoxGanged(JComboBox serviceInteCombox, JComboBox serviceImplComBox) {
         serviceInteCombox.addActionListener(e -> {
-            serviceImplComBox.setSelectedIndex(serviceInteCombox.getSelectedIndex());
+            serviceImplComBox.setSelectedItem(serviceInteCombox.getSelectedItem());
             serviceImplComBox.revalidate();
             serviceImplComBox.repaint();
         });
 
         serviceImplComBox.addActionListener(e -> {
-            serviceInteCombox.setSelectedIndex(serviceImplComBox.getSelectedIndex());
+            serviceInteCombox.setSelectedItem(serviceImplComBox.getSelectedItem());
             serviceInteCombox.revalidate();
             serviceInteCombox.repaint();
         });
@@ -230,9 +241,11 @@ public class Modules {
      * @param modulesComboxs
      * @param idx
      */
-    public static void syncModules(List<JComboBox> modulesComboxs, int idx) {
+    public static void syncModules(List<JComboBox> modulesComboxs, Object selectItem) {
         for (JComboBox modulesCombox : modulesComboxs) {
-            modulesCombox.setSelectedIndex(idx);
+            JTextField textField = (JTextField) modulesCombox.getEditor().getEditorComponent();
+            textField.setText(selectItem.toString());
+            modulesCombox.setSelectedItem(selectItem);
             modulesCombox.revalidate();
             modulesCombox.repaint();
         }
