@@ -145,14 +145,14 @@ public class VirtualFileUtils {
     public static PsiDirectory getPsiDirectory(Module module, String packageName, String key) {
 
         Set javaResourceRootTypes = StrUtil.isEmpty(key) ? JavaModuleSourceRootTypes.RESOURCES : JavaModuleSourceRootTypes.SOURCES;
-        PsiDirectory psiDirectory = PSI_DIRECTORY_MAP.get(packageName);
+        PsiDirectory psiDirectory = PSI_DIRECTORY_MAP.get(packageName + key);
         if (ObjectUtil.isNull(psiDirectory)) {
             AtomicReference<PsiDirectory> subPsiDirectory = new AtomicReference<>();
             WriteCommandAction.runWriteCommandAction(module.getProject(), () -> {
                 subPsiDirectory.set(createSubDirectory(module, javaResourceRootTypes, packageName));
             });
             psiDirectory = subPsiDirectory.get();
-            PSI_DIRECTORY_MAP.put(packageName, psiDirectory);
+            PSI_DIRECTORY_MAP.put(packageName + key, psiDirectory);
         }
         return psiDirectory;
     }

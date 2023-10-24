@@ -55,7 +55,8 @@ public class Modules {
         Map<String, String> moduleMap = modulePackageMap.get(moduleName);
         if (CollUtil.isEmpty(moduleMap)) {
             NotificationUtils.notifyError("模块不存在!", "", ProjectUtils.getCurrentProject());
-            throw new RuntimeException(StrUtil.format("模块不存在:{}", moduleName));
+            return "";
+            // throw new RuntimeException(StrUtil.format("模块不存在:{}", moduleName));
         }
         return moduleMap.getOrDefault(packageName, "");
     }

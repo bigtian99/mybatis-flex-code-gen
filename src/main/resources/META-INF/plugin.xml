@@ -39,10 +39,11 @@
     ]]></description>
 
     <change-notes><![CDATA[
-    <h3>1.6-RELEASE</h3>
+    <h3>1.6.1-RELEASE</h3>
     <ul>
-    <li>【新增】apt字段批量重命名</li>
-    <li>【新增】根据sql生成flex代码</li>
+    <li>【新增】提供在原有的默认模板上增加自定义模板渲染</li>
+    <li>【优化】生成面板模块支持搜索/li>
+    <li>【优化】同一个包名会把 mapper 生成到 resource 目录下</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
