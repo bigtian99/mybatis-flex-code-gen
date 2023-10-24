@@ -14,9 +14,9 @@ public class ComBoxDocumentListener implements DocumentListener {
     JTextField textField;
     JComboBox comboBox;
 
-    public ComBoxDocumentListener(JComboBox comboBox, JTextField textField) {
+    public ComBoxDocumentListener(JComboBox comboBox) {
         render = (ModuleComBoxRender) comboBox.getRenderer();
-        this.textField = textField;
+        this.textField =(JTextField) comboBox.getEditor().getEditorComponent();
         this.comboBox = comboBox;
     }
 

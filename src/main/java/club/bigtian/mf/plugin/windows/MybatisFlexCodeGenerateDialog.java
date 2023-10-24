@@ -197,7 +197,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         // tableNameSet按照字母降序
         tableNameList = new ArrayList<>(tableInfoMap.keySet());
         // 初始化倒排索引
-        InvertedIndexSearch.indexText(tableNameList,"tableList");
+        InvertedIndexSearch.indexText(tableNameList, "tableList");
         Collections.sort(tableNameList);
         model.addAll(tableNameList);
         tableList.setModel(model);
@@ -264,8 +264,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             Dimension dimension = jComboBox.getPreferredSize();
             dimension.width = 250;
             jComboBox.setPreferredSize(dimension);
-            JTextField field = (JTextField) jComboBox.getEditor().getEditorComponent();
-            textField.getDocument().addDocumentListener(new ComBoxDocumentListener(jComboBox, field));
+            textField.getDocument().addDocumentListener(new ComBoxDocumentListener(jComboBox));
         }
     }
 
@@ -313,11 +312,10 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             MybatisFlexConfig configData = getConfigData();
             mapperXmlPath.setText(Modules.getPackagePath(xmlComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getXmlPath(), "mappers")));
         });
-
     }
 
     private static Set<String> search(String tableName, TableListCellRenderer cellRenderer) {
-        Map<String, String> highlightKey = InvertedIndexSearch.highlightKey(tableName,"tableList");
+        Map<String, String> highlightKey = InvertedIndexSearch.highlightKey(tableName, "tableList");
         cellRenderer.setSearchTableName(tableName);
         cellRenderer.setHighlightKey(highlightKey);
         return highlightKey.keySet();
@@ -452,7 +450,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                     JTextField textField = (JTextField) el.getEditor().getEditorComponent();
                     String moduleName = textField.getText();
                     if (!Modules.containsModule(moduleName)) {
-                        Messages.showWarningDialog(StrUtil.format("找不到名称为：【{}】的模块",moduleName), "提示");
+                        Messages.showWarningDialog(StrUtil.format("找不到名称为：【{}】的模块", moduleName), "提示");
                         Assert.isFalse(true, "请选择正确的模块");
                     }
                 });

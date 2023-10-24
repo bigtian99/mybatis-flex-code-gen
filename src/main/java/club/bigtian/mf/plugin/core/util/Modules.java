@@ -40,6 +40,10 @@ public class Modules {
         return moduleMap.containsKey(moduleName);
     }
 
+    public static Set<String> getModuleNames() {
+        return moduleMap.keySet();
+    }
+
     /**
      * 得到包路径
      *
@@ -130,7 +134,7 @@ public class Modules {
             }
             modulePackageMap.put(name, moduleMap);
         }
-        InvertedIndexSearch.indexText(modulePackageMap.keySet(),"module");
+        InvertedIndexSearch.indexText(modulePackageMap.keySet(), "module");
     }
 
     /**
