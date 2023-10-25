@@ -2,7 +2,9 @@ package club.bigtian.mf.plugin.core.persistent;
 
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
+import club.bigtian.mf.plugin.core.util.TableUtils;
 import club.bigtian.mf.plugin.entity.MatchTypeMapping;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
@@ -130,7 +132,7 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
          */
         public String columnFieldMap = "{}";
 
-        public String typeMapping = "{}";
+        public String typeMappings = "{}";
 
     }
 
@@ -141,8 +143,12 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
      */
 
     public static Map<String, List<MatchTypeMapping>> getTypeMapping() {
-        return JSON.parseObject(getInstance().getState().typeMapping, new TypeReference<Map<String, List<MatchTypeMapping>>>() {
+        Map<String, List<MatchTypeMapping>> typeMappingMap = JSON.parseObject(getInstance().getState().typeMappings, new TypeReference<Map<String, List<MatchTypeMapping>>>() {
         });
+        if (CollUtil.isEmpty(typeMappingMap)) {
+            typeMappingMap = TableUtils.getDefaultTypeMappingMap();
+        }
+        return typeMappingMap;
     }
 
     /**
@@ -154,7 +160,7 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
     public static void setTypeMapping(Map<String, List<MatchTypeMapping>> typeMapping) {
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
-        state.typeMapping = JSONObject.toJSONString(typeMapping);
+        state.typeMappings = JSONObject.toJSONString(typeMapping);
         instance.loadState(state);
     }
 

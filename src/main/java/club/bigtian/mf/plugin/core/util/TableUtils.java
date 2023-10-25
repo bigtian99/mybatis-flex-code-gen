@@ -247,4 +247,35 @@ public class TableUtils {
         }
         return fieldType;
     }
+
+    public static Map<String,List<MatchTypeMapping>> getDefaultTypeMappingMap(){
+        Map<String,List<MatchTypeMapping>> map = new HashMap<>();
+        map.put("REGEX",getRegexTypeMapping());
+        map.put("ORDINARY",getOrdinaryTypeMapping());
+        return map;
+    }
+    public static List<MatchTypeMapping> getRegexTypeMapping() {
+        List<MatchTypeMapping> list = new ArrayList<>();
+        list.add(new MatchTypeMapping("REGEX", "java.lang.String", "varchar(\\(\\d+\\))?"));
+        list.add(new MatchTypeMapping("REGEX", "java.lang.String", "char(\\(\\d+\\))?"));
+        list.add(new MatchTypeMapping("REGEX", "java.lang.String", "(tiny|medium|long)*text"));
+        list.add(new MatchTypeMapping("REGEX", "java.math.BigDecimal", "decimal(\\(\\d+,\\d+\\))?"));
+        list.add(new MatchTypeMapping("REGEX", "java.lang.Integer", "(tiny|small|medium)*int(\\(\\d+\\))?"));
+        list.add(new MatchTypeMapping("REGEX", "jjava.lang.Long", "bigint(\\(\\d+\\))?"));
+        return list;
+    }
+    public static List<MatchTypeMapping> getOrdinaryTypeMapping() {
+
+        List<MatchTypeMapping> list = new ArrayList<>();
+        list.add(new MatchTypeMapping("ORDINARY", "java.lang.Integer", "integer"));
+        list.add(new MatchTypeMapping("ORDINARY", "java.lang.String", "int4"));
+        list.add(new MatchTypeMapping("ORDINARY", "java.lang.Long", "int8"));
+        list.add(new MatchTypeMapping("ORDINARY", "java.util.Date", "date"));
+        list.add(new MatchTypeMapping("ORDINARY", "java.util.Date", "datetime"));
+        list.add(new MatchTypeMapping("ORDINARY", "java.util.Date", "timestamp"));
+        list.add(new MatchTypeMapping("ORDINARY", "java.time.LocalTime", "time"));
+        list.add(new MatchTypeMapping("ORDINARY", "java.lang.Boolean", "boolean"));
+        return list;
+    }
+
 }

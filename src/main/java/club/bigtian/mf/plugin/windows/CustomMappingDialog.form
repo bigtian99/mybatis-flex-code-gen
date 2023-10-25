@@ -59,7 +59,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <grid id="3b5dd" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="3b5dd" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -78,7 +78,7 @@
               </component>
               <vspacer id="efb5c">
                 <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                 </constraints>
               </vspacer>
               <component id="6a28d" class="javax.swing.JButton" binding="removeBtn">
@@ -88,6 +88,15 @@
                 <properties>
                   <icon value="icons/removeConfig.png"/>
                   <text value="删除"/>
+                </properties>
+              </component>
+              <component id="c496a" class="javax.swing.JButton" binding="reset">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <icon value="icons/reset_mapping.png"/>
+                  <text value="重置"/>
                 </properties>
               </component>
             </children>

@@ -2,6 +2,7 @@ package club.bigtian.mf.plugin.windows;
 
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
+import club.bigtian.mf.plugin.core.util.NotificationUtils;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.entity.MatchTypeMapping;
 import cn.hutool.core.util.ObjectUtil;
@@ -29,6 +30,7 @@ public class CustomMappingDialog extends JDialog {
     private JButton addBtn;
     private JButton removeBtn;
     private JTable table;
+    private JButton reset;
     String[] HEADER = {"Match Type", "Column Type", "Java Type"};
     Object[][] TABLE_DATA = {
             {"Match Type", "Column Type", "Java Type"}
@@ -77,7 +79,7 @@ public class CustomMappingDialog extends JDialog {
 
         addBtn.addActionListener(e -> {
             typeMapping = getTableData();
-            typeMapping.computeIfAbsent("REGEX", k -> new ArrayList<>()).add(new MatchTypeMapping("REGEX","",""));
+            typeMapping.computeIfAbsent("REGEX", k -> new ArrayList<>()).add(new MatchTypeMapping("REGEX", "", ""));
             initTableData();
             table.setModel(getDataModel());
             setColumnInput();
@@ -91,13 +93,23 @@ public class CustomMappingDialog extends JDialog {
             if (table.isEditing()) {
                 table.getCellEditor().stopCellEditing();
             }
-            String valueAt = model.getValueAt(selectedRow, 0).toString();
+            String type = model.getValueAt(selectedRow, 0).toString();
+            String valueAt = model.getValueAt(selectedRow, 1).toString();
             typeMapping = getTableData();
-            typeMapping.remove(valueAt);
+            typeMapping.get(type).removeIf(mapping -> mapping.getColumType().equals(valueAt));
             initTableData();
         });
         initTableData();
 
+        reset.addActionListener(e -> {
+            int flag = Messages.showYesNoDialog("确定重置吗？", "提示", AllIcons.General.QuestionDialog);
+            if (flag == 0) {
+                MybatisFlexPluginConfigData.setTypeMapping(new HashMap<>());
+                NotificationUtils.notifySuccess("重置成功");
+                typeMapping = MybatisFlexPluginConfigData.getTypeMapping();
+                initTableData();
+            }
+        });
     }
 
     private void initTableData() {
@@ -110,6 +122,7 @@ public class CustomMappingDialog extends JDialog {
             TABLE_DATA[idx] = new Object[]{mapping.getType(), mapping.getColumType(), mapping.getJavaField()};
             idx++;
         }
+
         table.setModel(getDataModel());
         setColumnInput();
     }
