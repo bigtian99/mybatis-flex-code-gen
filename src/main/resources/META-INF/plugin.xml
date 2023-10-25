@@ -44,6 +44,7 @@
     <li>【新增】提供在原有的默认模板上增加自定义模板渲染</li>
     <li>【优化】生成面板模块支持搜索/li>
     <li>【优化】同一个包名会把 mapper 生成到 resource 目录下</li>
+    <li>【优化】字段映射支持正则表达式</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.

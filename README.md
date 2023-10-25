@@ -80,7 +80,12 @@
 | **稳    | 9.9 元  |
 | 阳灿    | 16.66 元  |
 
-### 八、更新日志
+### 八、鸣谢
+1、感谢`jetbrains`对该项目大力支持，提供免费使用许可
+
+<img src="docs/assets/jetbrains.svg" alt="jetbrains-logo-inv.svg" style="height:125px;" />
+
+### 九、更新日志
 
 #### 1.4.7.1-RELEASE
 
