@@ -81,7 +81,7 @@
 | 阳灿    | 16.66 元  |
 
 ### 八、鸣谢
-1、感谢`jetbrains`公司对该项目的大力支持，提供免费使用许可
+1、感谢`jetbrains`公司对本项目的大力支持，提供免费使用许可
 
 <img src="docs/assets/jetbrains.svg" alt="jetbrains-logo-inv.svg" style="height:125px;" />
 
