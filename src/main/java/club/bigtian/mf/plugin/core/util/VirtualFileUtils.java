@@ -143,7 +143,6 @@ public class VirtualFileUtils {
      * @return {@code PsiDirectory}
      */
     public static PsiDirectory getPsiDirectory(Module module, String packageName, String key) {
-
         Set javaResourceRootTypes = StrUtil.isEmpty(key) ? JavaModuleSourceRootTypes.RESOURCES : JavaModuleSourceRootTypes.SOURCES;
         PsiDirectory psiDirectory = PSI_DIRECTORY_MAP.get(packageName + key);
         if (ObjectUtil.isNull(psiDirectory)) {

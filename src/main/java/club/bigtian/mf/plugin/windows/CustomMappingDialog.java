@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.windows;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
+import club.bigtian.mf.plugin.entity.MatchTypeMapping;
 import cn.hutool.core.util.ObjectUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.TreeClassChooser;
@@ -18,8 +19,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import java.awt.event.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class CustomMappingDialog extends JDialog {
     private JPanel contentPane;
@@ -28,9 +29,11 @@ public class CustomMappingDialog extends JDialog {
     private JButton addBtn;
     private JButton removeBtn;
     private JTable table;
-    String[] HEADER = {"Column Type", "Java Type"};
-    Object[][] TABLE_DATA;
-    Map<String, String> typeMapping;
+    String[] HEADER = {"Match Type", "Column Type", "Java Type"};
+    Object[][] TABLE_DATA = {
+            {"Match Type", "Column Type", "Java Type"}
+    };
+    Map<String, List<MatchTypeMapping>> typeMapping;
 
     public CustomMappingDialog() {
         setContentPane(contentPane);
@@ -74,7 +77,7 @@ public class CustomMappingDialog extends JDialog {
 
         addBtn.addActionListener(e -> {
             typeMapping = getTableData();
-            typeMapping.put("", "");
+            typeMapping.computeIfAbsent("REGEX", k -> new ArrayList<>()).add(new MatchTypeMapping("REGEX","",""));
             initTableData();
             table.setModel(getDataModel());
             setColumnInput();
@@ -98,20 +101,23 @@ public class CustomMappingDialog extends JDialog {
     }
 
     private void initTableData() {
-        TABLE_DATA = new Object[typeMapping.size() > 0 ? typeMapping.size() : 1][];
+        List<MatchTypeMapping> list = typeMapping.values().stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+        TABLE_DATA = new Object[list.size() > 0 ? list.size() : 1][];
         int idx = 0;
-        for (Map.Entry<String, String> entry : typeMapping.entrySet()) {
-            TABLE_DATA[idx] = new Object[]{entry.getKey(), entry.getValue()};
+        for (MatchTypeMapping mapping : list) {
+            TABLE_DATA[idx] = new Object[]{mapping.getType(), mapping.getColumType(), mapping.getJavaField()};
             idx++;
         }
         table.setModel(getDataModel());
-
         setColumnInput();
     }
 
 
     private void setColumnInput() {
-        TableColumn comboBoxColumn = table.getColumnModel().getColumn(1);
+        TableColumn comboBoxColumn = table.getColumnModel().getColumn(2);
+        TableColumn type = table.getColumnModel().getColumn(0);
 
         ExtendableTextField textField = new ExtendableTextField();
         ExtendableTextComponent.Extension browseExtension =
@@ -131,12 +137,17 @@ public class CustomMappingDialog extends JDialog {
                         });
         textField.addExtension(browseExtension);
         comboBoxColumn.setCellEditor(new DefaultCellEditor(textField));
+        JComboBox<Object> box = new JComboBox<>();
+        box.addItem("REGEX");
+        box.addItem("ORDINARY");
+        type.setCellEditor(new DefaultCellEditor(box));
+
     }
 
     @NotNull
     private DefaultTableModel getDataModel() {
         return new DefaultTableModel(TABLE_DATA, HEADER) {
-            boolean[] canEdit = {true, true};
+            boolean[] canEdit = {true, true, true};
 
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -152,18 +163,21 @@ public class CustomMappingDialog extends JDialog {
         dispose();
     }
 
-    private Map<String, String> getTableData() {
+    private Map<String, List<MatchTypeMapping>> getTableData() {
         if (table.isEditing()) {
             table.getCellEditor().stopCellEditing();
         }
         TableModel model = table.getModel();
         int rowCount = model.getRowCount();
-        Map<String, String> typeMappingMap = new HashMap<>();
+        Map<String, List<MatchTypeMapping>> typeMappingMap = new HashMap<>();
         try {
             for (int row = 0; row < rowCount; row++) {
-                String column = model.getValueAt(row, 0).toString().toLowerCase();
-                String javaField = model.getValueAt(row, 1).toString();
-                typeMappingMap.put(column, javaField);
+                String matchType = model.getValueAt(row, 0).toString();
+                String column = model.getValueAt(row, 1).toString().toLowerCase();
+                String javaField = model.getValueAt(row, 2).toString();
+                MatchTypeMapping mapping = new MatchTypeMapping(matchType, javaField, column);
+                // typeMappingMap.put(column, javaField);
+                typeMappingMap.computeIfAbsent(matchType, k -> new ArrayList<>()).add(mapping);
             }
         } catch (Exception e) {
 

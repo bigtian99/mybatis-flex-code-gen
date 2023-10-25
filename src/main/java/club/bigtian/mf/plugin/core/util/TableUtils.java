@@ -2,9 +2,11 @@ package club.bigtian.mf.plugin.core.util;
 
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
+import club.bigtian.mf.plugin.entity.MatchTypeMapping;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.database.dialects.DatabaseDialectEx;
 import com.intellij.database.model.DasColumn;
@@ -130,18 +132,23 @@ public class TableUtils {
      * @return {@code String}
      */
     private static String getFieldType(int jdbc, TableInfo tableInfo, String jdbcTypeName, int size, String jdbcTypeStr) {
-        Map<String, String> typeMapping = MybatisFlexPluginConfigData.getTypeMapping();
-        if (typeMapping.containsKey(jdbcTypeStr) || typeMapping.containsKey(StrUtil.subBefore(jdbcTypeStr, "(", true))) {
-            String className = typeMapping.get(jdbcTypeStr);
-            if (StrUtil.isEmpty(className)) {
-                className = typeMapping.get(StrUtil.subBefore(jdbcTypeStr, "(", true));
+        Map<String, List<MatchTypeMapping>> typeMapping = MybatisFlexPluginConfigData.getTypeMapping();
+        if (typeMapping.containsKey("ORDINARY")) {
+            for (MatchTypeMapping mapping : typeMapping.get("ORDINARY")) {
+                if (jdbcTypeStr.equals(mapping.getColumType())) {
+                    return mapping.getJavaField();
+                }
             }
-            if (StrUtil.contains(className, ".")) {
-                tableInfo.addImportClassItem(className);
-                return StrUtil.subAfter(className, ".", true);
-            }
-            return className;
         }
+        if (typeMapping.containsKey("REGEX")) {
+            for (MatchTypeMapping mapping : typeMapping.get("REGEX")) {
+                String group0 = ReUtil.getGroup0(mapping.getColumType(), jdbcTypeStr);
+                if (StrUtil.isNotEmpty(group0)) {
+                    return mapping.getJavaField();
+                }
+            }
+        }
+
         String className = convert(jdbc, size).getName();
         if (Object.class.getName().equals(className)) {
             String fieldType = MybatisFlexPluginConfigData.getFieldType(jdbcTypeName);
