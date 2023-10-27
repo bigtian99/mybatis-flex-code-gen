@@ -15,7 +15,9 @@ import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.intellij.codeInspection.reference.RefUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -75,9 +77,17 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     private FixedSizeButton sortBtn;
     private JCheckBox strictComBox;
     private JButton button1;
+    private JCheckBox enableControllerBox;
+    private JCheckBox enableModelBox;
+    private JCheckBox enableInterBox;
+    private JCheckBox enableImplBox;
+    private JCheckBox enableMapperBox;
+    private JCheckBox enableXmlBox;
 
     private AnActionEvent actionEvent;
+
     List<JComboBox> list = Arrays.asList(cotrollerCombox, modelCombox, serviceInteCombox, serviceImplComBox, mapperComBox, xmlComBox);
+    List<JCheckBox> enableList = Arrays.asList(enableControllerBox, enableModelBox, enableInterBox, enableImplBox, enableMapperBox, enableXmlBox);
     List<JTextField> packageList = Arrays.asList(controllerPath, modelPackagePath, serviceIntefacePath, serviceImpPath, mapperPackagePath, mapperXmlPath);
     Project project;
     List<String> tableNameList;
@@ -236,19 +246,19 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         });
         setSelectTalbe(actionEvent);
 
-        strictComBox.addChangeListener(e -> {
-            boolean strict = strictComBox.isSelected();
-            if (strict) {
-                Set<Boolean> collected = packageList.stream()
-                        .map(el -> StrUtil.isNotBlank(el.getText()))
-                        .collect(Collectors.toSet());
-
-                strict = !collected.contains(false);
-            } else {
-                strict = true;
-            }
-            generateBtn.setEnabled(strict);
-        });
+        // strictComBox.addChangeListener(e -> {
+        //     boolean strict = strictComBox.isSelected();
+        //     if (strict) {
+        //         Set<Boolean> collected = packageList.stream()
+        //                 .map(el -> StrUtil.isNotBlank(el.getText()))
+        //                 .collect(Collectors.toSet());
+        //
+        //         strict = !collected.contains(false);
+        //     } else {
+        //         strict = true;
+        //     }
+        //     generateBtn.setEnabled(strict);
+        // });
 
         addComBoxListener();
         button1.addActionListener(e -> {
@@ -398,25 +408,11 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 return StrUtil.isEmpty(pt) ? new ValidationInfo("请选择生成路径", textField) : null;
             }).installOn(textField);
 
-            textField.getDocument().addDocumentListener(new DocumentAdapter() {
-                @Override
-                protected void textChanged(@NotNull DocumentEvent e) {
-                    ComponentValidator.getInstance(textField).ifPresent(v -> v.revalidate());
-                    if (strictComBox.isSelected()) {
-                        enableGenerate();
-                    }
-                }
-            });
         });
     }
 
 
-    public void enableGenerate() {
-        Set<Boolean> booleanSet = packageList.stream()
-                .map(el -> StrUtil.isNotEmpty(el.getText()))
-                .collect(Collectors.toSet());
-        generateBtn.setEnabled(!booleanSet.contains(false));
-    }
+
 
     private void initBtn() {
         mapperBtn.addActionListener(e -> mapperPackagePath.setText(Package.selectPackage(Modules.getModule(mapperComBox.getSelectedItem().toString()), mapperPackagePath.getText())));
@@ -468,17 +464,28 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         // if (flag) {
         String since = sinceComBox.getSelectedItem().toString();
         MybatisFlexConfig configData = getConfigData();
+
+
         if (!SINCE_CONFIG.equals(since)) {
             MybatisFlexPluginConfigData.removeSinceConfig(since);
             MybatisFlexPluginConfigData.configSince(since, configData);
         }
         MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(configData);
+
         startGenCode(selectedTableInfo);
         // }
     }
 
     private void startGenCode(List<TableInfo> selectedTableInfo) {
-        RenderMybatisFlexTemplate.assembleData(selectedTableInfo, getConfigData(), actionEvent.getProject());
+        MybatisFlexConfig configData = getConfigData();
+        for (JCheckBox box : enableList) {
+            boolean selected = box.isSelected();
+            if (selected) {
+                continue;
+            }
+            ReflectUtil.setFieldValue(configData, box.getName(),"");
+        }
+        RenderMybatisFlexTemplate.assembleData(selectedTableInfo, configData, actionEvent.getProject());
         NotificationUtils.notifySuccess("代码生成成功", project);
         onCancel();
     }
