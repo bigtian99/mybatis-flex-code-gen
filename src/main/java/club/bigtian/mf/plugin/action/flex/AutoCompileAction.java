@@ -14,4 +14,6 @@ public class AutoCompileAction extends AnAction {
         ProjectUtils.setCurrentProject(project);
         PsiJavaFileUtil.createAptFile();
     }
+
+
 }

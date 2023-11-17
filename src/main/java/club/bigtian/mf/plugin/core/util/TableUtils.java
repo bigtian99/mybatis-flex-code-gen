@@ -261,7 +261,7 @@ public class TableUtils {
         list.add(new MatchTypeMapping("REGEX", "java.lang.String", "(tiny|medium|long)*text"));
         list.add(new MatchTypeMapping("REGEX", "java.math.BigDecimal", "decimal(\\(\\d+,\\d+\\))?"));
         list.add(new MatchTypeMapping("REGEX", "java.lang.Integer", "(tiny|small|medium)*int(\\(\\d+\\))?"));
-        list.add(new MatchTypeMapping("REGEX", "jjava.lang.Long", "bigint(\\(\\d+\\))?"));
+        list.add(new MatchTypeMapping("REGEX", "java.lang.Long", "bigint(\\(\\d+\\))?"));
         return list;
     }
     public static List<MatchTypeMapping> getOrdinaryTypeMapping() {

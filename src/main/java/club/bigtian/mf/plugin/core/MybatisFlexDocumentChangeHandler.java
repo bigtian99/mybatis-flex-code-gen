@@ -114,8 +114,8 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                     VelocityContext context = new VelocityContext();
                     String className = getClassName(config, psiClass.getName()) + ObjectUtil.defaultIfEmpty(config.getTableDefClassSuffix(), "TableDef");
                     context.put("className", className);
-                    context.put("allColumns", getDefInstanceName(config,"allColumns", false));
-                    context.put("defaultColumns", getDefInstanceName(config,"defaultColumns", false));
+                    context.put("allColumns", getDefInstanceName(config, "allColumns", false));
+                    context.put("defaultColumns", getDefInstanceName(config, "defaultColumns", false));
                     context.put("packageName", psiJavaFile.getPackageName() + "." + ObjectUtil.defaultIfEmpty(config.getAllInTablesPackage(), "table"));
                     context.put("list", fieldMap.values());
                     context.put("instance", getDefInstanceName(config, psiClass.getName(), true));
@@ -192,21 +192,21 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
         try {
             NotificationUtils.start();
-            // 所有的文档监听
-            EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this, this);
-            Document document;
-
-            for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
-                ProjectUtils.setCurrentProject(editor.getProject());
-                document = editor.getDocument();
-                document.putUserData(LISTENER, true);
-                editor.addEditorMouseListener(new EditorMouseListener() {
-                    @Override
-                    public void mouseExited(@NotNull EditorMouseEvent event) {
-                        createAptFile(Arrays.asList(VirtualFileUtils.getVirtualFile(editor.getDocument())));
-                    }
-                });
-            }
+            // // 所有的文档监听
+            // EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this, this);
+            // Document document;
+            //
+            // for (Editor editor : EditorFactory.getInstance().getAllEditors()) {
+            //     ProjectUtils.setCurrentProject(editor.getProject());
+            //     document = editor.getDocument();
+            //
+            //     editor.addEditorMouseListener(new EditorMouseListener() {
+            //         @Override
+            //         public void mouseExited(@NotNull EditorMouseEvent event) {
+            //             createAptFile(Arrays.asList(VirtualFileUtils.getVirtualFile(editor.getDocument())));
+            //         }
+            //     });
+            // }
             Project project = ProjectUtils.getCurrentProject();
             if (ObjectUtil.isNull(project)) {
                 return;
@@ -237,32 +237,32 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
 
         Editor editor = event.getEditor();
         Document document = editor.getDocument();
-        if (Boolean.TRUE.equals(document.getUserData(LISTENER))) {
-            document.putUserData(LISTENER, false);
-            document.removeDocumentListener(this);
+        VirtualFile currentFile = VirtualFileUtils.getVirtualFile(document);
+        ProjectUtils.setCurrentProject(editor.getProject());
+        if (!checkFile(currentFile)) {
+            return;
         }
+        document.removeDocumentListener(this);
     }
 
     @Override
     public void editorCreated(@NotNull EditorFactoryEvent event) {
         try {
-
             EditorFactoryListener.super.editorCreated(event);
             Editor editor = event.getEditor();
+            Document document = editor.getDocument();
+            VirtualFile currentFile = VirtualFileUtils.getVirtualFile(document);
+            ProjectUtils.setCurrentProject(editor.getProject());
+            if (!checkFile(currentFile)) {
+                return;
+            }
             editor.addEditorMouseListener(new EditorMouseListener() {
                 @Override
                 public void mouseExited(@NotNull EditorMouseEvent event) {
                     createAptFile(Arrays.asList(VirtualFileUtils.getVirtualFile(editor.getDocument())));
                 }
             });
-            Document document = editor.getDocument();
-            if (Boolean.TRUE.equals(document.getUserData(LISTENER))) {
-                if (!document.getUserData(LISTENER)) {
-                    document.addDocumentListener(this);
-                }
-                document.putUserData(LISTENER, true);
-            }
-            ProjectUtils.setCurrentProject(editor.getProject());
+            document.addDocumentListener(this);
         } catch (Exception e) {
 
         }

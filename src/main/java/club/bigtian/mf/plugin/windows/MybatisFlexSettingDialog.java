@@ -24,6 +24,7 @@ import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.LanguageTextField;
+import com.intellij.ui.components.JBTextField;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -121,6 +122,8 @@ public class MybatisFlexSettingDialog extends JDialog {
         insideSchema.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                // TemplatePreviewDialog dialog = new TemplatePreviewDialog();
+                // dialog.show();
                 int clickCount = e.getClickCount();
                 if (clickCount != 2) {
                     return;

@@ -11,6 +11,7 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.FileIndex;
 import com.intellij.openapi.roots.ModuleFileIndex;
@@ -35,6 +36,7 @@ public class Modules {
     private static Map<String, Module> moduleMap;
     public static Map<String, Map<String, String>> modulePackageMap;
     private static Boolean isManvenProject;
+
 
     public static boolean containsModule(String moduleName) {
         return moduleMap.containsKey(moduleName);
@@ -256,7 +258,9 @@ public class Modules {
         }
 
     }
-
+    public static Module getModuleForFile(PsiJavaFile file) {
+        return ModuleUtilCore.findModuleForPsiElement(file);
+    }
     public static String getModuleName(Module module) {
         return module.getName().replaceAll("\\.main", "");
     }

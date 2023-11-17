@@ -147,7 +147,10 @@ public class ReturnInfoDialog extends JDialog {
         Project project = ProjectUtils.getCurrentProject();
         if (StrUtil.isNotBlank(qualifiedName)) {
             PsiClass psiClass = JavaPsiFacade.getInstance(project).findClass(qualifiedName, GlobalSearchScope.allScope(project));
-            addMethodComBoxItem(psiClass, config.getMethodName());
+            if(ObjectUtil.isNotNull(psiClass)){
+                addMethodComBoxItem(psiClass, config.getMethodName());
+
+            }
 
         }
         genericityCheckBox.setSelected(config.isGenericity());
