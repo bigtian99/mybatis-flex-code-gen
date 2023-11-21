@@ -7,6 +7,7 @@ import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TabInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -76,11 +77,12 @@ public class RenderMybatisFlexTemplate {
             context.put("config", config);
             context.put("importClassList", tableInfo.getImportClassList());
             context.put("table", tableInfo);
+            context.put("createTime", DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
             String qualifiedName = config.getQualifiedName();
             if (StrUtil.isNotBlank(qualifiedName)) {
                 String methodName = config.getMethodName();
                 config.setMethodName(StrUtil.subBefore(methodName, "(", false));
-                context.put("resutlClass", qualifiedName.substring(qualifiedName.lastIndexOf(".") + 1));
+                context.put("resultClass", qualifiedName.substring(qualifiedName.lastIndexOf(".") + 1));
             }
             renderTemplate(templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules, factory, project);
             // 自定义模版渲染

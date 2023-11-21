@@ -27,7 +27,7 @@ public class NoFromInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        if(!Template.getCheckBoxConfig(MybatisFlexConstant.FROM,true)){
+        if(!Template.getCheckBoxConfig(MybatisFlexConstant.FROM,false)){
             return new PsiElementVisitor() {};
         }
         return new PsiElementVisitor() {

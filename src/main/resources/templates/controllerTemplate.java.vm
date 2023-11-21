@@ -79,11 +79,11 @@ public class ${controllerName}{
     })
     #end
 #if($config.qualifiedName)
-    public ${resutlClass} #if($config.genericity)<Boolean> #end save(@RequestBody $modelName  $requestPath){
+    public ${resultClass} #if($config.genericity)<Boolean> #end save(@RequestBody $modelName  $requestPath){
 #if($config.resultType=='static')
-        return ${resutlClass}.${config.methodName}(${interfaceVariable}.save($requestPath));
+        return ${resultClass}.${config.methodName}(${interfaceVariable}.save($requestPath));
 #else
-        return new ${resutlClass}(${interfaceVariable}.save($requestPath));
+        return new ${resultClass}(${interfaceVariable}.save($requestPath));
 #end
         }
 #else
@@ -121,11 +121,11 @@ public class ${controllerName}{
     })
     #end
 #if($config.qualifiedName)
-    public ${resutlClass} #if($config.genericity)<Boolean> #end  remove(@PathVariable Serializable id){
+    public ${resultClass} #if($config.genericity)<Boolean> #end  remove(@PathVariable Serializable id){
     #if($config.resultType=='static')
-            return ${resutlClass}.${config.methodName}(${interfaceVariable}.removeById(id));
+            return ${resultClass}.${config.methodName}(${interfaceVariable}.removeById(id));
     #else
-            return new ${resutlClass}(${interfaceVariable}.removeById(id));
+            return new ${resultClass}(${interfaceVariable}.removeById(id));
     #end
     }
 #else
@@ -161,11 +161,11 @@ public class ${controllerName}{
     })
     #end
 #if($config.qualifiedName)
-    public  ${resutlClass} #if($config.genericity)<Boolean> #end  update(@RequestBody $modelName $requestPath ){
+    public  ${resultClass} #if($config.genericity)<Boolean> #end  update(@RequestBody $modelName $requestPath ){
     #if($config.resultType=='static')
-            return ${resutlClass}.${config.methodName}(${interfaceVariable}.updateById($requestPath));
+            return ${resultClass}.${config.methodName}(${interfaceVariable}.updateById($requestPath));
     #else
-            return new ${resutlClass}(${interfaceVariable}.updateById($requestPath));
+            return new ${resultClass}(${interfaceVariable}.updateById($requestPath));
     #end
     }
 #else
@@ -188,11 +188,11 @@ public class ${controllerName}{
     @Operation(summary = "查询所有$!table.comment")
     #end
 #if($config.qualifiedName)
-    public ${resutlClass}#if($config.genericity)<List<$modelName>> #end list(){
+    public ${resultClass}#if($config.genericity)<List<$modelName>> #end list(){
     #if($config.resultType=='static')
-            return ${resutlClass}.${config.methodName}(${interfaceVariable}.list());
+            return ${resultClass}.${config.methodName}(${interfaceVariable}.list());
     #else
-            return new ${resutlClass}(${interfaceVariable}.list());
+            return new ${resultClass}(${interfaceVariable}.list());
     #end
     }
 #else
@@ -230,11 +230,11 @@ public class ${controllerName}{
     })
     #end
 #if($config.qualifiedName)
-    public ${resutlClass}#if($config.genericity)<$modelName> #end  getInfo(@PathVariable Serializable id){
+    public ${resultClass}#if($config.genericity)<$modelName> #end  getInfo(@PathVariable Serializable id){
     #if($config.resultType=='static')
-            return ${resutlClass}.${config.methodName}(${interfaceVariable}.getById(id));
+            return ${resultClass}.${config.methodName}(${interfaceVariable}.getById(id));
     #else
-            return new ${resutlClass}(${interfaceVariable}.getById(id));
+            return new ${resultClass}(${interfaceVariable}.getById(id));
     #end
     }
 #else
@@ -266,11 +266,11 @@ public class ${controllerName}{
     })
     #end
 #if($config.qualifiedName)
-    public ${resutlClass}#if($config.genericity)<Page<$modelName>> #end page(Page<$modelName> page){
+    public ${resultClass}#if($config.genericity)<Page<$modelName>> #end page(Page<$modelName> page){
     #if($config.resultType=='static')
-            return ${resutlClass}.${config.methodName}(${interfaceVariable}.page(page));
+            return ${resultClass}.${config.methodName}(${interfaceVariable}.page(page));
     #else
-            return new ${resutlClass}(${interfaceVariable}.page(page));
+            return new ${resultClass}(${interfaceVariable}.page(page));
     #end
     }
 #else

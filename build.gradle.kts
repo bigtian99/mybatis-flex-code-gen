@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.mybatisflex.plugin"
-version = "1.6.1-RELEASE"
+version = "1.6.2-RELEASE"
 
 repositories {
     maven {
@@ -20,7 +20,7 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
 //    version.set("2023.2.1")
-    version.set("2022.2.5")
+    version.set("2023.2.5")
 
 //    version.set("2020.3.3")
     type.set("IU") // Target IDE Platform

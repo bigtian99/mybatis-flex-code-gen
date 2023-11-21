@@ -143,6 +143,7 @@ public class TableUtils {
         if (typeMapping.containsKey("REGEX")) {
             for (MatchTypeMapping mapping : typeMapping.get("REGEX")) {
                 String group0 = ReUtil.getGroup0(mapping.getColumType(), jdbcTypeStr);
+
                 if (StrUtil.isNotEmpty(group0)) {
                     return mapping.getJavaField();
                 }
@@ -260,8 +261,8 @@ public class TableUtils {
         list.add(new MatchTypeMapping("REGEX", "java.lang.String", "char(\\(\\d+\\))?"));
         list.add(new MatchTypeMapping("REGEX", "java.lang.String", "(tiny|medium|long)*text"));
         list.add(new MatchTypeMapping("REGEX", "java.math.BigDecimal", "decimal(\\(\\d+,\\d+\\))?"));
-        list.add(new MatchTypeMapping("REGEX", "java.lang.Integer", "(tiny|small|medium)*int(\\(\\d+\\))?"));
         list.add(new MatchTypeMapping("REGEX", "java.lang.Long", "bigint(\\(\\d+\\))?"));
+        list.add(new MatchTypeMapping("REGEX", "java.lang.Integer", "(tiny|small|medium)*int(\\(\\d+\\))?"));
         return list;
     }
     public static List<MatchTypeMapping> getOrdinaryTypeMapping() {
