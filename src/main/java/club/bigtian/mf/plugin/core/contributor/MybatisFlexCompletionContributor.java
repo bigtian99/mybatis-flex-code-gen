@@ -206,6 +206,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
             if (psiManager.getProject().isDisposed()) {
                 return importSet;
             }
+
             PsiFile file = psiManager.findFile(currentFile);
             if (file instanceof PsiJavaFile) {
                 PsiJavaFile javaFile = (PsiJavaFile) file;
