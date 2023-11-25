@@ -203,7 +203,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
     private Set<String> getFileImport(VirtualFile currentFile) {
         Set<String> importSet = new HashSet<>();
         try {
-            if (!psiManager.getProject().isDisposed()) {
+            if (psiManager.getProject().isDisposed()) {
                 return importSet;
             }
             PsiFile file = psiManager.findFile(currentFile);
