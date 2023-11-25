@@ -85,8 +85,7 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
             return;
         }
         // 获取当前模块的依赖模块
-        List<Module> moduleList = Arrays.stream(ModuleRootManager.getInstance(module).getDependencies())
-                .collect(Collectors.toList());
+        List<Module> moduleList = Arrays.stream(ModuleRootManager.getInstance(module).getDependencies()).collect(Collectors.toList());
         moduleList.add(module);
         CustomConfig config = new CustomConfig();
         // 获取当前模块以及所依赖的模块的TableDef文件
@@ -120,28 +119,25 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
         CompletionResultSet completionResultSet = result.caseInsensitive();
         for (Map.Entry<String, String> entry : tableDefMap.entrySet()) {
             // 添加补全提示
-            LookupElement lookupElement = LookupElementBuilder.create(entry.getKey())
-                    .withTypeText(StrUtil.subAfter(entry.getValue(), ".", true) + "(MybatisFlex-Helpler)", true)
-                    .withInsertHandler((context, item) -> {
-                        // 选中后的处理事件
-                        PsiClass psiClass = psiFacade.findClass(entry.getValue(), GlobalSearchScope.projectScope(project));
-                        // 创建静态导入
-                        assert psiClass != null;
-                        // 获取导入的import
-                        PsiFile file = psiManager.findFile(currentFile);
-                        // 导入import
-                        WriteCommandAction.runWriteCommandAction(project, () -> {
-                            if (file instanceof PsiJavaFile) {
-                                PsiJavaFile psiJavaFile = (PsiJavaFile) file;
-                                javaImport(psiJavaFile, psiClass, entry.getKey());
-                            } else if (file instanceof KtFile) {
-                                KtFile ktFile = (KtFile) file;
-                                ktImport(ktFile, psiClass, entry.getKey(), document);
-                            }
+            LookupElement lookupElement = LookupElementBuilder.create(entry.getKey()).withTypeText(StrUtil.subAfter(entry.getValue(), ".", true) + "(MybatisFlex-Helpler)", true).withInsertHandler((context, item) -> {
+                // 选中后的处理事件
+                PsiClass psiClass = psiFacade.findClass(entry.getValue(), GlobalSearchScope.projectScope(project));
+                // 创建静态导入
+                assert psiClass != null;
+                // 获取导入的import
+                PsiFile file = psiManager.findFile(currentFile);
+                // 导入import
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    if (file instanceof PsiJavaFile) {
+                        PsiJavaFile psiJavaFile = (PsiJavaFile) file;
+                        javaImport(psiJavaFile, psiClass, entry.getKey());
+                    } else if (file instanceof KtFile) {
+                        KtFile ktFile = (KtFile) file;
+                        ktImport(ktFile, psiClass, entry.getKey(), document);
+                    }
 
-                        });
-                    })
-                    .withIcon(Nodes.Field);
+                });
+            }).withIcon(Nodes.Field);
             completionResultSet.addElement(lookupElement);
         }
     }
@@ -207,6 +203,9 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
     private Set<String> getFileImport(VirtualFile currentFile) {
         Set<String> importSet = new HashSet<>();
         try {
+            if (!psiManager.getProject().isDisposed()) {
+                return importSet;
+            }
             PsiFile file = psiManager.findFile(currentFile);
             if (file instanceof PsiJavaFile) {
                 PsiJavaFile javaFile = (PsiJavaFile) file;
@@ -218,13 +217,12 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
         } catch (Exception e) {
 
         }
-        return importSet.stream()
-                .map(el -> {
-                    el = StrUtil.subAfter(el, ".", true);
-                    return StrUtil.subBefore(el, ";", true);
-                })
-                .collect(Collectors.toSet());
+        return importSet.stream().map(el -> {
+            el = StrUtil.subAfter(el, ".", true);
+            return StrUtil.subBefore(el, ";", true);
+        }).collect(Collectors.toSet());
     }
+
     /**
      * 获取相关的TableDef文件
      *
@@ -241,13 +239,13 @@ public class MybatisFlexCompletionContributor extends CompletionContributor {
                 } else {
                     String name = child.getName();
                     String tableDefConf = ObjectUtil.defaultIfNull(config.getTableDefClassSuffix(), "TableDef");
-                    if (name.contains(tableDefConf)) {
+                    if (name.contains(tableDefConf) && !psiManager.getProject().isDisposed()) {
                         PsiClassOwner psiJavaFile = (PsiClassOwner) psiManager.findFile(child);
                         assert psiJavaFile != null;
                         String packageName = psiJavaFile.getPackageName();
                         String path = StrUtil.subBefore(child.getPath(), ".", true);
                         String tableDef = StrUtil.subAfter(path, "/", true);
-                        String tableName = MybatisFlexDocumentChangeHandler.getDefInstanceName(config, StrUtil.subBefore(tableDef, tableDefConf, false),true);
+                        String tableName = MybatisFlexDocumentChangeHandler.getDefInstanceName(config, StrUtil.subBefore(tableDef, tableDefConf, false), true);
                         tableDefMap.put(tableName, packageName + "." + tableDef);
                     }
                 }

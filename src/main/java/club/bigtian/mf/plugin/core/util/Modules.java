@@ -79,7 +79,6 @@ public class Modules {
             NotificationUtils.notifyError("目录层级有误!", "", project);
             return;
         }
-
         boolean isManvenProject = isManvenProject(modules[0]);
         for (JComboBox modulesCombox : modulesComboxs) {
             modulesCombox.setRenderer(new ModuleComBoxRender());

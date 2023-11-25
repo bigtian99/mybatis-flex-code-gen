@@ -20,17 +20,17 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
 //    version.set("2023.2.1")
-    version.set("2023.2.5")
+//    version.set("2023.2.5")
 
-//    version.set("2020.3.3")
+    version.set("2022.2.5")
     type.set("IU") // Target IDE Platform
     plugins.set(listOf("com.intellij.java", "org.jetbrains.kotlin", "com.intellij.database"))
 }
 
 dependencies {
     implementation("com.alibaba.fastjson2:fastjson2:2.0.41")
-    implementation("cn.hutool:hutool-core:5.8.22")
-    implementation("cn.hutool:hutool-http:5.8.22")
+    implementation("cn.hutool:hutool-core:5.8.23")
+    implementation("cn.hutool:hutool-http:5.8.23")
     implementation("com.github.jsqlparser:jsqlparser:4.7")
 }
 java {
@@ -51,12 +51,12 @@ tasks {
     }
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
         options.encoding = "utf-8"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
+        kotlinOptions.jvmTarget = "1.8"
     }
 
     patchPluginXml {
