@@ -157,7 +157,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
             instanceSuffix = ObjectUtil.defaultIfNull(config.getTableDefInstanceSuffix(), "");
         }
         className = getClassName(config, className);
-        String instace = StrUtil.toUnderlineCase(className);
+        String instace = toUnderlineCase(className);
         switch (type) {
             case "upperCase":
                 instace = instace.toUpperCase();
@@ -176,6 +176,23 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 break;
         }
         return instace + instanceSuffix;
+    }
+    public static String toUnderlineCase(String str) {
+        if (str == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(Character.toLowerCase(str.charAt(0)));
+        for (int i = 1; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+                sb.append('_');
+                sb.append(Character.toLowerCase(c));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     @NotNull
