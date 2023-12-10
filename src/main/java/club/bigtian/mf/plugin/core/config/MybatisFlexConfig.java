@@ -230,6 +230,16 @@ public class MybatisFlexConfig {
 
     private String tabList;
 
+    private Boolean enableDebug;
+
+    public Boolean isEnableDebug() {
+        return enableDebug;
+    }
+
+    public void setEnableDebug(Boolean enableDebug) {
+        this.enableDebug = enableDebug;
+    }
+
     public List<TabInfo> getTabList() {
         return JSON.parseArray(tabList, TabInfo.class);
     }

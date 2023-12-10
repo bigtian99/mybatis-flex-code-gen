@@ -1,6 +1,8 @@
 package club.bigtian.mf.plugin.core;
 
+import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.JavaParameters;
@@ -37,7 +39,10 @@ public class PerRun extends JavaProgramPatcher {
     @Override
     public void patchJavaParameters(Executor executor, RunProfile runProfile, JavaParameters javaParameters) {
         //
-        // setLogLevel(runProfile, javaParameters);
+        MybatisFlexConfig config = Template.getMybatisFlexConfig();
+        if (ObjectUtil.defaultIfNull(config.isEnableDebug(),true)) {
+            setLogLevel(runProfile, javaParameters);
+        }
         SpringBootApplicationRunConfiguration springBootApplicationRunConfiguration = (SpringBootApplicationRunConfiguration) runProfile;
         Project project = springBootApplicationRunConfiguration.getProject();
         ConsoleView consoleView = new ConsoleViewImpl(project, true);

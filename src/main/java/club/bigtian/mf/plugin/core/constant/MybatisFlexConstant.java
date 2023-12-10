@@ -80,5 +80,6 @@ public class MybatisFlexConstant {
     public static final String FROM = "fromCheck";
     public static final String SQL_DIALECT = "sqlDialect";
     public static final String TAB_LIST = "tabList";
+    public static final String ENABLE_DEBUG = "enableDebug";
     public static String MAPPER_XML_TYPE= "mapperXmlType";
 }

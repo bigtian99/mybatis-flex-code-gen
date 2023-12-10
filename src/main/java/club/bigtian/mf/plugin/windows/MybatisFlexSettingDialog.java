@@ -24,7 +24,6 @@ import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.LanguageTextField;
-import com.intellij.ui.components.JBTextField;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -98,6 +97,8 @@ public class MybatisFlexSettingDialog extends JDialog {
     private com.intellij.openapi.ui.FixedSizeButton addTab;
     private FixedSizeButton updateTab;
     private FixedSizeButton tabDelete;
+    private JCheckBox enableDebug;
+    private JButton saveBtn;
     private Project project;
 
     // 是否开启内部模式
@@ -307,6 +308,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         for (int i = 0; i < tabbedPane1.getTabCount(); i++) {
             tabbedPane1.setIconAt(i, Icons.DONATE);
         }
+        saveBtn.addActionListener(e -> onOK());
     }
 
     private void checkDefaultTab() {
@@ -360,6 +362,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         initDialectComBox();
         String dialectChinese = MybatisFlexUtil.getDialectChinese(Template.getConfigData(MybatisFlexConstant.SQL_DIALECT, "MYSQL"));
         sqlDialect.setSelectedItem(dialectChinese);
+        enableDebug.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.ENABLE_DEBUG, true));
         initSinceComBox();
         pathMap = new HashMap<>();
         for (JTextField textField : list) {
@@ -484,6 +487,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setFromCheck(fromCheckBox.isSelected());
         config.setSqlDialect(MybatisFlexUtil.getDialectType(sqlDialect.getSelectedItem().toString()));
         config.setMapperXmlType(mapperXmlType.getSelectedItem().toString());
+        config.setEnableDebug(enableDebug.isSelected());
         for (TabInfo tabInfo : tabList) {
             tabInfo.setContent(tabInfo.getTextField().getText());
         }
