@@ -39,9 +39,11 @@
     ]]></description>
 
     <change-notes><![CDATA[
-    <h3>1.6.2-RELEASE</h3>
+    <h3>1.6.3-RELEASE</h3>
     <ul>
-    <li>【修复】自定义映射多一个j</li>
+    <li>【修复】修复TableDef的名称自动提示异常</li>
+    <li>【修复】修复配置父类，onInsert,onUpdate无法生成代码</li>
+    <li>【修复】 java.lang.Throwable: Bus is already disposed / java.lang.Throwable: Project is already disposed:</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
@@ -51,11 +53,15 @@
     <depends>com.intellij.modules.java</depends>
     <depends>org.jetbrains.kotlin</depends>
     <depends>com.intellij.database</depends>
+    <depends>com.intellij.spring.boot</depends>
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+        <java.programPatcher implementation="club.bigtian.mf.plugin.core.PerRun"/>
+
         <consoleFilterProvider implementation="club.bigtian.mf.plugin.core.console.MyBatisFlexConsoleFilterProvider" id="club.bigtian.mf.plugin.core.console.MyBatisFlexConsoleFilterProvider"/>
+        <consoleFilterProvider implementation="club.bigtian.mf.plugin.core.console.MyBatisFlexAgentConsoleFilterProvider" id="club.bigtian.mf.plugin.core.console.MyBatisFlexAgentConsoleFilterProvider"/>
         <executor implementation="club.bigtian.mf.plugin.core.log.MyBatisLogExecutor"
                   id="club.bigtian.mf.plugin.core.log.MyBatisLogExecutor"/>
 
@@ -72,7 +78,6 @@
                                 id="club.bigtian.mf.plugin.core.contributor.MybatisFlexConfigCompletionContributor"
                                 implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexConfigCompletionContributor"/>
 
-        <completion.contributor language="JAVA" implementationClass="club.bigtian.mf.plugin.core.contributor.MyCompletionContributor"/>
 
         <fileIconProvider implementation="club.bigtian.mf.plugin.core.type.MybatisFlexConfigFileType" id="club.bigtian.mf.plugin.core.type.MybatisFlexConfigFileType"/>
 

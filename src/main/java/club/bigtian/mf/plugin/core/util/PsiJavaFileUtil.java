@@ -171,4 +171,13 @@ public class PsiJavaFileUtil {
         boolean isFinal = modifierList.hasModifierProperty(PsiModifier.FINAL);
         return isStatic || isFinal;
     }
+
+    /**
+     * 判断是不是mybatis-flex项目
+     * @return
+     */
+    public  static  boolean isFlexProject(){
+        PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryWrapper");
+        return ObjectUtil.isNotNull(psiClass);
+    }
 }

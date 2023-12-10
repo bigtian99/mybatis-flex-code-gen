@@ -117,6 +117,7 @@ public class TableUtils {
                 columnList.add(columnInfo);
             }
             tableInfo.setColumnList(columnList);
+            tableInfo.setImportClassList(new HashSet<>());
             tableInfoList.add(tableInfo);
         }
         return tableInfoList;

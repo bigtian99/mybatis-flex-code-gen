@@ -1,3 +1,4 @@
+import org.gradle.internal.impldep.bsh.commands.dir
 import org.gradle.internal.impldep.org.bouncycastle.cms.RecipientId.password
 import org.gradle.internal.impldep.org.eclipse.jgit.lib.ObjectChecker.type
 
@@ -8,7 +9,7 @@ plugins {
 }
 
 group = "com.mybatisflex.plugin"
-version = "1.6.2-RELEASE"
+version = "1.6.3-RELEASE"
 
 repositories {
     maven {
@@ -20,11 +21,11 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
 //    version.set("2023.2.1")
-//    version.set("2023.2.5")
+    version.set("2023.2.5")
 
-    version.set("2022.2.5")
+//    version.set("2022.2.5")
     type.set("IU") // Target IDE Platform
-    plugins.set(listOf("com.intellij.java", "org.jetbrains.kotlin", "com.intellij.database"))
+    plugins.set(listOf("com.intellij.java", "org.jetbrains.kotlin", "com.intellij.database","com.intellij.spring.boot"))
 }
 
 dependencies {
@@ -32,6 +33,8 @@ dependencies {
     implementation("cn.hutool:hutool-core:5.8.23")
     implementation("cn.hutool:hutool-http:5.8.23")
     implementation("com.github.jsqlparser:jsqlparser:4.7")
+    implementation(fileTree(mapOf("dir" to "libs", "includes" to listOf("*.jar"))))
+
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_17

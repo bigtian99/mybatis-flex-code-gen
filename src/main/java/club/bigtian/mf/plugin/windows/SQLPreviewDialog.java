@@ -4,6 +4,11 @@ import club.bigtian.mf.plugin.core.util.BasicFormatter;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.NotificationUtils;
 import cn.hutool.core.swing.clipboard.ClipboardUtil;
+import com.intellij.openapi.roots.ContentEntry;
+import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.vfs.VirtualFile;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -18,6 +23,7 @@ public class SQLPreviewDialog extends JDialog {
     private JTextArea sqlPreview;
     private static final BasicFormatter FORMATTER = new BasicFormatter();
     private String sql;
+
 
     public SQLPreviewDialog(String sql ) {
         setContentPane(contentPane);

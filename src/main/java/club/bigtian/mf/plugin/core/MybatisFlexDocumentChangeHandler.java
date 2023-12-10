@@ -11,7 +11,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
@@ -177,6 +176,7 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         }
         return instace + instanceSuffix;
     }
+
     public static String toUnderlineCase(String str) {
         if (str == null) {
             return null;
@@ -229,20 +229,21 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 return;
             }
             FileEditorManager.getInstance(project).addFileEditorManagerListener(this);
-            new Thread(() -> {
-                scheduler.scheduleAtFixedRate(() -> {
-                    try {
-                        DumbService.getInstance(project).runWhenSmart(() -> {
-                            ApplicationManager.getApplication().invokeLater(() -> {
-                                PsiJavaFileUtil.createAptFile();
+            if(PsiJavaFileUtil.isFlexProject()){
+                new Thread(() -> {
+                    scheduler.scheduleAtFixedRate(() -> {
+                        try {
+                            DumbService.getInstance(project).runWhenSmart(() -> {
+                                ApplicationManager.getApplication().invokeLater(() -> {
+                                    PsiJavaFileUtil.createAptFile();
+                                });
                             });
-                        });
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }, 10, 1, TimeUnit.MINUTES);
-            }).start();
-
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }, 10, 1, TimeUnit.MINUTES);
+                }).start();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -290,7 +291,11 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
         if (ObjectUtil.isNull(currentFile) || currentFile instanceof LightVirtualFile) {
             return false;
         }
-        PsiManager psiManager = PsiManager.getInstance(ProjectUtils.getCurrentProject());
+        Project project = ProjectUtils.getCurrentProject();
+        if (project.isDisposed()) {
+            return false;
+        }
+        PsiManager psiManager = PsiManager.getInstance(project);
         PsiFile psiFile = psiManager.findFile(currentFile);
         // 支持java和kotlin
         if (!(psiFile instanceof PsiJavaFile) && !(psiFile instanceof KtFile)) {

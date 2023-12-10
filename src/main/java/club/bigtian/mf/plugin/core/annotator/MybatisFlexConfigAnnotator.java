@@ -74,7 +74,6 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 return;
             }
             psiJavaFile = (PsiJavaFile) VirtualFileUtils.getPsiFile(document);
-
             if (ObjectUtil.isNull(document) || !document.isWritable() || ObjectUtil.isNull(psiJavaFile)) {
                 return;
             }

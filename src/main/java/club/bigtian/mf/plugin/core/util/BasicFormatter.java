@@ -17,7 +17,6 @@ import java.util.*;
  */
 public class BasicFormatter {
 
-    public static final String FORMAT_KEY = BasicFormatter.class.getName() + ".FORMAT";
 
     // MOD: from org.hibernate.internal.util.StringHelper
     private static final String WHITESPACE = " \n\r\f\t";
@@ -101,44 +100,89 @@ public class BasicFormatter {
             tokens = new StringTokenizer(sql, "()+*/-=<>'`\"[]," + /* StringHelper. */WHITESPACE, true);
         }
 
+        // public String perform() {
+        //
+        //     result.append(INITIAL);
+        //
+        //     while (tokens.hasMoreTokens()) {
+        //         token = tokens.nextToken();
+        //         lcToken = token.toLowerCase(Locale.ROOT);
+        //
+        //         switch (token) {
+        //         case "'": {
+        //             String t;
+        //             do {
+        //                 t = tokens.nextToken();
+        //                 token += t;
+        //             }
+        //             // cannot handle single quotes
+        //             while (!"'".equals(t) && tokens.hasMoreTokens());
+        //             break;
+        //         }
+        //         case "\"": {
+        //             String t;
+        //             do {
+        //                 t = tokens.nextToken();
+        //                 token += t;
+        //             } while (!"\"".equals(t) && tokens.hasMoreTokens());
+        //             break;
+        //         }
+        //         // SQL Server uses "[" and "]" to escape reserved words
+        //         // see SQLServerDialect.openQuote and SQLServerDialect.closeQuote
+        //         case "[": {
+        //             String t;
+        //             do {
+        //                 t = tokens.nextToken();
+        //                 token += t;
+        //             } while (!"]".equals(t) && tokens.hasMoreTokens());
+        //             break;
+        //         }
+        //         }
+        //
+        //         if (afterByOrSetOrFromOrSelect && ",".equals(token)) {
+        //             commaAfterByOrFromOrSelect();
+        //         } else if (afterOn && ",".equals(token)) {
+        //             commaAfterOn();
+        //         } else if ("(".equals(token)) {
+        //             openParen();
+        //         } else if (")".equals(token)) {
+        //             closeParen();
+        //         } else if (BEGIN_CLAUSES.contains(lcToken)) {
+        //             beginNewClause();
+        //         } else if (END_CLAUSES.contains(lcToken)) {
+        //             endNewClause();
+        //         } else if ("select".equals(lcToken)) {
+        //             select();
+        //         } else if (DML.contains(lcToken)) {
+        //             updateOrInsertOrDelete();
+        //         } else if ("values".equals(lcToken)) {
+        //             values();
+        //         } else if ("on".equals(lcToken)) {
+        //             on();
+        //         } else if (afterBetween && "and".equals(lcToken)) {
+        //             misc();
+        //             afterBetween = false;
+        //         } else if (LOGICAL.contains(lcToken)) {
+        //             logical();
+        //         } else if (isWhitespace(token)) {
+        //             white();
+        //         } else {
+        //             misc();
+        //         }
+        //
+        //         if (!isWhitespace(token)) {
+        //             lastToken = lcToken;
+        //         }
+        //
+        //     }
+        //     return result.toString();
+        // }
         public String perform() {
-
             result.append(INITIAL);
 
             while (tokens.hasMoreTokens()) {
                 token = tokens.nextToken();
                 lcToken = token.toLowerCase(Locale.ROOT);
-
-                switch (token) {
-                case "'": {
-                    String t;
-                    do {
-                        t = tokens.nextToken();
-                        token += t;
-                    }
-                    // cannot handle single quotes
-                    while (!"'".equals(t) && tokens.hasMoreTokens());
-                    break;
-                }
-                case "\"": {
-                    String t;
-                    do {
-                        t = tokens.nextToken();
-                        token += t;
-                    } while (!"\"".equals(t) && tokens.hasMoreTokens());
-                    break;
-                }
-                // SQL Server uses "[" and "]" to escape reserved words
-                // see SQLServerDialect.openQuote and SQLServerDialect.closeQuote
-                case "[": {
-                    String t;
-                    do {
-                        t = tokens.nextToken();
-                        token += t;
-                    } while (!"]".equals(t) && tokens.hasMoreTokens());
-                    break;
-                }
-                }
 
                 if (afterByOrSetOrFromOrSelect && ",".equals(token)) {
                     commaAfterByOrFromOrSelect();
@@ -167,6 +211,10 @@ public class BasicFormatter {
                     logical();
                 } else if (isWhitespace(token)) {
                     white();
+                } else if ("`".equals(lcToken)) {
+                    // 当 token 是 "into" 时，直接输出，不插入换行符
+                    out();
+                    afterInsert=false;
                 } else {
                     misc();
                 }
@@ -174,11 +222,9 @@ public class BasicFormatter {
                 if (!isWhitespace(token)) {
                     lastToken = lcToken;
                 }
-
             }
             return result.toString();
         }
-
         private void commaAfterOn() {
             out();
             indent--;
@@ -226,7 +272,7 @@ public class BasicFormatter {
         }
 
         private void white() {
-            if (!beginLine) {
+                if (!beginLine) {
                 result.append(" ");
             }
         }
