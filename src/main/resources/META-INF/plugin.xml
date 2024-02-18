@@ -39,11 +39,10 @@
     ]]></description>
 
     <change-notes><![CDATA[
-    <h3>1.6.3-RELEASE</h3>
+    <h3>1.6.4-RELEASE</h3>
     <ul>
-    <li>【修复】修复TableDef的名称自动提示异常</li>
-    <li>【修复】修复配置父类，onInsert,onUpdate无法生成代码</li>
-    <li>【修复】 java.lang.Throwable: Bus is already disposed / java.lang.Throwable: Project is already disposed:</li>
+    <li>【优化】支撑生成kt文件</li>
+    <li>【优化】支持IDEA 2024.1 EAP版本</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
@@ -135,6 +134,6 @@
         </action>
     </actions>
 
-    <idea-version since-build="202.*"/>
+<!--    <idea-version since-build="202.*"/>-->
     <!--    <resource-bundle/>-->
 </idea-plugin>

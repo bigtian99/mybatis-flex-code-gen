@@ -313,4 +313,8 @@ public class Modules {
         }
         return config;
     }
+
+    public static Module getModuleFromDirectory(PsiDirectory directory) {
+        return ModuleUtilCore.findModuleForFile(directory.getVirtualFile(), directory.getProject());
+    }
 }

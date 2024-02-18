@@ -77,7 +77,7 @@ public class RenderMybatisFlexTemplate {
             context.put("config", config);
             context.put("importClassList", tableInfo.getImportClassList());
             context.put("table", tableInfo);
-            context.put("createTime", DateUtil.format(new Date(),"yyyy-MM-dd HH:mm:ss"));
+            context.put("createTime", DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
             String qualifiedName = config.getQualifiedName();
             if (StrUtil.isNotBlank(qualifiedName)) {
                 String methodName = config.getMethodName();
@@ -109,6 +109,7 @@ public class RenderMybatisFlexTemplate {
 
         DumbService.getInstance(project).runWhenSmart(() -> {
             WriteCommandAction.runWriteCommandAction(project, () -> {
+                List<PsiJavaFile> psiJavaFiles = new ArrayList<>();
                 for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
                     List<PsiElement> list = entry.getValue();
                     PsiDirectory directory = entry.getKey();
@@ -127,7 +128,16 @@ public class RenderMybatisFlexTemplate {
 
                     for (PsiElement psiFile : list) {
                         try {
-                            directory.add(psiFile);
+                            if (config.isKtFile()) {
+                                PsiElement newPsiFile = directory.add(psiFile);
+                                if (newPsiFile instanceof PsiJavaFile) {
+                                    psiJavaFiles.add((PsiJavaFile) newPsiFile);
+                                }
+                            }else {
+                                directory.add(psiFile);
+                            }
+
+
                         } catch (IncorrectOperationException e) {
                             if (e.getMessage().contains("already exists")) {
                                 PsiFile file = (PsiFile) psiFile;
@@ -140,6 +150,11 @@ public class RenderMybatisFlexTemplate {
                         }
                     }
                 }
+                //  转换kt文件
+                if (config.isKtFile()) {
+                    KtFileUtil.convertKtFile(psiJavaFiles);
+                }
+
             });
         });
         //

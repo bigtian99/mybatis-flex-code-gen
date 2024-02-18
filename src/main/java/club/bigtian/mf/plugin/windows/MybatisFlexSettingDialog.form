@@ -567,6 +567,12 @@
                                   <text value="Active Record"/>
                                 </properties>
                               </component>
+                              <component id="7abea" class="javax.swing.JCheckBox" binding="ktFile">
+                                <constraints/>
+                                <properties>
+                                  <text value="生成kt文件"/>
+                                </properties>
+                              </component>
                               <component id="94243" class="javax.swing.JLabel">
                                 <constraints/>
                                 <properties>

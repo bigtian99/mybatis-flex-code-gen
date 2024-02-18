@@ -232,6 +232,16 @@ public class MybatisFlexConfig {
 
     private Boolean enableDebug;
 
+    private boolean ktFile;
+
+    public boolean isKtFile() {
+        return ktFile;
+    }
+
+    public void setKtFile(boolean ktFile) {
+        this.ktFile = ktFile;
+    }
+
     public Boolean isEnableDebug() {
         return enableDebug;
     }

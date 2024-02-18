@@ -78,6 +78,7 @@ public class MybatisFlexConstant {
     public static final String DATA_SOURCE = "dataSource";
     public static final String MODEL_SUPER_CLASS = "modelSuperClass";
     public static final String FROM = "fromCheck";
+    public static final String KT_FILE = "ktFile";
     public static final String SQL_DIALECT = "sqlDialect";
     public static final String TAB_LIST = "tabList";
     public static final String ENABLE_DEBUG = "enableDebug";

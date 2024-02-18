@@ -43,7 +43,7 @@ public class MybatisFlexAgentHyperlinkInfo implements HyperlinkInfo {
             for (DasTable table : tables) {
                 // 打印表的名称
                 if (sql.contains(table.getName())) {
-                    DatabaseEditorHelper.openConsoleFile(dataSource, false);
+                    DatabaseEditorHelper.openConsoleFile(dataSource, true);
                     // // 获取当前打开的文件
                     VirtualFile file = FileEditorManager.getInstance(project).getSelectedFiles()[0];
                     // 获取文件的 Document

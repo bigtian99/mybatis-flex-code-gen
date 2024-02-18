@@ -99,6 +99,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private FixedSizeButton tabDelete;
     private JCheckBox enableDebug;
     private JButton saveBtn;
+    private JCheckBox ktFile;
     private Project project;
 
     // 是否开启内部模式
@@ -359,6 +360,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         requiredArgsConstructorCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.LOMBOK_REQUIRED_ARGS_CONSTRUCTOR));
         fromCheckBox.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.FROM, true));
         mapperXmlType.setSelectedItem(Template.getConfigData(MybatisFlexConstant.MAPPER_XML_TYPE, "resource"));
+        ktFile.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.KT_FILE, false));
         initDialectComBox();
         String dialectChinese = MybatisFlexUtil.getDialectChinese(Template.getConfigData(MybatisFlexConstant.SQL_DIALECT, "MYSQL"));
         sqlDialect.setSelectedItem(dialectChinese);
@@ -488,6 +490,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setSqlDialect(MybatisFlexUtil.getDialectType(sqlDialect.getSelectedItem().toString()));
         config.setMapperXmlType(mapperXmlType.getSelectedItem().toString());
         config.setEnableDebug(enableDebug.isSelected());
+        config.setKtFile(ktFile.isSelected());
         for (TabInfo tabInfo : tabList) {
             tabInfo.setContent(tabInfo.getTextField().getText());
         }
