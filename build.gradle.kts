@@ -45,26 +45,27 @@ tasks {
     runIde {
         // 启用热重载功能，使用Build菜单编译项目后无需重启调试进程即可完成, 仅支持JBR
         jvmArgs = listOf(
-            "-XX:+AllowEnhancedClassRedefinition",
-//            "-javaagent:/Users/daijunxiong/Desktop/ja-netfilter-all/ja-netfilter.jar=jetbrains",
-//            "--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED",
-//            "--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED",
+//            "-XX:+AllowEnhancedClassRedefinition",
+            "-javaagent:/Users/daijunxiong/app/jetbra/ja-netfilter.jar=jetbrains",
+            "--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED",
+            "--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED"
+
         )
 
     }
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "1.8"
-        targetCompatibility = "1.8"
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
         options.encoding = "utf-8"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "17"
     }
 
     patchPluginXml {
-        sinceBuild.set("202.*")
-        untilBuild.set("*.*")
+        sinceBuild.set("231.*")
+        untilBuild.set("241.*")
     }
 
     signPlugin {

@@ -134,7 +134,7 @@ public class RenderMybatisFlexTemplate {
                                     psiJavaFiles.add((PsiJavaFile) newPsiFile);
                                 }
                             }else {
-                                directory.add(psiFile);
+                            directory.add(psiFile);
                             }
 
 

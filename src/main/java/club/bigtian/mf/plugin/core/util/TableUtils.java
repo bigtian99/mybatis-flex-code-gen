@@ -9,10 +9,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.database.dialects.DatabaseDialectEx;
-import com.intellij.database.model.DasColumn;
-import com.intellij.database.model.DasObject;
-import com.intellij.database.model.DasTable;
-import com.intellij.database.model.ObjectKind;
+import com.intellij.database.model.*;
 import com.intellij.database.psi.DbDataSourceImpl;
 import com.intellij.database.psi.DbElement;
 import com.intellij.database.psi.DbTableImpl;
@@ -79,14 +76,16 @@ public class TableUtils {
     public static DatabaseDialectEx getDialect(DasTable dasTable) {
         DbTableImpl table = (DbTableImpl) dasTable;
         DbDataSourceImpl dataSource = table.getDataSource();
+
         return dataSource.getDatabaseDialect();
     }
+
+
 
     /**
      * 得到表信息列表
      *
      * @param selectedTableList 选择表列表
-     * @param tableInfoList     表信息列表
      */
     public static List<TableInfo> getTableInfoList(List<DasTable> selectedTableList) {
         List<TableInfo> tableInfoList = new ArrayList<>();
@@ -103,10 +102,11 @@ public class TableUtils {
                 DasColumn dasColumn = (DasColumn) column;
                 columnInfo.setName(dasColumn.getName());
                 columnInfo.setFieldName(StrUtil.toCamelCase(dasColumn.getName().toLowerCase()));
-                String jdbcTypeStr = dasColumn.getDataType().toString();
+                DataType dataType = dasColumn.getDasType().toDataType();
+                String jdbcTypeStr = dataType.toString();
                 int jdbc = dialect.getJavaTypeForNativeType(jdbcTypeStr);
                 String jdbcTypeName = JdbcUtil.getJdbcTypeName(jdbc);
-                String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName, dasColumn.getDataType().size, jdbcTypeStr.toLowerCase());
+                String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName,  dataType.size, jdbcTypeStr.toLowerCase());
                 columnInfo.setFieldType(fieldType);
                 columnInfo.setNotNull(dasColumn.isNotNull());
                 columnInfo.setComment(ObjectUtil.defaultIfNull(dasColumn.getComment(), "").replaceAll("\n", ""));

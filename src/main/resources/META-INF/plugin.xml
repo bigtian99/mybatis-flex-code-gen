@@ -96,6 +96,9 @@
 <!--        <intentionAction>-->
 <!--            <className>club.bigtian.mf.plugin.action.flex.MybatisFlexInternal</className>-->
 <!--        </intentionAction>-->
+
+        <toolWindow id="GPT" icon="/icons/GPT.png" anchor="right"
+                    factoryClass="club.bigtian.mf.plugin.core.factory.GptToolWindowFactory"/>
     </extensions>
 
     <actions>
@@ -134,6 +137,6 @@
         </action>
     </actions>
 
-<!--    <idea-version since-build="202.*"/>-->
+<!--    <idea-version since-build="231.*" until-build="231.*"/>-->
     <!--    <resource-bundle/>-->
 </idea-plugin>
