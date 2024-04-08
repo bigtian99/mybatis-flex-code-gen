@@ -16,19 +16,40 @@ public class ComBoxDocumentListener implements DocumentListener {
 
     public ComBoxDocumentListener(JComboBox comboBox) {
         render = (ModuleComBoxRender) comboBox.getRenderer();
-        this.textField =(JTextField) comboBox.getEditor().getEditorComponent();
+        this.textField = (JTextField) comboBox.getEditor().getEditorComponent();
         this.comboBox = comboBox;
+        // 检测comboBox点击事件
+        comboBox.addActionListener(e -> {
+            SwingUtilities.invokeLater(() -> {
+                String text = textField.getText();
+
+                // 获取所有的选项
+                Map<String, String> allOptions = InvertedIndexSearch.highlightKey("", "module");
+
+                render.setHighlightKey(allOptions);
+
+                DefaultComboBoxModel boxModel = new DefaultComboBoxModel();
+                boxModel.addAll(allOptions.keySet());
+                boxModel.setSelectedItem(text);
+                comboBox.setModel(boxModel);
+
+                flag = true;
+                textField.setText(text.toString());
+            });
+        });
     }
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        test(e);
+        flag = false;
+        searchMoudle(e);
 
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        test(e);
+        flag = false;
+        searchMoudle(e);
 
     }
 
@@ -37,12 +58,13 @@ public class ComBoxDocumentListener implements DocumentListener {
     }
 
     String preText = "";
+    boolean flag = false;
 
-    public void test(DocumentEvent event) {
+    public void searchMoudle(DocumentEvent event) {
         try {
             SwingUtilities.invokeLater(() -> {
                 String text = textField.getText();
-                if (StrUtil.equals(text, "\n") || StrUtil.equals(preText, text)) {
+                if (StrUtil.equals(text, "\n") || StrUtil.equals(preText, text) || flag) {
                     return;
                 }
                 Map<String, String> highlightKey = InvertedIndexSearch.highlightKey(text, "module");

@@ -17,7 +17,6 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.intellij.codeInspection.reference.RefUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -274,6 +273,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             Dimension dimension = jComboBox.getPreferredSize();
             dimension.width = 250;
             jComboBox.setPreferredSize(dimension);
+            textField = (JTextField) jComboBox.getEditor().getEditorComponent();
             textField.getDocument().addDocumentListener(new ComBoxDocumentListener(jComboBox));
         }
     }
