@@ -4,6 +4,7 @@ import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.MatchTypeMapping;
 import club.bigtian.mf.plugin.entity.TableInfo;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
@@ -81,7 +82,6 @@ public class TableUtils {
     }
 
 
-
     /**
      * 得到表信息列表
      *
@@ -106,7 +106,7 @@ public class TableUtils {
                 String jdbcTypeStr = dataType.toString();
                 int jdbc = dialect.getJavaTypeForNativeType(jdbcTypeStr);
                 String jdbcTypeName = JdbcUtil.getJdbcTypeName(jdbc);
-                String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName,  dataType.size, jdbcTypeStr.toLowerCase());
+                String fieldType = getFieldType(jdbc, tableInfo, jdbcTypeName, dataType.size, jdbcTypeStr.toLowerCase());
                 columnInfo.setFieldType(fieldType);
                 columnInfo.setNotNull(dasColumn.isNotNull());
                 columnInfo.setComment(ObjectUtil.defaultIfNull(dasColumn.getComment(), "").replaceAll("\n", ""));
@@ -117,7 +117,9 @@ public class TableUtils {
                 columnList.add(columnInfo);
             }
             tableInfo.setColumnList(columnList);
-            tableInfo.setImportClassList(new HashSet<>());
+            if(CollUtil.isEmpty(tableInfo.getImportClassList())){
+                tableInfo.setImportClassList(new HashSet<>());
+            }
             tableInfoList.add(tableInfo);
         }
         return tableInfoList;
@@ -137,7 +139,13 @@ public class TableUtils {
         if (typeMapping.containsKey("ORDINARY")) {
             for (MatchTypeMapping mapping : typeMapping.get("ORDINARY")) {
                 if (jdbcTypeStr.equals(mapping.getColumType())) {
-                    return mapping.getJavaField();
+                    String javaField = mapping.getJavaField();
+                    if (javaField.contains(".")) {
+                        tableInfo.addImportClassItem(javaField);
+                        javaField = StrUtil.subAfter(javaField, ".", true);
+
+                    }
+                    return javaField;
                 }
             }
         }
@@ -146,7 +154,12 @@ public class TableUtils {
                 String group0 = ReUtil.getGroup0(mapping.getColumType(), jdbcTypeStr);
 
                 if (StrUtil.isNotEmpty(group0)) {
-                    return mapping.getJavaField();
+                    String javaField = mapping.getJavaField();
+                    if (javaField.contains(".")) {
+                        tableInfo.addImportClassItem(javaField);
+                        javaField = StrUtil.subAfter(javaField, ".", true);
+                    }
+                    return javaField;
                 }
             }
         }
@@ -250,12 +263,13 @@ public class TableUtils {
         return fieldType;
     }
 
-    public static Map<String,List<MatchTypeMapping>> getDefaultTypeMappingMap(){
-        Map<String,List<MatchTypeMapping>> map = new HashMap<>();
-        map.put("REGEX",getRegexTypeMapping());
-        map.put("ORDINARY",getOrdinaryTypeMapping());
+    public static Map<String, List<MatchTypeMapping>> getDefaultTypeMappingMap() {
+        Map<String, List<MatchTypeMapping>> map = new HashMap<>();
+        map.put("REGEX", getRegexTypeMapping());
+        map.put("ORDINARY", getOrdinaryTypeMapping());
         return map;
     }
+
     public static List<MatchTypeMapping> getRegexTypeMapping() {
         List<MatchTypeMapping> list = new ArrayList<>();
         list.add(new MatchTypeMapping("REGEX", "java.lang.String", "varchar(\\(\\d+\\))?"));
@@ -266,6 +280,7 @@ public class TableUtils {
         list.add(new MatchTypeMapping("REGEX", "java.lang.Integer", "(tiny|small|medium)*int(\\(\\d+\\))?"));
         return list;
     }
+
     public static List<MatchTypeMapping> getOrdinaryTypeMapping() {
 
         List<MatchTypeMapping> list = new ArrayList<>();
