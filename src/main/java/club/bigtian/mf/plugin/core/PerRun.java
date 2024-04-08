@@ -40,38 +40,39 @@ public class PerRun extends JavaProgramPatcher {
     public void patchJavaParameters(Executor executor, RunProfile runProfile, JavaParameters javaParameters) {
         //
         MybatisFlexConfig config = Template.getMybatisFlexConfig();
-        if (ObjectUtil.defaultIfNull(config.isEnableDebug(),true)) {
+        if (ObjectUtil.defaultIfNull(config.isEnableDebug(), true)) {
             setLogLevel(runProfile, javaParameters);
         }
-        SpringBootApplicationRunConfiguration springBootApplicationRunConfiguration = (SpringBootApplicationRunConfiguration) runProfile;
-        Project project = springBootApplicationRunConfiguration.getProject();
-        ConsoleView consoleView = new ConsoleViewImpl(project, true);
-        consoleView.addMessageFilter(new MybatisFlexAgentFilter(project));
-        InputStream in = getClass().getResourceAsStream("/libs/runtime-agent-1.0-SNAPSHOT-jar-with-dependencies.jar");
-        // 创建一个临时文件来存储内部 JAR 文件
-        Path tempFile = null;
-        try {
-            tempFile = Files.createTempFile("runtime-agent-", ".jar");
-            tempFile.toFile().deleteOnExit();
+        if (runProfile instanceof SpringBootApplicationRunConfiguration springBootApplicationRunConfiguration) {
+            Project project = springBootApplicationRunConfiguration.getProject();
+            ConsoleView consoleView = new ConsoleViewImpl(project, true);
+            consoleView.addMessageFilter(new MybatisFlexAgentFilter(project));
+            InputStream in = getClass().getResourceAsStream("/libs/runtime-agent-1.0-SNAPSHOT-jar-with-dependencies.jar");
+            // 创建一个临时文件来存储内部 JAR 文件
+            Path tempFile = null;
+            try {
+                tempFile = Files.createTempFile("runtime-agent-", ".jar");
+                tempFile.toFile().deleteOnExit();
 
-            // 将内部 JAR 文件的内容复制到临时文件
-            try (OutputStream out = Files.newOutputStream(tempFile)) {
-                byte[] buffer = new byte[1024];
-                int len;
-                while ((len = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, len);
+                // 将内部 JAR 文件的内容复制到临时文件
+                try (OutputStream out = Files.newOutputStream(tempFile)) {
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, len);
+                    }
                 }
+
+                // 使用临时文件的路径作为你的 agent JAR 文件的路径
+                String agentPath = tempFile.toString();
+                RunConfiguration runConfiguration = (RunConfiguration) runProfile;
+                ParametersList vmParametersList = javaParameters.getVMParametersList();
+                vmParametersList.addParametersString("-javaagent:" + agentPath);
+                vmParametersList.addNotEmptyProperty("guide-idea-plugin-probe.projectId", runConfiguration.getProject().getLocationHash());
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-
-            // 使用临时文件的路径作为你的 agent JAR 文件的路径
-            String agentPath = tempFile.toString();
-            RunConfiguration runConfiguration = (RunConfiguration) runProfile;
-            ParametersList vmParametersList = javaParameters.getVMParametersList();
-            vmParametersList.addParametersString("-javaagent:" + agentPath);
-            vmParametersList.addNotEmptyProperty("guide-idea-plugin-probe.projectId", runConfiguration.getProject().getLocationHash());
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
     }

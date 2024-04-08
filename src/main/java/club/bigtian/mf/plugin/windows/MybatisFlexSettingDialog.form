@@ -570,7 +570,9 @@
                               <component id="7abea" class="javax.swing.JCheckBox" binding="ktFile">
                                 <constraints/>
                                 <properties>
+                                  <hideActionText value="false"/>
                                   <text value="生成kt文件"/>
+                                  <visible value="false"/>
                                 </properties>
                               </component>
                               <component id="94243" class="javax.swing.JLabel">

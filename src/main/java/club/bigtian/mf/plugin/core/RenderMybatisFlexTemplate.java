@@ -92,7 +92,7 @@ public class RenderMybatisFlexTemplate {
                     String genPath = info.getGenPath();
                     StringWriter sw = new StringWriter();
                     velocityEngine.evaluate(context, sw, "mybatis-flex", info.getContent());
-                    File file = new File(genPath + File.separator + className + "." + info.getSuffix());
+                    File file = new File(genPath + File.separator + className + info.getSuffix());
                     if (!file.getParentFile().exists()) {
                         Messages.showWarningDialog("自定义模板路径不存在：" + genPath, "警告");
                         return;
@@ -150,10 +150,10 @@ public class RenderMybatisFlexTemplate {
                         }
                     }
                 }
-                //  转换kt文件
-                if (config.isKtFile()) {
-                    KtFileUtil.convertKtFile(psiJavaFiles);
-                }
+                // //  转换kt文件
+                // if (config.isKtFile()) {
+                //     KtFileUtil.convertKtFile(psiJavaFiles);
+                // }
 
             });
         });
