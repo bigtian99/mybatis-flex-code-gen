@@ -3,9 +3,13 @@ package club.bigtian.mf.plugin.action.flex;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateDialog;
 import com.intellij.database.model.DasTable;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
 
 /**
  * 表动作
@@ -19,8 +23,10 @@ public class TableAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        MybatisFlexCodeGenerateDialog generateWin = new MybatisFlexCodeGenerateDialog(e);
-        generateWin.show();
+        SwingUtilities.invokeLater(() -> {
+            MybatisFlexCodeGenerateDialog generateWin = new MybatisFlexCodeGenerateDialog(e);
+            generateWin.setVisible(true);
+        });
     }
 
 
@@ -35,5 +41,10 @@ public class TableAction extends AnAction {
         Object selectedElement = e.getData(CommonDataKeys.PSI_ELEMENT);
         boolean isSelectedTable = selectedElement instanceof DasTable;
         e.getPresentation().setVisible(isSelectedTable);
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 }

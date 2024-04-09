@@ -22,12 +22,9 @@ public class ComBoxDocumentListener implements DocumentListener {
         comboBox.addActionListener(e -> {
             SwingUtilities.invokeLater(() -> {
                 String text = textField.getText();
-
                 // 获取所有的选项
                 Map<String, String> allOptions = InvertedIndexSearch.highlightKey("", "module");
-
                 render.setHighlightKey(allOptions);
-
                 DefaultComboBoxModel boxModel = new DefaultComboBoxModel();
                 boxModel.addAll(allOptions.keySet());
                 boxModel.setSelectedItem(text);

@@ -39,10 +39,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
-    <h3>1.6.4-RELEASE</h3>
+    <h3>1.6.4.1-RELEASE</h3>
     <ul>
-    <li>【优化】支撑生成kt文件</li>
-    <li>【优化】支持IDEA 2024.1 EAP版本</li>
+    <li>【优化】生成面板模块搜索</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.

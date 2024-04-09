@@ -100,6 +100,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JCheckBox enableDebug;
     private JButton saveBtn;
     private JCheckBox ktFile;
+    private JButton remoteBtn;
     private Project project;
 
     // 是否开启内部模式
@@ -310,6 +311,10 @@ public class MybatisFlexSettingDialog extends JDialog {
             tabbedPane1.setIconAt(i, Icons.DONATE);
         }
         saveBtn.addActionListener(e -> onOK());
+        remoteBtn.addActionListener(e -> {
+            RemoteDataConfigDialog dialog = new RemoteDataConfigDialog();
+            dialog.setVisible(true);
+        });
     }
 
     private void checkDefaultTab() {
@@ -430,7 +435,6 @@ public class MybatisFlexSettingDialog extends JDialog {
         implTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
         mapperTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
         xmlTemplate = new LanguageTextField(XMLLanguage.INSTANCE, project, "", false);
-
         scrollPane1 = new JScrollPane();
         scrollPane2 = new JScrollPane();
         scrollPane3 = new JScrollPane();

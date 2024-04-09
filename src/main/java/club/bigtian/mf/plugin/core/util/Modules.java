@@ -228,17 +228,21 @@ public class Modules {
      * @param serviceImplComBox 服务impl com盒子
      */
     public static void comBoxGanged(JComboBox serviceInteCombox, JComboBox serviceImplComBox) {
-        serviceInteCombox.addActionListener(e -> {
-            serviceImplComBox.setSelectedItem(serviceInteCombox.getSelectedItem());
-            serviceImplComBox.revalidate();
-            serviceImplComBox.repaint();
-        });
 
-        serviceImplComBox.addActionListener(e -> {
-            serviceInteCombox.setSelectedItem(serviceImplComBox.getSelectedItem());
-            serviceInteCombox.revalidate();
-            serviceInteCombox.repaint();
+        serviceInteCombox.addActionListener(e -> {
+            setSelectedItem(serviceImplComBox, serviceInteCombox.getSelectedItem().toString());
         });
+        serviceImplComBox.addActionListener(e -> {
+            setSelectedItem(serviceInteCombox, serviceImplComBox.getSelectedItem().toString());
+        });
+    }
+
+    public static void setSelectedItem(JComboBox comboBox, String item) {
+        comboBox.setSelectedItem(item);
+        JTextField textField = (JTextField) comboBox.getEditor().getEditorComponent();
+        textField.setText(item);
+        comboBox.revalidate();
+        comboBox.repaint();
     }
 
     /**
@@ -257,9 +261,11 @@ public class Modules {
         }
 
     }
+
     public static Module getModuleForFile(PsiJavaFile file) {
         return ModuleUtilCore.findModuleForPsiElement(file);
     }
+
     public static String getModuleName(Module module) {
         return module.getName().replaceAll("\\.main", "");
     }

@@ -40,7 +40,7 @@ public class PerRun extends JavaProgramPatcher {
     public void patchJavaParameters(Executor executor, RunProfile runProfile, JavaParameters javaParameters) {
         //
         MybatisFlexConfig config = Template.getMybatisFlexConfig();
-        if (ObjectUtil.defaultIfNull(config.isEnableDebug(), true)) {
+        if (ObjectUtil.defaultIfNull(config.getEnableDebug(), true)) {
             setLogLevel(runProfile, javaParameters);
         }
         if (runProfile instanceof SpringBootApplicationRunConfiguration springBootApplicationRunConfiguration) {

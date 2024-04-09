@@ -234,6 +234,51 @@ public class MybatisFlexConfig {
 
     private boolean ktFile;
 
+    private String remoteDataUrl;
+    private String remoteHeader;
+    private String remoteDataToken;
+    private String resultField;
+
+    public String getResultField() {
+        return resultField;
+    }
+
+    public void setResultField(String resultField) {
+        this.resultField = resultField;
+    }
+
+    public Boolean getEnableDebug() {
+        return enableDebug;
+    }
+
+    public String getRemoteDataToken() {
+        return remoteDataToken;
+    }
+
+    public void setRemoteDataToken(String remoteDataToken) {
+        this.remoteDataToken = remoteDataToken;
+    }
+
+    public String getRemoteDataUrl() {
+        return remoteDataUrl;
+    }
+
+    public void setRemoteDataUrl(String remoteDataUrl) {
+        this.remoteDataUrl = remoteDataUrl;
+    }
+
+    public String getRemoteHeader() {
+        return remoteHeader;
+    }
+
+    public void setRemoteHeader(String remoteHeader) {
+        this.remoteHeader = remoteHeader;
+    }
+
+    public void setTabList(String tabList) {
+        this.tabList = tabList;
+    }
+
     public boolean isKtFile() {
         return ktFile;
     }

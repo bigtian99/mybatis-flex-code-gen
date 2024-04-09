@@ -34,6 +34,7 @@ dependencies {
     implementation("cn.hutool:hutool-http:5.8.27")
     implementation("com.github.jsqlparser:jsqlparser:4.9")
     implementation(fileTree(mapOf("dir" to "libs", "includes" to listOf("*.jar"))))
+    compileOnly("org.projectlombok:lombok:1.18.32")
 
 }
 java {

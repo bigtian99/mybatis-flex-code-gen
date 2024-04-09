@@ -11,6 +11,9 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpRequest;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -85,26 +88,7 @@ public class RenderMybatisFlexTemplate {
                 context.put("resultClass", qualifiedName.substring(qualifiedName.lastIndexOf(".") + 1));
             }
             renderTemplate(templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules, factory, project);
-            // 自定义模版渲染
-            List<TabInfo> infoList = config.getTabList();
-            if (CollUtil.isNotEmpty(infoList)) {
-                for (TabInfo info : infoList) {
-                    String genPath = info.getGenPath();
-                    StringWriter sw = new StringWriter();
-                    velocityEngine.evaluate(context, sw, "mybatis-flex", info.getContent());
-                    File file = new File(genPath + File.separator + className + info.getSuffix());
-                    if (!file.getParentFile().exists()) {
-                        Messages.showWarningDialog("自定义模板路径不存在：" + genPath, "警告");
-                        return;
-                    }
-                    try {
-                        FileOutputStream fileOutputStream = new FileOutputStream(file);
-                        IoUtil.write(fileOutputStream, true, sw.toString().getBytes(StandardCharsets.UTF_8));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
+            customRender(config, velocityEngine, context, className);
         }
 
         DumbService.getInstance(project).runWhenSmart(() -> {
@@ -133,8 +117,8 @@ public class RenderMybatisFlexTemplate {
                                 if (newPsiFile instanceof PsiJavaFile) {
                                     psiJavaFiles.add((PsiJavaFile) newPsiFile);
                                 }
-                            }else {
-                            directory.add(psiFile);
+                            } else {
+                                directory.add(psiFile);
                             }
 
 
@@ -150,16 +134,39 @@ public class RenderMybatisFlexTemplate {
                         }
                     }
                 }
-                // //  转换kt文件
-                // if (config.isKtFile()) {
-                //     KtFileUtil.convertKtFile(psiJavaFiles);
-                // }
+                //  转换kt文件
+                if (config.isKtFile()) {
+                    KtFileUtil.convertKtFile(psiJavaFiles);
+                }
 
             });
         });
         //
         // // 生成代码之后，重新构建
         // CompilerManagerUtil.make(Modules.getModule(config.getModelModule()));
+    }
+
+    private static boolean customRender(MybatisFlexConfig config, VelocityEngine velocityEngine, VelocityContext context, String className) {
+        List<TabInfo> infoList = config.getTabList();
+        if (CollUtil.isNotEmpty(infoList)) {
+            for (TabInfo info : infoList) {
+                String genPath = info.getGenPath();
+                StringWriter sw = new StringWriter();
+                velocityEngine.evaluate(context, sw, "mybatis-flex", info.getContent());
+                File file = new File(genPath + File.separator + className + info.getSuffix());
+                if (!file.getParentFile().exists()) {
+                    Messages.showWarningDialog("自定义模板路径不存在：" + genPath, "警告");
+                    return true;
+                }
+                try {
+                    FileOutputStream fileOutputStream = new FileOutputStream(file);
+                    IoUtil.write(fileOutputStream, true, sw.toString().getBytes(StandardCharsets.UTF_8));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return false;
     }
 
     private static void logicDelete(List<TableInfo> selectedTableInfo, MybatisFlexConfig config) {
@@ -277,12 +284,7 @@ public class RenderMybatisFlexTemplate {
             StringWriter sw = new StringWriter();
             context.put("className", className);
             velocityEngine.evaluate(context, sw, "mybatis-flex", entry.getValue());
-            Module module = Modules.getModule(modules.get(entry.getKey()));
-            String key = entry.getKey();
-            if (StrUtil.isEmpty(key)) {
-                key = "resource".equals(Template.getConfigData(MybatisFlexConstant.MAPPER_XML_TYPE, "resource")) ? "" : "xml";
-            }
-            PsiDirectory packageDirectory = VirtualFileUtils.getPsiDirectory(module, packages.get(entry.getKey()), key);
+            PsiDirectory packageDirectory = getPsiDirectory(packages, modules, entry.getKey());
             DumbService.getInstance(project).runWhenSmart(() -> {
                 String classPrefix = ObjectUtil.equal(MybatisFlexConstant.SERVICE, entry.getKey())
                         ? ObjectUtil.defaultIfNull(Template.getMybatisFlexConfig().getInterfacePre(), "I") : "";
@@ -293,5 +295,66 @@ public class RenderMybatisFlexTemplate {
         }
     }
 
+    private static PsiDirectory getPsiDirectory(Map<String, String> packages, Map<String, String> modules, String key) {
+        Module module = Modules.getModule(modules.get(key));
+        if (StrUtil.isEmpty(key)) {
+            key = "resource".equals(Template.getConfigData(MybatisFlexConstant.MAPPER_XML_TYPE, "resource")) ? "" : "xml";
+        }
+        PsiDirectory packageDirectory = VirtualFileUtils.getPsiDirectory(module, packages.get(key), key);
+        return packageDirectory;
+    }
 
+
+    /**
+     * 获取远程数据并渲染
+     *
+     * @param selectedTabeList
+     */
+    public static void remoteDataGen(List<String> selectedTabeList) {
+        VelocityEngine velocityEngine = new VelocityEngine();
+        MybatisFlexConfig config = Template.getMybatisFlexConfig();
+        String remoteDataUrl = config.getRemoteDataUrl();
+        if (StrUtil.isEmpty(remoteDataUrl)) {
+            NotificationUtils.notifyError("请配置远程数据地址", "错误", ProjectUtils.getCurrentProject());
+            return;
+        }
+        PsiFileFactory factory = PsiFileFactory.getInstance(ProjectUtils.getCurrentProject());
+        HashMap<PsiDirectory, List<PsiElement>> templateMap = new HashMap<>();
+        Map<String, String> packages = config.getPackages();
+        Map<String, String> suffixMap = config.getSuffix();
+        String result = HttpRequest.post(remoteDataUrl)
+                .body(JSON.toJSONString(selectedTabeList))
+                .header(config.getRemoteHeader(), config.getRemoteDataToken())
+                .execute()
+                .body();
+        List<JSONObject> list = JSON.parseObject(result).getList(config.getResultField(), JSONObject.class);
+        VelocityContext context;
+        Map<String, String> templates = new ConcurrentHashMap<>(config.getTemplates());
+        for (JSONObject tableInfo : list) {
+            context = new VelocityContext(tableInfo);
+            customRender(config, velocityEngine, context, context.get("ClassName").toString());
+            for (Map.Entry<String, String> entry : templates.entrySet()) {
+                StringWriter sw = new StringWriter();
+                velocityEngine.evaluate(context, sw, "mybatis-flex", entry.getValue());
+                PsiDirectory psiDirectory = getPsiDirectory(packages, config.getModules(), entry.getKey());
+                String classPrefix = ObjectUtil.equal(MybatisFlexConstant.SERVICE, entry.getKey())
+                        ? ObjectUtil.defaultIfNull(Template.getMybatisFlexConfig().getInterfacePre(), "I") : "";
+                String fileName = classPrefix + tableInfo.getString("ClassName") + suffixMap.get(entry.getKey()) + (StrUtil.isEmpty(entry.getKey()) ? ".xml" : ".java");
+                PsiFile file = factory.createFileFromText(fileName, StrUtil.isEmpty(entry.getKey()) ? XmlFileType.INSTANCE : JavaFileType.INSTANCE, sw.toString());
+                templateMap.computeIfAbsent(psiDirectory, k -> new ArrayList<>()).add(CodeReformat.reformat(file));
+            }
+        }
+        DumbService.getInstance(ProjectUtils.getCurrentProject()).runWhenSmart(() -> {
+            WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
+                for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
+                    List<PsiElement> list1 = entry.getValue();
+                    PsiDirectory directory = entry.getKey();
+                    for (PsiElement psiFile : list1) {
+                        directory.add(psiFile);
+                    }
+                }
+            });
+        });
+
+    }
 }

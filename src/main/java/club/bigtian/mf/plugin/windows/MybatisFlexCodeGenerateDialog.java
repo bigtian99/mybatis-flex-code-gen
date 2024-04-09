@@ -82,6 +82,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     private JCheckBox enableImplBox;
     private JCheckBox enableMapperBox;
     private JCheckBox enableXmlBox;
+    private JCheckBox remoteInterface;
 
     private AnActionEvent actionEvent;
 
@@ -412,8 +413,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     }
 
 
-
-
     private void initBtn() {
         mapperBtn.addActionListener(e -> mapperPackagePath.setText(Package.selectPackage(Modules.getModule(mapperComBox.getSelectedItem().toString()), mapperPackagePath.getText())));
         modelBtn.addActionListener(e -> modelPackagePath.setText(Package.selectPackage(Modules.getModule(modelCombox.getSelectedItem().toString()), modelPackagePath.getText())));
@@ -452,6 +451,14 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 });
 
         List<String> selectedTabeList = tableList.getSelectedValuesList();
+        boolean flag = remoteInterface.isSelected();
+        if(flag){
+            // TODO
+            RenderMybatisFlexTemplate.remoteDataGen(selectedTabeList);
+            NotificationUtils.notifySuccess("代码生成成功", project);
+            onCancel();
+            return;
+        }
         if (CollUtil.isEmpty(selectedTabeList)) {
             Messages.showWarningDialog("请选择要生成的表", "提示");
             return;
@@ -483,7 +490,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             if (selected) {
                 continue;
             }
-            ReflectUtil.setFieldValue(configData, box.getName(),"");
+            ReflectUtil.setFieldValue(configData, box.getName(), "");
         }
         RenderMybatisFlexTemplate.assembleData(selectedTableInfo, configData, actionEvent.getProject());
         NotificationUtils.notifySuccess("代码生成成功", project);
@@ -550,57 +557,36 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             config = Template.getMybatisFlexConfig();
         }
         controllerPath.setText(config.getControllerPackage());
-        String controllerModule = config.getControllerModule();
-        if (StrUtil.isNotEmpty(controllerModule)) {
-            cotrollerCombox.setSelectedItem(controllerModule);
-        } else {
-            cotrollerCombox.setSelectedIndex(0);
-        }
+        setComboBoxAndTextField(cotrollerCombox, config.getControllerModule());
         if (StrUtil.isNotEmpty(config.getIdType())) {
             idTypeCombox.setSelectedItem(config.getIdType());
         }
         serviceIntefacePath.setText(config.getInterfacePackage());
-        String interfaceModule = config.getInterfaceModule();
-        if (StrUtil.isNotEmpty(interfaceModule)) {
-            serviceInteCombox.setSelectedItem(interfaceModule);
-        } else {
-            serviceInteCombox.setSelectedIndex(0);
-        }
+        setComboBoxAndTextField(serviceInteCombox, config.getInterfaceModule());
         serviceImpPath.setText(config.getImplPackage());
-        String implModule = config.getImplModule();
-        if (StrUtil.isNotEmpty(implModule)) {
-            serviceImplComBox.setSelectedItem(implModule);
-        } else {
-            serviceImplComBox.setSelectedIndex(0);
-        }
+        setComboBoxAndTextField(serviceImplComBox, config.getImplModule());
         modelPackagePath.setText(config.getModelPackage());
-        String modelModule = config.getModelModule();
-        if (StrUtil.isNotEmpty(modelModule)) {
-            modelCombox.setSelectedItem(modelModule);
-        } else {
-            modelCombox.setSelectedIndex(0);
-        }
-
+        setComboBoxAndTextField(modelCombox, config.getModelModule());
         mapperPackagePath.setText(config.getMapperPackage());
-        String mapperModule = config.getMapperModule();
-        if (StrUtil.isNotEmpty(mapperModule)) {
-            mapperComBox.setSelectedItem(mapperModule);
-        } else {
-            mapperComBox.setSelectedIndex(0);
-        }
+        setComboBoxAndTextField(mapperComBox, config.getMapperModule());
         mapperXmlPath.setText(config.getXmlPackage());
-        String xmlModule = config.getXmlModule();
-        if (StrUtil.isNotEmpty(xmlModule)) {
-            xmlComBox.setSelectedItem(xmlModule);
-        } else {
-            xmlComBox.setSelectedIndex(0);
-        }
+        setComboBoxAndTextField(xmlComBox, config.getXmlModule());
         syncCheckBox.setSelected(config.isSync());
         for (JComboBox jComboBox : list) {
             Object selectedItem = jComboBox.getSelectedItem();
             if (ObjectUtil.isNotEmpty(selectedItem)) {
                 jComboBox.repaint();
             }
+        }
+    }
+
+    private void setComboBoxAndTextField(JComboBox comboBox, String module) {
+        if (StrUtil.isNotEmpty(module)) {
+            comboBox.setSelectedItem(module);
+            JTextField textField = (JTextField) comboBox.getEditor().getEditorComponent();
+            textField.setText(module);
+        } else {
+            comboBox.setSelectedIndex(0);
         }
     }
 

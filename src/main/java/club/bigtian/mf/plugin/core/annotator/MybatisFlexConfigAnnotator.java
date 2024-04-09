@@ -2,7 +2,6 @@ package club.bigtian.mf.plugin.core.annotator;
 
 import club.bigtian.mf.plugin.core.function.BigFunction;
 import club.bigtian.mf.plugin.core.render.SqlPreviewIconRenderer;
-import club.bigtian.mf.plugin.core.util.MybatisFlexUtil;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import club.bigtian.mf.plugin.core.util.VirtualFileUtils;
@@ -70,11 +69,12 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 return;
             }
             Document document = PsiDocumentManager.getInstance(project).getDocument(containingFile);
-            if (ObjectUtil.isNull(document)) {
+            if (ObjectUtil.isNull(document) || !document.isWritable() || !(VirtualFileUtils.getPsiFile(document) instanceof PsiJavaFile)) {
                 return;
             }
+
             psiJavaFile = (PsiJavaFile) VirtualFileUtils.getPsiFile(document);
-            if (ObjectUtil.isNull(document) || !document.isWritable() || ObjectUtil.isNull(psiJavaFile)) {
+            if (ObjectUtil.isNull(psiJavaFile)) {
                 return;
             }
             int offset = element.getTextOffset();
