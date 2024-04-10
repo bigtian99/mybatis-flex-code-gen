@@ -27,6 +27,7 @@ import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.components.fields.ExpandableTextField;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,7 +40,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JButton buttonOK;
     private JButton buttonCancel;
     private JPanel mainPanel;
-    private com.intellij.ui.components.fields.ExpandableTextField tablePrefix;
+    private ExpandableTextField tablePrefix;
 
     private JButton resetBtn;
     private JTextField author;
@@ -70,7 +71,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JTabbedPane tabbedPane1;
     private JButton restBtn;
     private JCheckBox swagger3CheckBox;
-    private com.intellij.openapi.ui.FixedSizeButton returnBtn;
+    private FixedSizeButton returnBtn;
     private JTextField contrPath;
     private JTextField servicePath;
     private JTextField implPath;
@@ -83,12 +84,12 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JLabel insideSchema;
     private JCheckBox requiredArgsConstructorCheckBox;
 
-    private com.intellij.openapi.ui.FixedSizeButton buttonFixedSizeButton;
+    private FixedSizeButton buttonFixedSizeButton;
     private JCheckBox fromCheckBox;
     private JComboBox sqlDialect;
     private JComboBox mapperXmlType;
     private JTextField interfacePre;
-    private com.intellij.openapi.ui.FixedSizeButton addTab;
+    private FixedSizeButton addTab;
     private FixedSizeButton updateTab;
     private FixedSizeButton tabDelete;
     private JCheckBox enableDebug;
@@ -432,21 +433,18 @@ public class MybatisFlexSettingDialog extends JDialog {
         Project project = ProjectUtils.getCurrentProject();
         // 获取EditorFactory实例
         EditorFactory editorFactory = EditorFactory.getInstance();
-
-        // 创建一个Document实例
+        // // 创建一个Document实例
         Document document = editorFactory.createDocument(text);
-
         // 创建一个Editor实例
         Editor editor = editorFactory.createEditor(document, project);
-
         // 设置Editor的一些属性
         EditorSettings editorSettings = editor.getSettings();
         editorSettings.setVirtualSpace(false);
         editorSettings.setLineMarkerAreaShown(false);
         editorSettings.setLineNumbersShown(true);
         editorSettings.setFoldingOutlineShown(true);
+        editorSettings.setGutterIconsShown(true);
         ((EditorEx) editor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, StrUtil.format("demo{}.vm", fileSuffix)));
-
         return editor;
     }
 

@@ -77,6 +77,7 @@ public class ${controllerName}{
         #end
         #end
     })
+
     #end
 #if($config.qualifiedName)
     public ${resultClass} #if($config.genericity)<Boolean> #end save(@RequestBody $modelName  $requestPath){

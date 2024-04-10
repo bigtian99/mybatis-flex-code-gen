@@ -9,6 +9,7 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -115,19 +116,24 @@ public class Modules {
     public static void getModulePackages() {
         modulePackageMap = new HashMap<>();
         Project project = ProjectUtils.getCurrentProject();
+        PsiManager psiManager = PsiManager.getInstance(project);
+
         for (Module module : moduleMap.values()) {
             Map<String, String> moduleMap = new HashMap<>();
-            PsiManager psiManager = PsiManager.getInstance(project);
             FileIndex fileIndex = module != null ? ModuleRootManager.getInstance(module).getFileIndex() : ProjectRootManager.getInstance(project).getFileIndex();
-            fileIndex.iterateContent(fileOrDir -> {
-                if (fileOrDir.isDirectory() && (fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.SOURCES) || fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.RESOURCES))) {
-                    PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
-                    PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
-                    if (aPackage != null) {
-                        moduleMap.put(aPackage.getName(), aPackage.getQualifiedName());
+            ApplicationManager.getApplication().runReadAction(() -> {
+                fileIndex.iterateContent(fileOrDir -> {
+                    if (fileOrDir.isDirectory() && (fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.SOURCES) || fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.RESOURCES))) {
+                        PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
+                        if (ObjectUtil.isNotNull(psiDirectory)) {
+                            String packageName = JavaDirectoryService.getInstance().getPackage(psiDirectory).getQualifiedName();
+                            moduleMap.put(psiDirectory.getName(), packageName);
+
+                        }
                     }
-                }
-                return true;
+                    return true;
+                });
+
             });
             String name = module.getName();
             if (name.contains(".")) {
@@ -249,7 +255,6 @@ public class Modules {
      * 同步controller模块
      *
      * @param modulesComboxs
-     * @param idx
      */
     public static void syncModules(List<JComboBox> modulesComboxs, Object selectItem) {
         for (JComboBox modulesCombox : modulesComboxs) {
