@@ -9,22 +9,24 @@ import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.FileChooserUtil;
 import club.bigtian.mf.plugin.core.util.MybatisFlexUtil;
+import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.entity.TabInfo;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.intellij.lang.java.JavaLanguage;
-import com.intellij.lang.xml.XMLLanguage;
-import com.intellij.openapi.editor.event.DocumentEvent;
-import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.EditorSettings;
+import com.intellij.openapi.editor.ex.EditorEx;
+import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.LanguageTextField;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,12 +40,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JButton buttonCancel;
     private JPanel mainPanel;
     private com.intellij.ui.components.fields.ExpandableTextField tablePrefix;
-    private LanguageTextField controllerTemplate;
-    private LanguageTextField modelTemplate;
-    private LanguageTextField interfaceTempalate;
-    private LanguageTextField implTemplate;
-    private LanguageTextField mapperTemplate;
-    private LanguageTextField xmlTemplate;
+
     private JButton resetBtn;
     private JTextField author;
     private JTextField since;
@@ -71,9 +68,6 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JButton exportBtn;
     private JButton importBtn;
     private JTabbedPane tabbedPane1;
-    private JPanel controllerTab;
-    private JPanel modelTab;
-    private JPanel panel1;
     private JButton restBtn;
     private JCheckBox swagger3CheckBox;
     private com.intellij.openapi.ui.FixedSizeButton returnBtn;
@@ -209,6 +203,7 @@ public class MybatisFlexSettingDialog extends JDialog {
             }
             String path = virtualFile.getPath();
             MybatisFlexPluginConfigData.importConfig(path);
+            tabList.clear();
             init();
         });
 
@@ -216,6 +211,8 @@ public class MybatisFlexSettingDialog extends JDialog {
             int flag = Messages.showYesNoDialog("确定要恢复自带模板吗？", "提示", Messages.getQuestionIcon());
             if (0 == flag) {
                 MybatisFlexPluginConfigData.clearCode();
+                tabList.clear();
+                MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(getConfigData());
                 init();
                 Messages.showInfoMessage("恢复成功", "提示");
             }
@@ -285,12 +282,12 @@ public class MybatisFlexSettingDialog extends JDialog {
                         if (!dialog.getTitle().equals(title)) {
                             tabbedPane1.remove(selectedIndex);
                             tabbedPane1.insertTab(el.getTitle(), Icons.DONATE, createTabView(el.getTitle(),
-                                    el.getTextField().getText(),
+                                    el.getDocument().getText(),
                                     el.getGenPath(),
                                     el.getSuffix(),
                                     true), "", selectedIndex);
                             tabbedPane1.setSelectedIndex(selectedIndex);
-                            el.getTextField().requestFocusInWindow();
+                            // el.getTextField().requestFocusInWindow();
                         }
                     });
         });
@@ -325,14 +322,12 @@ public class MybatisFlexSettingDialog extends JDialog {
         }
     }
 
+    public void setEditorText(Editor editor, String text) {
+        WriteCommandAction.runWriteCommandAction(project, () -> editor.getDocument().setText(text));
+    }
 
     public void init() {
-        controllerTemplate.setText(Template.getVmCode(MybatisFlexConstant.CONTROLLER_TEMPLATE));
-        modelTemplate.setText(Template.getVmCode(MybatisFlexConstant.MODEL_TEMPLATE));
-        interfaceTempalate.setText(Template.getVmCode(MybatisFlexConstant.INTERFACE_TEMPLATE));
-        implTemplate.setText(Template.getVmCode(MybatisFlexConstant.IMPL_TEMPLATE));
-        mapperTemplate.setText(Template.getVmCode(MybatisFlexConstant.MAPPER_TEMPLATE));
-        xmlTemplate.setText(Template.getVmCode(MybatisFlexConstant.XML_TEMPLATE));
+
         tablePrefix.setText(Template.getTablePrefix());
         author.setText(Template.getAuthor());
         since.setText(Template.getSince());
@@ -376,10 +371,25 @@ public class MybatisFlexSettingDialog extends JDialog {
             pathMap.put(textField.getName(), textField.getText());
         }
         MybatisFlexConfig config = Template.getMybatisFlexConfig();
+        tabbedPane1.removeAll();
         List<TabInfo> infoList = config.getTabList();
+        if (CollUtil.isEmpty(infoList) || infoList.size() < 6) {
+            infoList.add(0, new TabInfo("Controller", Template.getVmCode(MybatisFlexConstant.CONTROLLER_TEMPLATE), ".java"));
+            infoList.add(1, new TabInfo("Service", Template.getVmCode(MybatisFlexConstant.INTERFACE_TEMPLATE), ".java"));
+            infoList.add(2, new TabInfo("ServiceImpl", Template.getVmCode(MybatisFlexConstant.IMPL_TEMPLATE), ".java"));
+            infoList.add(3, new TabInfo("Entity", Template.getVmCode(MybatisFlexConstant.MODEL_TEMPLATE), ".java"));
+            infoList.add(4, new TabInfo("Mapper", Template.getVmCode(MybatisFlexConstant.MAPPER_TEMPLATE), ".java"));
+            infoList.add(5, new TabInfo("Xml", Template.getVmCode(MybatisFlexConstant.XML_TEMPLATE), ".xml"));
+        }
         if (CollUtil.isNotEmpty(infoList)) {
-            for (TabInfo tabInfo : infoList) {
-                tabbedPane1.addTab(tabInfo.getTitle(), createTabView(tabInfo.getTitle(), tabInfo.getContent(), tabInfo.getGenPath(), tabInfo.getSuffix(), false));
+            for (int idx = 0; idx < infoList.size(); idx++) {
+                TabInfo tabInfo = infoList.get(idx);
+                tabbedPane1.insertTab(tabInfo.getTitle(), Icons.DONATE, createTabView(tabInfo.getTitle(),
+                        tabInfo.getContent(),
+                        tabInfo.getGenPath(),
+                        tabInfo.getSuffix(),
+                        false), "", idx
+                );
             }
         }
     }
@@ -406,62 +416,44 @@ public class MybatisFlexSettingDialog extends JDialog {
     public JPanel createTabView(String title, String content, String genPath, String fileSuffix, boolean isUpdate) {
         JPanel jPanel = new JPanel(new GridLayout());
         JScrollPane pane = new JScrollPane();
-        LanguageTextField languageTextField = new LanguageTextField(JavaLanguage.INSTANCE, project, content, false);
-        pane.setViewportView(languageTextField);
+
+        Editor editor = createEditorWithText(content, fileSuffix);
+        pane.setViewportView(editor.getComponent());
         jPanel.add(pane);
-        languageTextField.addDocumentListener(new DocumentListener() {
-            @Override
-            public void documentChanged(@NotNull DocumentEvent event) {
-                // 重新渲染JScrollPane，否则没有滚动条，无法滚动
-                pane.revalidate();
-                pane.repaint();
-            }
-        });
         if (!isUpdate) {
-            TabInfo tabInfo = new TabInfo(title, content, genPath, fileSuffix, languageTextField);
+            TabInfo tabInfo = new TabInfo(title, content, genPath, fileSuffix, editor);
             tabList.add(tabInfo);
         }
         pane.getVerticalScrollBar().setUnitIncrement(10);
         return jPanel;
     }
 
-    /**
-     * 创建自定义控件
-     */
-    private void createUIComponents() {
-        controllerTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
-        modelTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
-        interfaceTempalate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
-        implTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
-        mapperTemplate = new LanguageTextField(JavaLanguage.INSTANCE, project, "", false);
-        xmlTemplate = new LanguageTextField(XMLLanguage.INSTANCE, project, "", false);
-        scrollPane1 = new JScrollPane();
-        scrollPane2 = new JScrollPane();
-        scrollPane3 = new JScrollPane();
-        scrollPane4 = new JScrollPane();
-        scrollPane5 = new JScrollPane();
-        scrollPane6 = new JScrollPane();
-        // scrollPane7 = new JScrollPane();
-        // scrollPane8 = new JScrollPane();
-        scrollPane1.getVerticalScrollBar().setUnitIncrement(10);
-        scrollPane2.getVerticalScrollBar().setUnitIncrement(10);
-        scrollPane3.getVerticalScrollBar().setUnitIncrement(10);
-        scrollPane4.getVerticalScrollBar().setUnitIncrement(10);
-        scrollPane5.getVerticalScrollBar().setUnitIncrement(10);
-        scrollPane6.getVerticalScrollBar().setUnitIncrement(10);
-        // scrollPane7.getVerticalScrollBar().setUnitIncrement(10);
-        // scrollPane8.getVerticalScrollBar().setUnitIncrement(10);
+    public Editor createEditorWithText(String text, String fileSuffix) {
+        Project project = ProjectUtils.getCurrentProject();
+        // 获取EditorFactory实例
+        EditorFactory editorFactory = EditorFactory.getInstance();
+
+        // 创建一个Document实例
+        Document document = editorFactory.createDocument(text);
+
+        // 创建一个Editor实例
+        Editor editor = editorFactory.createEditor(document, project);
+
+        // 设置Editor的一些属性
+        EditorSettings editorSettings = editor.getSettings();
+        editorSettings.setVirtualSpace(false);
+        editorSettings.setLineMarkerAreaShown(false);
+        editorSettings.setLineNumbersShown(true);
+        editorSettings.setFoldingOutlineShown(true);
+        ((EditorEx) editor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, StrUtil.format("demo{}.vm", fileSuffix)));
+
+        return editor;
     }
 
 
     public MybatisFlexConfig getConfigData() {
         MybatisFlexConfig config = Template.getMybatisFlexConfig();
-        config.setControllerTemplate(controllerTemplate.getText());
-        config.setModelTemplate(modelTemplate.getText());
-        config.setInterfaceTempalate(interfaceTempalate.getText());
-        config.setImplTemplate(implTemplate.getText());
-        config.setMapperTemplate(mapperTemplate.getText());
-        config.setXmlTemplate(xmlTemplate.getText());
+
         config.setTablePrefix(tablePrefix.getText());
         config.setAuthor(author.getText());
         config.setSince(since.getText());
@@ -496,7 +488,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setEnableDebug(enableDebug.isSelected());
         config.setKtFile(ktFile.isSelected());
         for (TabInfo tabInfo : tabList) {
-            tabInfo.setContent(tabInfo.getTextField().getText());
+            tabInfo.setContent(tabInfo.getDocument().getText());
         }
         config.setTabList(tabList);
         return config;

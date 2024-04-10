@@ -1,7 +1,9 @@
 package club.bigtian.mf.plugin.entity;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.annotation.JSONField;
-import com.intellij.ui.LanguageTextField;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
 
 public class TabInfo {
     private String title;
@@ -12,13 +14,24 @@ public class TabInfo {
     private String suffix;
 
     @JSONField(serialize = false)
-    private LanguageTextField textField;
+    private Editor textField;
 
-    public LanguageTextField getTextField() {
+    @JSONField(serialize = false)
+    private Document document;
+
+    public Document getDocument() {
+        return document;
+    }
+
+    public void setDocument(Document document) {
+        this.document = document;
+    }
+
+    public Editor getTextField() {
         return textField;
     }
 
-    public void setTextField(LanguageTextField textField) {
+    public void setTextField(Editor textField) {
         this.textField = textField;
     }
 
@@ -38,12 +51,23 @@ public class TabInfo {
         this.suffix = suffix;
     }
 
-    public TabInfo(String title, String content, String genPath, String suffix, LanguageTextField languageTextField) {
+    public TabInfo(String title, String content, String genPath, String suffix, Editor editor) {
         this.title = title;
         this.content = content;
         this.genPath = genPath;
         this.suffix = suffix;
-        this.textField = languageTextField;
+        this.textField = editor;
+        if (ObjectUtil.isNotNull(editor)) {
+            this.document = editor.getDocument();
+        }
+    }
+
+    public TabInfo(String title, String content, String suffix) {
+        this.title = title;
+        this.content = content;
+        this.genPath = genPath;
+        this.suffix = suffix;
+
     }
 
     public String getContent() {

@@ -9,6 +9,7 @@ import com.alibaba.fastjson2.JSON;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MybatisFlexConfig {
     /**
@@ -239,6 +240,16 @@ public class MybatisFlexConfig {
     private String remoteDataToken;
     private String resultField;
 
+    private boolean remoteInterface;
+
+    public boolean isRemoteInterface() {
+        return remoteInterface;
+    }
+
+    public void setRemoteInterface(boolean remoteInterface) {
+        this.remoteInterface = remoteInterface;
+    }
+
     public String getResultField() {
         return resultField;
     }
@@ -381,12 +392,15 @@ public class MybatisFlexConfig {
 
     public Map<String, String> getTemplates() {
         Map<String, String> data = new HashMap<>();
-        data.put(MybatisFlexConstant.CONTROLLER, controllerTemplate);
-        data.put(MybatisFlexConstant.ENTITY, modelTemplate);
-        data.put(MybatisFlexConstant.SERVICE, interfaceTempalate);
-        data.put(MybatisFlexConstant.SERVICE_IMPL, implTemplate);
-        data.put(MybatisFlexConstant.MAPPER, mapperTemplate);
-        data.put("", xmlTemplate);
+        Map<String, String> templateMap = getTabList()
+                .stream()
+                .collect(Collectors.toMap(TabInfo::getTitle, TabInfo::getContent));
+        data.put(MybatisFlexConstant.CONTROLLER, templateMap.getOrDefault(MybatisFlexConstant.CONTROLLER, ""));
+        data.put(MybatisFlexConstant.ENTITY, templateMap.getOrDefault(MybatisFlexConstant.ENTITY, ""));
+        data.put(MybatisFlexConstant.SERVICE, templateMap.getOrDefault(MybatisFlexConstant.SERVICE, ""));
+        data.put(MybatisFlexConstant.SERVICE_IMPL, templateMap.getOrDefault(MybatisFlexConstant.SERVICE_IMPL, ""));
+        data.put(MybatisFlexConstant.MAPPER, templateMap.getOrDefault(MybatisFlexConstant.MAPPER, ""));
+        data.put("", templateMap.getOrDefault("Xml", ""));
         return data;
     }
 

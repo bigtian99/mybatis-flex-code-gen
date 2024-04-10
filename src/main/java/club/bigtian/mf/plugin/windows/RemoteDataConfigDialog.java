@@ -16,13 +16,14 @@ public class RemoteDataConfigDialog extends JDialog {
     private JTextField headerKey;
     private JTextArea token;
     private JTextField resultField;
+    private JCheckBox remoteInterface;
 
     public RemoteDataConfigDialog() {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
         setTitle("远程数据配置");
-        setSize(500, 200);
+        setSize(500, 300);
         DialogUtil.centerShow(this);
         buttonOK.addActionListener(e -> onOK());
 
@@ -46,6 +47,7 @@ public class RemoteDataConfigDialog extends JDialog {
         url.setText(config.getRemoteDataUrl());
         headerKey.setText(config.getRemoteHeader());
         token.setText(config.getRemoteDataToken());
+        remoteInterface.setSelected(config.isRemoteInterface());
         resultField.setText(config.getResultField());
     }
 
@@ -55,8 +57,8 @@ public class RemoteDataConfigDialog extends JDialog {
         config.setRemoteDataUrl(url.getText());
         config.setRemoteHeader(headerKey.getText());
         config.setResultField(resultField.getText());
+        config.setRemoteInterface(remoteInterface.isSelected());
         MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(config);
-
         dispose();
     }
 

@@ -8,7 +8,7 @@ import club.bigtian.mf.plugin.entity.TabInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.io.IORuntimeException;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
@@ -17,6 +17,8 @@ import com.alibaba.fastjson2.JSONObject;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -27,11 +29,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -88,7 +86,7 @@ public class RenderMybatisFlexTemplate {
                 context.put("resultClass", qualifiedName.substring(qualifiedName.lastIndexOf(".") + 1));
             }
             renderTemplate(templates, context, className, velocityEngine, templateMap, packages, suffixMap, modules, factory, project);
-            customRender(config, velocityEngine, context, className);
+            customRender(config, velocityEngine, context, className, templateMap);
         }
 
         DumbService.getInstance(project).runWhenSmart(() -> {
@@ -97,18 +95,7 @@ public class RenderMybatisFlexTemplate {
                 for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
                     List<PsiElement> list = entry.getValue();
                     PsiDirectory directory = entry.getKey();
-                    // 如果勾选了覆盖，则删除原有文件
-                    if (config.isOverrideCheckBox()) {
-                        for (PsiElement psiFile : list) {
-                            if (psiFile instanceof PsiFile) {
-                                PsiFile file = (PsiFile) psiFile;
-                                PsiFile directoryFile = directory.findFile(file.getName());
-                                if (ObjectUtil.isNotNull(directoryFile)) {
-                                    directoryFile.delete();
-                                }
-                            }
-                        }
-                    }
+                    remoteOldFile(config, list, directory);
 
                     for (PsiElement psiFile : list) {
                         try {
@@ -146,27 +133,49 @@ public class RenderMybatisFlexTemplate {
         // CompilerManagerUtil.make(Modules.getModule(config.getModelModule()));
     }
 
-    private static boolean customRender(MybatisFlexConfig config, VelocityEngine velocityEngine, VelocityContext context, String className) {
+    private static void remoteOldFile(MybatisFlexConfig config, List<PsiElement> list, PsiDirectory directory) {
+        // 如果勾选了覆盖，则删除原有文件
+        if (config.isOverrideCheckBox()) {
+            for (PsiElement psiFile : list) {
+                if (psiFile instanceof PsiFile) {
+                    PsiFile file = (PsiFile) psiFile;
+                    PsiFile directoryFile = directory.findFile(file.getName());
+                    if (ObjectUtil.isNotNull(directoryFile)) {
+                        directoryFile.delete();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 渲染 自定义模板
+     *
+     * @param config
+     * @param velocityEngine
+     * @param context
+     * @param className
+     * @param templateMap
+     * @return
+     */
+    private static void customRender(MybatisFlexConfig config, VelocityEngine velocityEngine, VelocityContext context, String className, HashMap<PsiDirectory, List<PsiElement>> templateMap) {
+        PsiFileFactory factory = PsiFileFactory.getInstance(ProjectUtils.getCurrentProject());
         List<TabInfo> infoList = config.getTabList();
         if (CollUtil.isNotEmpty(infoList)) {
             for (TabInfo info : infoList) {
                 String genPath = info.getGenPath();
                 StringWriter sw = new StringWriter();
                 velocityEngine.evaluate(context, sw, "mybatis-flex", info.getContent());
-                File file = new File(genPath + File.separator + className + info.getSuffix());
-                if (!file.getParentFile().exists()) {
-                    Messages.showWarningDialog("自定义模板路径不存在：" + genPath, "警告");
-                    return true;
-                }
-                try {
-                    FileOutputStream fileOutputStream = new FileOutputStream(file);
-                    IoUtil.write(fileOutputStream, true, sw.toString().getBytes(StandardCharsets.UTF_8));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                PsiDirectory psiDirectory = VirtualFileUtils.getPsiDirectory(ProjectUtils.getCurrentProject(), genPath);
+                String fileName = className + info.getSuffix();
+                PsiFile file = factory.createFileFromText(fileName, getFileTypeByExtension(info.getSuffix().replace(".", "")), sw.toString());
+                templateMap.computeIfAbsent(psiDirectory, k -> new ArrayList<>()).add(CodeReformat.reformat(file));
             }
         }
-        return false;
+    }
+
+    public static FileType getFileTypeByExtension(String extension) {
+        return FileTypeManager.getInstance().getFileTypeByExtension(extension);
     }
 
     private static void logicDelete(List<TableInfo> selectedTableInfo, MybatisFlexConfig config) {
@@ -307,32 +316,55 @@ public class RenderMybatisFlexTemplate {
 
     /**
      * 获取远程数据并渲染
+     * {
+     * "data": "data（返回的数据列表）",
+     * "code": "code（状态码）",
+     * "msg": "msg(当返回编码不是正常的时候会提示)",
+     * "num": "200(和code匹配使用，表示响应正茬会给你)"
+     * }
      *
      * @param selectedTabeList
      */
-    public static void remoteDataGen(List<String> selectedTabeList) {
+    public static boolean remoteDataGen(List<String> selectedTabeList) {
         VelocityEngine velocityEngine = new VelocityEngine();
         MybatisFlexConfig config = Template.getMybatisFlexConfig();
         String remoteDataUrl = config.getRemoteDataUrl();
         if (StrUtil.isEmpty(remoteDataUrl)) {
             NotificationUtils.notifyError("请配置远程数据地址", "错误", ProjectUtils.getCurrentProject());
-            return;
+            return false;
         }
         PsiFileFactory factory = PsiFileFactory.getInstance(ProjectUtils.getCurrentProject());
         HashMap<PsiDirectory, List<PsiElement>> templateMap = new HashMap<>();
         Map<String, String> packages = config.getPackages();
         Map<String, String> suffixMap = config.getSuffix();
-        String result = HttpRequest.post(remoteDataUrl)
-                .body(JSON.toJSONString(selectedTabeList))
-                .header(config.getRemoteHeader(), config.getRemoteDataToken())
-                .execute()
-                .body();
-        List<JSONObject> list = JSON.parseObject(result).getList(config.getResultField(), JSONObject.class);
+        HttpRequest request = HttpRequest.post(remoteDataUrl)
+                .body(JSON.toJSONString(selectedTabeList));
+        if (StrUtil.isNotEmpty(config.getRemoteDataToken()) && StrUtil.isNotEmpty(config.getRemoteHeader())) {
+            request.header(config.getRemoteHeader(), config.getRemoteDataToken());
+        }
+        JSONObject resultField = JSON.parseObject(config.getResultField());
+
+        JSONObject resultJson = null;
+        try {
+            String result = request.execute().body();
+            resultJson = JSON.parseObject(result);
+        } catch (IORuntimeException e) {
+            NotificationUtils.notifyError("远程数据请求失败", "错误", ProjectUtils.getCurrentProject());
+            return false;
+        } catch (Exception e) {
+            NotificationUtils.notifyError("返回数据格式错误", "错误", ProjectUtils.getCurrentProject());
+            return false;
+        }
+        if (!resultJson.getInteger(resultField.getString("code")).equals(resultField.getInteger("num"))) {
+            NotificationUtils.notifyError(resultJson.getString(resultField.getString("msg")), "错误", ProjectUtils.getCurrentProject());
+            return false;
+        }
+        List<JSONObject> list = resultJson.getList(resultField.getString("data"), JSONObject.class);
         VelocityContext context;
         Map<String, String> templates = new ConcurrentHashMap<>(config.getTemplates());
         for (JSONObject tableInfo : list) {
             context = new VelocityContext(tableInfo);
-            customRender(config, velocityEngine, context, context.get("ClassName").toString());
+            customRender(config, velocityEngine, context, context.get("ClassName").toString(), templateMap);
             for (Map.Entry<String, String> entry : templates.entrySet()) {
                 StringWriter sw = new StringWriter();
                 velocityEngine.evaluate(context, sw, "mybatis-flex", entry.getValue());
@@ -344,17 +376,35 @@ public class RenderMybatisFlexTemplate {
                 templateMap.computeIfAbsent(psiDirectory, k -> new ArrayList<>()).add(CodeReformat.reformat(file));
             }
         }
+        List<PsiJavaFile> psiJavaFiles = new ArrayList<>();
         DumbService.getInstance(ProjectUtils.getCurrentProject()).runWhenSmart(() -> {
             WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), () -> {
                 for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
                     List<PsiElement> list1 = entry.getValue();
                     PsiDirectory directory = entry.getKey();
                     for (PsiElement psiFile : list1) {
-                        directory.add(psiFile);
+                        remoteOldFile(config, list1, directory);
+                        PsiElement newPsiFile = null;
+                        try {
+                            newPsiFile = directory.add(psiFile);
+                        } catch (IncorrectOperationException e) {
+                            if (e.getMessage().contains("already exists")) {
+                                PsiFile file = (PsiFile) psiFile;
+                                Messages.showErrorDialog("文件已存在：" + file.getName(), "错误");
+                            }
+                            throw e;
+                        }
+                        if (newPsiFile instanceof PsiJavaFile) {
+                            psiJavaFiles.add((PsiJavaFile) newPsiFile);
+                        }
                     }
                 }
             });
         });
-
+        //  转换kt文件
+        if (config.isKtFile()) {
+            KtFileUtil.convertKtFile(psiJavaFiles);
+        }
+        return true;
     }
 }

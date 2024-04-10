@@ -82,7 +82,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     private JCheckBox enableImplBox;
     private JCheckBox enableMapperBox;
     private JCheckBox enableXmlBox;
-    private JCheckBox remoteInterface;
 
     private AnActionEvent actionEvent;
 
@@ -103,7 +102,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         setModal(true);
         setTitle("Mybatis Flex Code Generate");
         getRootPane().setDefaultButton(generateBtn);
-        setSize(1050, 460);
+        setSize(1050, 450);
         DialogUtil.centerShow(this);
         project = actionEvent.getProject();
 
@@ -451,12 +450,13 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 });
 
         List<String> selectedTabeList = tableList.getSelectedValuesList();
-        boolean flag = remoteInterface.isSelected();
-        if(flag){
-            // TODO
-            RenderMybatisFlexTemplate.remoteDataGen(selectedTabeList);
-            NotificationUtils.notifySuccess("代码生成成功", project);
-            onCancel();
+        MybatisFlexConfig configData = getConfigData();
+
+        if (configData.isRemoteInterface()) {
+            if (RenderMybatisFlexTemplate.remoteDataGen(selectedTabeList)) {
+                NotificationUtils.notifySuccess("代码生成成功", project);
+                onCancel();
+            }
             return;
         }
         if (CollUtil.isEmpty(selectedTabeList)) {
@@ -470,7 +470,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         // boolean flag = checkTableInfo(selectedTableInfo);
         // if (flag) {
         String since = sinceComBox.getSelectedItem().toString();
-        MybatisFlexConfig configData = getConfigData();
 
 
         if (!SINCE_CONFIG.equals(since)) {
