@@ -6,9 +6,7 @@ import club.bigtian.mf.plugin.entity.TabInfo;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSON;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MybatisFlexConfig {
@@ -307,8 +305,9 @@ public class MybatisFlexConfig {
     }
 
     public List<TabInfo> getTabList() {
-        return JSON.parseArray(tabList, TabInfo.class);
+        return Optional.ofNullable( JSON.parseArray(tabList, TabInfo.class)).orElse(new ArrayList<>());
     }
+
 
     public void setTabList(List<TabInfo> tabList) {
         this.tabList = JSON.toJSONString(tabList);
