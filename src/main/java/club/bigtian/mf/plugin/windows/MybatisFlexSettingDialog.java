@@ -15,33 +15,40 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.EditorSettings;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.FixedSizeButton;
-import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.fields.ExpandableTextField;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class MybatisFlexSettingDialog extends JDialog {
     private JPanel contentPane;
+    private List defaultTempList= Arrays.asList("Controller", "Entity", "Service", "ServiceImpl", "Mapper", "Xml");
     private JButton buttonOK;
     private JButton buttonCancel;
     private JPanel mainPanel;
     private ExpandableTextField tablePrefix;
-
+    private Editor templateEditor;
     private JButton resetBtn;
     private JTextField author;
     private JTextField since;
@@ -96,6 +103,9 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JButton saveBtn;
     private JCheckBox ktFile;
     private JButton remoteBtn;
+    private JList list1;
+    private JPanel listHeader;
+    private JPanel edtiorPanel;
     private Project project;
 
     // 是否开启内部模式
@@ -103,7 +113,8 @@ public class MybatisFlexSettingDialog extends JDialog {
     SimpleFunction simpleFunction;
     List<JTextField> list = Arrays.asList(contrPath, servicePath, implPath, domainPath, xmlPath, mapperPath);
     Map<String, String> pathMap;
-    List<TabInfo> tabList = new ArrayList<>();
+    Map<String, TabInfo> tabMap;
+
 
     public MybatisFlexSettingDialog(Project project, SimpleFunction simpleFunction) {
         this.project = project;
@@ -115,8 +126,12 @@ public class MybatisFlexSettingDialog extends JDialog {
         setSize(screenSize);
         setMinimumSize(new Dimension(700, 500));
         getRootPane().setDefaultButton(buttonOK);
+
+
+        listHeader.setPreferredSize(new Dimension(50, 600));
+        // 添加到顶部
+        listHeader.add(toolBar().getComponent(), BorderLayout.NORTH);
         DialogUtil.centerShow(this);
-        buttonOK.addActionListener(e -> onOK());
         insideSchema.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -128,11 +143,6 @@ public class MybatisFlexSettingDialog extends JDialog {
                 }
                 insideSchemaFlag = !insideSchemaFlag;
                 Messages.showInfoMessage(insideSchemaFlag ? "内部模式已开启" : "内部模式已关闭", "提示");
-            }
-        });
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
             }
         });
 
@@ -204,20 +214,9 @@ public class MybatisFlexSettingDialog extends JDialog {
             }
             String path = virtualFile.getPath();
             MybatisFlexPluginConfigData.importConfig(path);
-            tabList.clear();
             init();
         });
 
-        restBtn.addActionListener(e -> {
-            int flag = Messages.showYesNoDialog("确定要恢复自带模板吗？", "提示", Messages.getQuestionIcon());
-            if (0 == flag) {
-                MybatisFlexPluginConfigData.clearCode();
-                tabList.clear();
-                MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(getConfigData());
-                init();
-                Messages.showInfoMessage("恢复成功", "提示");
-            }
-        });
 
         swagger3CheckBox.addActionListener(e -> {
             if (swagger3CheckBox.isSelected()) {
@@ -243,71 +242,8 @@ public class MybatisFlexSettingDialog extends JDialog {
             dialog.show();
         });
         buttonFixedSizeButton.addActionListener(e -> new CommonSettingDialog().show());
-        addTab.addActionListener(e -> {
-            CustomTabDialog dialog = new CustomTabDialog();
-            dialog.setVisible(true);
-            String genPath = dialog.getGenPath();
-            String title = dialog.getTitle();
-            String fileSuffix = dialog.getFileSuffix();
-            if (StrUtil.isEmpty(title) || StrUtil.isEmpty(genPath) || StrUtil.isEmpty(fileSuffix)) {
-                return;
-            }
-            boolean flag = tabList.stream()
-                    .map(TabInfo::getTitle)
-                    .anyMatch(el -> el.equals(title));
-            if (flag) {
-                Messages.showWarningDialog(StrUtil.format("该标题【{}】已经存在,请使用其他名称", title), "提示");
-                return;
-            }
-            tabbedPane1.addTab(title, Icons.DONATE, createTabView(title, "", genPath, fileSuffix, false));
-            int idx = tabbedPane1.indexOfTab(title);
-            tabbedPane1.setSelectedIndex(idx);
-        });
-        updateTab.addActionListener(e -> {
-            checkDefaultTab();
-            int selectedIndex = tabbedPane1.getSelectedIndex();
-            String title = tabbedPane1.getTitleAt(selectedIndex);
-            tabList.stream()
-                    .filter(el -> el.getTitle().equals(title))
-                    .findFirst()
-                    .ifPresent(el -> {
-                        CustomTabDialog dialog = new CustomTabDialog(el.getGenPath(), el.getTitle(), el.getSuffix());
-                        dialog.show();
-                        String genPath = dialog.getGenPath();
-                        if (StrUtil.isEmpty(genPath)) {
-                            return;
-                        }
-                        el.setSuffix(dialog.getFileSuffix());
-                        el.setTitle(dialog.getTitle());
-                        el.setGenPath(dialog.getGenPath());
-                        if (!dialog.getTitle().equals(title)) {
-                            tabbedPane1.remove(selectedIndex);
-                            tabbedPane1.insertTab(el.getTitle(), Icons.DONATE, createTabView(el.getTitle(),
-                                    el.getDocument().getText(),
-                                    el.getGenPath(),
-                                    el.getSuffix(),
-                                    true), "", selectedIndex);
-                            tabbedPane1.setSelectedIndex(selectedIndex);
-                            // el.getTextField().requestFocusInWindow();
-                        }
-                    });
-        });
-        tabDelete.addActionListener(e -> {
-            checkDefaultTab();
-            MessageDialogBuilder.YesNo yes = MessageDialogBuilder.yesNo("提示", "确定要删除吗？");
-            int show = yes.show();
-            if (show == 1) {
-                return;
-            }
-            int selectedIndex = tabbedPane1.getSelectedIndex();
-            String title = tabbedPane1.getTitleAt(selectedIndex);
-            tabList.removeIf(el -> el.getTitle().equals(title));
-            tabbedPane1.remove(selectedIndex);
-        });
 
-        for (int i = 0; i < tabbedPane1.getTabCount(); i++) {
-            tabbedPane1.setIconAt(i, Icons.DONATE);
-        }
+
         saveBtn.addActionListener(e -> onOK());
         remoteBtn.addActionListener(e -> {
             RemoteDataConfigDialog dialog = new RemoteDataConfigDialog();
@@ -315,17 +251,6 @@ public class MybatisFlexSettingDialog extends JDialog {
         });
     }
 
-    private void checkDefaultTab() {
-        int selectedIndex = tabbedPane1.getSelectedIndex();
-        if (selectedIndex <= 5) {
-            Messages.showWarningDialog("默认模板不能额外操作", "提示");
-            Assert.isTrue(false, "默认模板不能额外操作");
-        }
-    }
-
-    public void setEditorText(Editor editor, String text) {
-        WriteCommandAction.runWriteCommandAction(project, () -> editor.getDocument().setText(text));
-    }
 
     public void init() {
 
@@ -371,28 +296,41 @@ public class MybatisFlexSettingDialog extends JDialog {
         for (JTextField textField : list) {
             pathMap.put(textField.getName(), textField.getText());
         }
+        templateList();
+    }
+
+    private void templateList() {
+        List<TabInfo> infoList = getTabInfos();
+        tabMap = infoList.stream().collect(Collectors.toMap(TabInfo::getTitle, Function.identity()));
+        DefaultListModel model = new DefaultListModel();
+        model.addAll(infoList.stream().map(TabInfo::getTitle).toList());
+        list1.setModel(model);
+        list1.setSelectedIndex(0);
+        Document document = templateEditor.getDocument();
+        list1.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting() || ObjectUtil.isNull(list1.getSelectedValue())) {
+                return;
+            }
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                TabInfo info = tabMap.get(list1.getSelectedValue().toString());
+                ((EditorEx) templateEditor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, StrUtil.format(StrUtil.format("{}{}.vm", info.getTitle(), info.getSuffix()), info.getSuffix())));
+                document.setText(info.getContent());
+            });
+        });
+    }
+
+    private static @NotNull List<TabInfo> getTabInfos() {
         MybatisFlexConfig config = Template.getMybatisFlexConfig();
-        tabbedPane1.removeAll();
         List<TabInfo> infoList = config.getTabList();
         if (CollUtil.isEmpty(infoList) || infoList.size() < 6) {
-            infoList.add(0, new TabInfo("Controller", Template.getVmCode(MybatisFlexConstant.CONTROLLER_TEMPLATE), ".java"));
-            infoList.add(1, new TabInfo("Service", Template.getVmCode(MybatisFlexConstant.INTERFACE_TEMPLATE), ".java"));
-            infoList.add(2, new TabInfo("ServiceImpl", Template.getVmCode(MybatisFlexConstant.IMPL_TEMPLATE), ".java"));
-            infoList.add(3, new TabInfo("Entity", Template.getVmCode(MybatisFlexConstant.MODEL_TEMPLATE), ".java"));
-            infoList.add(4, new TabInfo("Mapper", Template.getVmCode(MybatisFlexConstant.MAPPER_TEMPLATE), ".java"));
-            infoList.add(5, new TabInfo("Xml", Template.getVmCode(MybatisFlexConstant.XML_TEMPLATE), ".xml"));
+            infoList.add(0, new TabInfo("Controller", Template.getVmCode(MybatisFlexConstant.CONTROLLER_TEMPLATE), ".java", 0));
+            infoList.add(1, new TabInfo("Service", Template.getVmCode(MybatisFlexConstant.INTERFACE_TEMPLATE), ".java", 1));
+            infoList.add(2, new TabInfo("ServiceImpl", Template.getVmCode(MybatisFlexConstant.IMPL_TEMPLATE), ".java", 2));
+            infoList.add(3, new TabInfo("Entity", Template.getVmCode(MybatisFlexConstant.MODEL_TEMPLATE), ".java", 3));
+            infoList.add(4, new TabInfo("Mapper", Template.getVmCode(MybatisFlexConstant.MAPPER_TEMPLATE), ".java", 4));
+            infoList.add(5, new TabInfo("Xml", Template.getVmCode(MybatisFlexConstant.XML_TEMPLATE), ".xml", 5));
         }
-        if (CollUtil.isNotEmpty(infoList)) {
-            for (int idx = 0; idx < infoList.size(); idx++) {
-                TabInfo tabInfo = infoList.get(idx);
-                tabbedPane1.insertTab(tabInfo.getTitle(), Icons.DONATE, createTabView(tabInfo.getTitle(),
-                        tabInfo.getContent(),
-                        tabInfo.getGenPath(),
-                        tabInfo.getSuffix(),
-                        false), "", idx
-                );
-            }
-        }
+        return infoList;
     }
 
     public void initSinceComBox() {
@@ -414,20 +352,6 @@ public class MybatisFlexSettingDialog extends JDialog {
         sqlDialect.repaint();
     }
 
-    public JPanel createTabView(String title, String content, String genPath, String fileSuffix, boolean isUpdate) {
-        JPanel jPanel = new JPanel(new GridLayout());
-        JScrollPane pane = new JScrollPane();
-
-        Editor editor = createEditorWithText(content, fileSuffix);
-        pane.setViewportView(editor.getComponent());
-        jPanel.add(pane);
-        if (!isUpdate) {
-            TabInfo tabInfo = new TabInfo(title, content, genPath, fileSuffix, editor);
-            tabList.add(tabInfo);
-        }
-        pane.getVerticalScrollBar().setUnitIncrement(10);
-        return jPanel;
-    }
 
     public Editor createEditorWithText(String text, String fileSuffix) {
         Project project = ProjectUtils.getCurrentProject();
@@ -485,9 +409,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setMapperXmlType(mapperXmlType.getSelectedItem().toString());
         config.setEnableDebug(enableDebug.isSelected());
         config.setKtFile(ktFile.isSelected());
-        for (TabInfo tabInfo : tabList) {
-            tabInfo.setContent(tabInfo.getDocument().getText());
-        }
+        List<TabInfo> tabList = tabMap.values().stream().sorted(Comparator.comparingInt(TabInfo::getSort)).collect(Collectors.toList());
         config.setTabList(tabList);
         return config;
     }
@@ -509,5 +431,212 @@ public class MybatisFlexSettingDialog extends JDialog {
 
     private void onCancel() {
         dispose();
+    }
+
+    private void checkDefaultTab() {
+        if (defaultTempList.contains( list1.getSelectedValue().toString())) {
+            Messages.showWarningDialog("默认模板不能额外操作", "提示");
+            Assert.isTrue(false, "默认模板不能额外操作");
+        }
+    }
+
+    private void createUIComponents() {
+        edtiorPanel = new JPanel();
+        edtiorPanel.setLayout(new GridLayout(1, 1));
+        edtiorPanel.setPreferredSize(new Dimension(800, 600));
+        List<TabInfo> tabInfos = getTabInfos();
+        templateEditor = createEditorWithText(tabInfos.get(0).getContent(), ".java");
+        edtiorPanel.add(templateEditor.getComponent());
+        // templateList();
+        templateEditor.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void documentChanged(@NotNull DocumentEvent event) {
+                String title = list1.getSelectedValue().toString();
+                TabInfo tabInfo = tabMap.get(title);
+                tabInfo.setContent(event.getDocument().getText());
+            }
+        });
+    }
+
+    private ActionToolbar toolBar() {
+        DefaultActionGroup actionGroup = new DefaultActionGroup();
+        // 复制操作
+        // actionGroup.add(createCopyAction());
+        // 新增操作
+        actionGroup.add(createAddAction());
+        // 删除动作
+        actionGroup.add(createRemoveAction());
+        // 重置模板
+        actionGroup.add(createResetAction());
+        // 编辑模板
+        actionGroup.add(createEditorAction());
+        // 向上移动
+        actionGroup.add(createMoveUpAction());
+        // 向下移动
+        actionGroup.add(createMoveDownAction());
+        return ActionManager.getInstance().createActionToolbar("Item Toolbar", actionGroup, true);
+
+    }
+
+    private AnAction createEditorAction() {
+        return new AnAction(AllIcons.Actions.EditScheme) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                checkDefaultTab();
+                int selectedIndex = list1.getSelectedIndex();
+                String title = list1.getSelectedValue().toString();
+                TabInfo el = tabMap.get(title);
+
+                CustomTabDialog dialog = new CustomTabDialog(el.getGenPath(), el.getTitle(), el.getSuffix());
+                dialog.show();
+                String genPath = dialog.getGenPath();
+                if (StrUtil.isEmpty(genPath)) {
+                    return;
+                }
+                el.setSuffix(dialog.getFileSuffix());
+                el.setTitle(dialog.getTitle());
+                el.setGenPath(dialog.getGenPath());
+                tabMap.put(el.getTitle(), el);
+                resetList(selectedIndex);
+            }
+        };
+    }
+
+    private void resetList(int selectedIndex) {
+        DefaultListModel<String> model = new DefaultListModel<>();
+        List<String> titleList = tabMap.values().stream().sorted(Comparator.comparingInt(TabInfo::getSort)).map(TabInfo::getTitle).collect(Collectors.toList());
+        model.addAll(titleList);
+        list1.setModel(model);
+        list1.setSelectedIndex(selectedIndex);
+    }
+
+
+/*
+    private AnAction createCopyAction() {
+        return new AnAction(AllIcons.Actions.Copy) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+
+            }
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+            }
+        };
+    }
+*/
+
+    private AnAction createAddAction() {
+        return new AnAction(AllIcons.General.Add) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                CustomTabDialog dialog = new CustomTabDialog();
+                dialog.setVisible(true);
+                String genPath = dialog.getGenPath();
+                String title = dialog.getTitle();
+                String fileSuffix = dialog.getFileSuffix();
+                if (StrUtil.isEmpty(title) || StrUtil.isEmpty(genPath) || StrUtil.isEmpty(fileSuffix)) {
+                    return;
+                }
+                TabInfo tabInfo = new TabInfo(title, "", genPath, fileSuffix, tabMap.size());
+                tabMap.put(title, tabInfo);
+                resetList(tabMap.size() - 1);
+            }
+        };
+    }
+
+    private AnAction createRemoveAction() {
+        return new AnAction(AllIcons.General.Remove) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                checkDefaultTab();
+                int flag = Messages.showYesNoDialog("确定要删除该模板吗？", "提示", Messages.getQuestionIcon());
+                if (0 == flag) {
+                    String title = list1.getSelectedValue().toString();
+                    tabMap.remove(title);
+                    resetList(0);
+                }
+            }
+
+        };
+    }
+
+    private AnAction createResetAction() {
+        return new AnAction(AllIcons.General.Reset) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                int flag = Messages.showYesNoDialog("确定要恢复自带模板吗？", "提示", Messages.getQuestionIcon());
+                if (0 == flag) {
+                    MybatisFlexPluginConfigData.clearCode();
+                    tabMap.clear();
+                    MybatisFlexConfig configData = getConfigData();
+                    configData.setTabList(getTabInfos());
+                    MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(configData);
+
+                    int selectedIndex = list1.getSelectedIndex();
+                    templateList();
+                    resetList(selectedIndex);
+                    Messages.showInfoMessage("恢复成功", "提示");
+
+                }
+            }
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+
+            }
+        };
+    }
+
+    private AnAction createMoveUpAction() {
+        return new AnAction(Icons.MOVE_UP) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                // 动作执行的逻辑
+                String title = list1.getSelectedValue().toString();
+                TabInfo tabInfo = tabMap.get(title);
+                tabInfo.setSort(list1.getSelectedIndex() - 1);
+                sortIncr(+1, title, tabInfo.getSort());
+                resetList(tabInfo.getSort());
+            }
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                int idx = list1.getSelectedIndex();
+                e.getPresentation().setEnabled(idx > 0);
+
+            }
+        };
+    }
+
+    private AnAction createMoveDownAction() {
+        AnAction action = new AnAction(Icons.MOVE_DOWN) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                // 动作执行的逻辑
+                String title = list1.getSelectedValue().toString();
+                TabInfo tabInfo = tabMap.get(title);
+                tabInfo.setSort(list1.getSelectedIndex() + 1);
+                sortIncr(-1, title, tabInfo.getSort());
+                resetList(tabInfo.getSort());
+            }
+
+            @Override
+            public void update(@NotNull AnActionEvent e) {
+                // 更新动作状态的逻辑
+                int idx = list1.getSelectedIndex();
+                e.getPresentation().setEnabled(idx < tabMap.size() - 1);
+            }
+        };
+        // 设置悬浮提示文字
+        return action;
+    }
+
+    private void sortIncr(int step, String title, int sort) {
+        tabMap.values()
+                .stream()
+                .filter(el -> !el.getTitle().equals(title) && el.getSort() == sort)
+                .forEach(el -> el.setSort(el.getSort() + step));
+
     }
 }

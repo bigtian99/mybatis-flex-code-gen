@@ -164,6 +164,9 @@ public class RenderMybatisFlexTemplate {
         if (CollUtil.isNotEmpty(infoList)) {
             for (TabInfo info : infoList) {
                 String genPath = info.getGenPath();
+                if(StrUtil.isEmpty(genPath)){
+                    continue;
+                }
                 StringWriter sw = new StringWriter();
                 velocityEngine.evaluate(context, sw, "mybatis-flex", info.getContent());
                 PsiDirectory psiDirectory = VirtualFileUtils.getPsiDirectory(ProjectUtils.getCurrentProject(), genPath);
@@ -349,7 +352,7 @@ public class RenderMybatisFlexTemplate {
             String result = request.execute().body();
             resultJson = JSON.parseObject(result);
         } catch (IORuntimeException e) {
-            NotificationUtils.notifyError("远程数据请求失败", "错误", ProjectUtils.getCurrentProject());
+            NotificationUtils.notifyError("远程数据请求失败1", "错误", ProjectUtils.getCurrentProject());
             return false;
         } catch (Exception e) {
             NotificationUtils.notifyError("返回数据格式错误", "错误", ProjectUtils.getCurrentProject());
@@ -382,8 +385,9 @@ public class RenderMybatisFlexTemplate {
                 for (Map.Entry<PsiDirectory, List<PsiElement>> entry : templateMap.entrySet()) {
                     List<PsiElement> list1 = entry.getValue();
                     PsiDirectory directory = entry.getKey();
+                    remoteOldFile(config, list1, directory);
+
                     for (PsiElement psiFile : list1) {
-                        remoteOldFile(config, list1, directory);
                         PsiElement newPsiFile = null;
                         try {
                             newPsiFile = directory.add(psiFile);

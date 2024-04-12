@@ -46,10 +46,10 @@ tasks {
     runIde {
         // 启用热重载功能，使用Build菜单编译项目后无需重启调试进程即可完成, 仅支持JBR
         jvmArgs = listOf(
-//            "-XX:+AllowEnhancedClassRedefinition",
-            "-javaagent:/Users/daijunxiong/app/jetbra/ja-netfilter.jar=jetbrains",
-            "--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED",
-            "--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED"
+            "-XX:+AllowEnhancedClassRedefinition",
+//            "-javaagent:/Users/daijunxiong/app/jetbra/ja-netfilter.jar=jetbrains",
+//            "--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED",
+//            "--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED"
 
         )
 

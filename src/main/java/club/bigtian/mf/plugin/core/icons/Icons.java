@@ -17,4 +17,6 @@ public class Icons {
     public static final Icon DONATE = IconLoader.getIcon("/icons/coffee.svg", Icons.class);
     public static final Icon PRETTY_PRINT = IconLoader.getIcon("/icons/prettyPrint.svg", Icons.class);
     public static final Icon SQL_PREVIEW = IconLoader.getIcon("/icons/sqlPreview.svg", Icons.class);
+    public static final Icon MOVE_UP = IconLoader.getIcon("/icons/moveUp.svg", Icons.class);
+    public static final Icon MOVE_DOWN = IconLoader.getIcon("/icons/moveDown.svg", Icons.class);
 }

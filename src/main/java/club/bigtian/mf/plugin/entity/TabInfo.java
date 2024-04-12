@@ -13,11 +13,21 @@ public class TabInfo {
 
     private String suffix;
 
+    private int sort;
+
     @JSONField(serialize = false)
     private Editor textField;
 
     @JSONField(serialize = false)
     private Document document;
+
+    public int getSort() {
+        return sort;
+    }
+
+    public void setSort(int sort) {
+        this.sort = sort;
+    }
 
     public Document getDocument() {
         return document;
@@ -62,12 +72,19 @@ public class TabInfo {
         }
     }
 
-    public TabInfo(String title, String content, String suffix) {
+    public TabInfo(String title, String content, String suffix, int sort) {
         this.title = title;
         this.content = content;
-        this.genPath = genPath;
         this.suffix = suffix;
+        this.sort = sort;
+    }
 
+    public TabInfo(String title, String content, String genPath, String suffix, int sort) {
+        this.title = title;
+        this.content = content;
+        this.suffix = suffix;
+        this.genPath = genPath;
+        this.sort = sort;
     }
 
     public String getContent() {
