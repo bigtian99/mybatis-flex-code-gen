@@ -423,7 +423,11 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         serviceImplBtn.addActionListener(e -> {
             String packagePath = Package.selectPackage(Modules.getModule(serviceImplComBox.getSelectedItem().toString()), serviceImpPath.getText());
             serviceImpPath.setText(packagePath);
-            serviceIntefacePath.setText(packagePath.substring(0, packagePath.lastIndexOf(".")));
+            int idx = packagePath.lastIndexOf(".");
+            if (idx < 0) {
+                return;
+            }
+            serviceIntefacePath.setText(packagePath.substring(0, idx));
         });
         controllerBtn.addActionListener(e -> {
             String path = Package.selectPackage(Modules.getModule(cotrollerCombox.getSelectedItem().toString()), controllerPath.getText());
