@@ -3,7 +3,9 @@ package club.bigtian.mf.plugin.core.util;
 import club.bigtian.mf.plugin.core.MybatisFlexDocumentChangeHandler;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -86,15 +88,16 @@ public class PsiJavaFileUtil {
     }
 
     public static PsiClass getPsiClass(String qualifiedName) {
-        Project project = ProjectUtils.getCurrentProject();
-        JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
-        return psiFacade.findClass(qualifiedName, GlobalSearchScope.allScope(project));
+        return getPsiClass(qualifiedName, GlobalSearchScope.allScope(ProjectUtils.getCurrentProject()));
     }
 
     public static PsiClass getPsiClass(String qualifiedName, GlobalSearchScope scope) {
-        Project project = ProjectUtils.getCurrentProject();
-        JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
-        return psiFacade.findClass(qualifiedName, scope);
+        PsiClass psiClass = ApplicationManager.getApplication().runReadAction((Computable<PsiClass>) () -> {
+            Project project = ProjectUtils.getCurrentProject();
+            JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
+            return psiFacade.findClass(qualifiedName,scope);
+        });
+        return psiClass;
     }
 
     public static PsiImportStatement createImportStatement(PsiClass psiClass) {

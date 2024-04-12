@@ -3,6 +3,7 @@ package club.bigtian.mf.plugin.action.flex;
 import club.bigtian.mf.plugin.core.config.CustomConfig;
 import club.bigtian.mf.plugin.core.util.*;
 import cn.hutool.core.util.StrUtil;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -14,6 +15,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.psi.KtFile;
 
 import java.util.Arrays;
@@ -93,5 +95,10 @@ public class RenameAptAction extends AnAction {
                         el.getNameIdentifier().replace(identifier);
                     });
                 });
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 }

@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 public class MybatisFlexSettingDialog extends JDialog {
     private JPanel contentPane;
-    private List defaultTempList= Arrays.asList("Controller", "Entity", "Service", "ServiceImpl", "Mapper", "Xml");
+    private List defaultTempList = Arrays.asList("Controller", "Entity", "Service", "ServiceImpl", "Mapper", "Xml");
     private JButton buttonOK;
     private JButton buttonCancel;
     private JPanel mainPanel;
@@ -127,10 +127,11 @@ public class MybatisFlexSettingDialog extends JDialog {
         setMinimumSize(new Dimension(700, 500));
         getRootPane().setDefaultButton(buttonOK);
 
-
         listHeader.setPreferredSize(new Dimension(50, 600));
         // 添加到顶部
-        listHeader.add(toolBar().getComponent(), BorderLayout.NORTH);
+        ActionToolbar actionToolbar = toolBar();
+        actionToolbar.setTargetComponent(listHeader);
+        listHeader.add(actionToolbar.getComponent(), BorderLayout.NORTH);
         DialogUtil.centerShow(this);
         insideSchema.addMouseListener(new MouseAdapter() {
             @Override
@@ -434,7 +435,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     }
 
     private void checkDefaultTab() {
-        if (defaultTempList.contains( list1.getSelectedValue().toString())) {
+        if (defaultTempList.contains(list1.getSelectedValue().toString())) {
             Messages.showWarningDialog("默认模板不能额外操作", "提示");
             Assert.isTrue(false, "默认模板不能额外操作");
         }
@@ -466,14 +467,15 @@ public class MybatisFlexSettingDialog extends JDialog {
         actionGroup.add(createAddAction());
         // 删除动作
         actionGroup.add(createRemoveAction());
-        // 重置模板
-        actionGroup.add(createResetAction());
+
         // 编辑模板
         actionGroup.add(createEditorAction());
         // 向上移动
         actionGroup.add(createMoveUpAction());
         // 向下移动
         actionGroup.add(createMoveDownAction());
+        // 重置模板
+        actionGroup.add(createResetAction());
         return ActionManager.getInstance().createActionToolbar("Item Toolbar", actionGroup, true);
 
     }
@@ -542,6 +544,11 @@ public class MybatisFlexSettingDialog extends JDialog {
                 tabMap.put(title, tabInfo);
                 resetList(tabMap.size() - 1);
             }
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
         };
     }
 
@@ -558,6 +565,10 @@ public class MybatisFlexSettingDialog extends JDialog {
                 }
             }
 
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
         };
     }
 
@@ -585,6 +596,11 @@ public class MybatisFlexSettingDialog extends JDialog {
             public void update(@NotNull AnActionEvent e) {
 
             }
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
         };
     }
 
@@ -604,7 +620,11 @@ public class MybatisFlexSettingDialog extends JDialog {
             public void update(@NotNull AnActionEvent e) {
                 int idx = list1.getSelectedIndex();
                 e.getPresentation().setEnabled(idx > 0);
+            }
 
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
             }
         };
     }
@@ -627,6 +647,11 @@ public class MybatisFlexSettingDialog extends JDialog {
                 int idx = list1.getSelectedIndex();
                 e.getPresentation().setEnabled(idx < tabMap.size() - 1);
             }
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
         };
         // 设置悬浮提示文字
         return action;
@@ -639,4 +664,6 @@ public class MybatisFlexSettingDialog extends JDialog {
                 .forEach(el -> el.setSort(el.getSort() + step));
 
     }
+
+
 }

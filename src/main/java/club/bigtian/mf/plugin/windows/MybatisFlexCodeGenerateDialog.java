@@ -19,6 +19,7 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComponentValidator;
 import com.intellij.openapi.ui.FixedSizeButton;
@@ -104,178 +105,183 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         getRootPane().setDefaultButton(generateBtn);
         setSize(1050, 450);
         DialogUtil.centerShow(this);
-        project = actionEvent.getProject();
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            // 在这里执行耗时的操作
 
-        ProjectUtils.setCurrentProject(project);
-        generateBtn.addActionListener(e -> onGenerate());
+            project = actionEvent.getProject();
 
-        cancelBtn.addActionListener(e -> onCancel());
+            ProjectUtils.setCurrentProject(project);
+            generateBtn.addActionListener(e -> onGenerate());
 
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
+            cancelBtn.addActionListener(e -> onCancel());
 
-        contentPane.registerKeyboardAction(e ->
-                onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        init(project);
-
-        syncCheckBox.addActionListener(e -> {
-            if (syncCheckBox.isSelected()) {
-                Modules.syncModules(list, cotrollerCombox.getSelectedItem());
-            }
-        });
-        cotrollerCombox.addActionListener(e -> {
-            if (syncCheckBox.isSelected()) {
-                Modules.syncModules(list, cotrollerCombox.getSelectedItem());
-            }
-        });
-        JTextField textField = (JTextField) cotrollerCombox.getEditor().getEditorComponent();
-        textField.addActionListener(e -> {
-            if (syncCheckBox.isSelected()) {
-                Modules.syncModules(list, cotrollerCombox.getSelectedItem());
-            }
-        });
-
-        settingLabel.addActionListener(e -> {
-            Set<String> sinces = MybatisFlexPluginConfigData.getSinceMap().keySet();
-            MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project, () -> {
-                initConfigData(null);
+            setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+            addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    onCancel();
+                }
             });
-            dialog.show();
-            sinceFlag = true;
-            // 避免用户配置后，直接点击设置界面，再回来导致配置丢失
-            MybatisFlexConfig configData = getConfigData();
-            Set<String> sinceSet = MybatisFlexPluginConfigData.getSinceMap().keySet();
-            if (sinces.size() > sinceSet.size()) {
-                initSinceComBox(0);
-            } else {
-                initSinceComBox(CollUtil.isEmpty(list) ? null : sinceComBox.getSelectedIndex());
-            }
-            // 再次设置是因为initSinceComBox最终会把sinceFlag设置为false
-            sinceFlag = true;
-            initConfigData(configData);
-        });
 
-        sinceComBox.addActionListener(e -> {
-            Object selectedItem = sinceComBox.getSelectedItem();
-            if (ObjectUtil.isNull(selectedItem)) {
-                return;
-            }
-            if (selectedItem.toString().equals(SINCE_CONFIG_ADD)) {
-                sinceComBox.hidePopup();
-                Messages.InputDialog dialog = new Messages.InputDialog("请输入配置名称", "配置名称", Messages.getQuestionIcon(), "", new InputValidatorImpl());
+            contentPane.registerKeyboardAction(e ->
+                    onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            init(project);
+
+            syncCheckBox.addActionListener(e -> {
+                if (syncCheckBox.isSelected()) {
+                    Modules.syncModules(list, cotrollerCombox.getSelectedItem());
+                }
+            });
+            cotrollerCombox.addActionListener(e -> {
+                if (syncCheckBox.isSelected()) {
+                    Modules.syncModules(list, cotrollerCombox.getSelectedItem());
+                }
+            });
+            JTextField textField = (JTextField) cotrollerCombox.getEditor().getEditorComponent();
+            textField.addActionListener(e -> {
+                if (syncCheckBox.isSelected()) {
+                    Modules.syncModules(list, cotrollerCombox.getSelectedItem());
+                }
+            });
+
+            settingLabel.addActionListener(e -> {
+                Set<String> sinces = MybatisFlexPluginConfigData.getSinceMap().keySet();
+                MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project, () -> {
+                    initConfigData(null);
+                });
                 dialog.show();
-                String configName = dialog.getInputString();
-                if (StrUtil.isEmpty(configName)) {
+                sinceFlag = true;
+                // 避免用户配置后，直接点击设置界面，再回来导致配置丢失
+                MybatisFlexConfig configData = getConfigData();
+                Set<String> sinceSet = MybatisFlexPluginConfigData.getSinceMap().keySet();
+                if (sinces.size() > sinceSet.size()) {
+                    initSinceComBox(0);
+                } else {
+                    initSinceComBox(CollUtil.isEmpty(list) ? null : sinceComBox.getSelectedIndex());
+                }
+                // 再次设置是因为initSinceComBox最终会把sinceFlag设置为false
+                sinceFlag = true;
+                initConfigData(configData);
+            });
+
+            sinceComBox.addActionListener(e -> {
+                Object selectedItem = sinceComBox.getSelectedItem();
+                if (ObjectUtil.isNull(selectedItem)) {
                     return;
                 }
-                MybatisFlexPluginConfigData.configSince(configName, getConfigData());
-                NotificationUtils.notifySuccess("保存成功", project);
-                initSinceComBox(null);
-                return;
-            }
-            String key = selectedItem.toString();
-            MybatisFlexConfig config = MybatisFlexPluginConfigData.getConfig(key);
-            sinceFlag = !SINCE_CONFIG.equals(selectedItem.toString());
-            initConfigData(config);
-        });
-        initSinceComBox(null);
-        initPackagePath();
+                if (selectedItem.toString().equals(SINCE_CONFIG_ADD)) {
+                    sinceComBox.hidePopup();
+                    Messages.InputDialog dialog = new Messages.InputDialog("请输入配置名称", "配置名称", Messages.getQuestionIcon(), "", new InputValidatorImpl());
+                    dialog.show();
+                    String configName = dialog.getInputString();
+                    if (StrUtil.isEmpty(configName)) {
+                        return;
+                    }
+                    MybatisFlexPluginConfigData.configSince(configName, getConfigData());
+                    NotificationUtils.notifySuccess("保存成功", project);
+                    initSinceComBox(null);
+                    return;
+                }
+                String key = selectedItem.toString();
+                MybatisFlexConfig config = MybatisFlexPluginConfigData.getConfig(key);
+                sinceFlag = !SINCE_CONFIG.equals(selectedItem.toString());
+                initConfigData(config);
+            });
+            initSinceComBox(null);
+            initPackagePath();
 
-        tableList.addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                return;
-            }
-            boolean selected = selectAllChexBox.isSelected();
-            if (selected) {
-                selectAllChexBox.setSelected(false);
-            }
-            int size = tableList.getSelectedValuesList().size();
-            if (size == tableList.getModel().getSize() && size > 0) {
-                selectAllChexBox.setSelected(true);
-            }
-        });
-        tableInfoMap = TableUtils.getAllTables(actionEvent)
-                .stream()
-                .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
-
-        DefaultListModel model = new DefaultListModel();
-        // tableNameSet按照字母降序
-        tableNameList = new ArrayList<>(tableInfoMap.keySet());
-        // 初始化倒排索引
-        InvertedIndexSearch.indexText(tableNameList, "tableList");
-        Collections.sort(tableNameList);
-        model.addAll(tableNameList);
-        tableList.setModel(model);
-        TableListCellRenderer cellRenderer = new TableListCellRenderer(tableInfoMap);
-        tableList.setCellRenderer(cellRenderer);
-        sortBtn.addActionListener(e -> {
-            String tableName = tableSearch.getText();
-            tableNameList = search(tableName, cellRenderer).stream().collect(Collectors.toList());
-            if (sortBtn.getToolTipText().equals("升序")) {
-                sortBtn.setToolTipText("降序");
-                Collections.sort(tableNameList, Comparator.reverseOrder());
-            } else {
-                sortBtn.setToolTipText("升序");
-                Collections.sort(tableNameList);
-            }
-            selectAllChexBox.setSelected(false);
-            model.removeAllElements();
-            model.addAll(tableNameList);
-        });
-
-        selectAllChexBox.addActionListener(e -> {
-            if (selectAllChexBox.isSelected()) {
-                tableList.setSelectionInterval(0, tableList.getModel().getSize() - 1);
-            } else {
-                tableList.clearSelection();
-            }
-        });
-        tableSearch.getDocument().addDocumentListener(new DocumentAdapter() {
-            @Override
-            protected void textChanged(@NotNull DocumentEvent e) {
-                String tableName = tableSearch.getText();
-                Set<String> search = search(tableName, cellRenderer);
-                model.removeAllElements();
-                model.addAll(search);
-            }
-        });
-        setSelectTalbe(actionEvent);
-
-        // strictComBox.addChangeListener(e -> {
-        //     boolean strict = strictComBox.isSelected();
-        //     if (strict) {
-        //         Set<Boolean> collected = packageList.stream()
-        //                 .map(el -> StrUtil.isNotBlank(el.getText()))
-        //                 .collect(Collectors.toSet());
-        //
-        //         strict = !collected.contains(false);
-        //     } else {
-        //         strict = true;
-        //     }
-        //     generateBtn.setEnabled(strict);
-        // });
-
-        addComBoxListener();
-        button1.addActionListener(e -> {
-            CustomMappingDialog dialog = new CustomMappingDialog();
-            dialog.show();
+            tableList.addListSelectionListener(e -> {
+                if (e.getValueIsAdjusting()) {
+                    return;
+                }
+                boolean selected = selectAllChexBox.isSelected();
+                if (selected) {
+                    selectAllChexBox.setSelected(false);
+                }
+                int size = tableList.getSelectedValuesList().size();
+                if (size == tableList.getModel().getSize() && size > 0) {
+                    selectAllChexBox.setSelected(true);
+                }
+            });
             tableInfoMap = TableUtils.getAllTables(actionEvent)
                     .stream()
                     .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
+
+            DefaultListModel model = new DefaultListModel();
+            // tableNameSet按照字母降序
+            tableNameList = new ArrayList<>(tableInfoMap.keySet());
+            // 初始化倒排索引
+            InvertedIndexSearch.indexText(tableNameList, "tableList");
+            Collections.sort(tableNameList);
+            model.addAll(tableNameList);
+            tableList.setModel(model);
+            TableListCellRenderer cellRenderer = new TableListCellRenderer(tableInfoMap);
+            tableList.setCellRenderer(cellRenderer);
+            sortBtn.addActionListener(e -> {
+                String tableName = tableSearch.getText();
+                tableNameList = search(tableName, cellRenderer).stream().collect(Collectors.toList());
+                if (sortBtn.getToolTipText().equals("升序")) {
+                    sortBtn.setToolTipText("降序");
+                    Collections.sort(tableNameList, Comparator.reverseOrder());
+                } else {
+                    sortBtn.setToolTipText("升序");
+                    Collections.sort(tableNameList);
+                }
+                selectAllChexBox.setSelected(false);
+                model.removeAllElements();
+                model.addAll(tableNameList);
+            });
+
+            selectAllChexBox.addActionListener(e -> {
+                if (selectAllChexBox.isSelected()) {
+                    tableList.setSelectionInterval(0, tableList.getModel().getSize() - 1);
+                } else {
+                    tableList.clearSelection();
+                }
+            });
+            tableSearch.getDocument().addDocumentListener(new DocumentAdapter() {
+                @Override
+                protected void textChanged(@NotNull DocumentEvent e) {
+                    String tableName = tableSearch.getText();
+                    Set<String> search = search(tableName, cellRenderer);
+                    model.removeAllElements();
+                    model.addAll(search);
+                }
+            });
             setSelectTalbe(actionEvent);
+
+            // strictComBox.addChangeListener(e -> {
+            //     boolean strict = strictComBox.isSelected();
+            //     if (strict) {
+            //         Set<Boolean> collected = packageList.stream()
+            //                 .map(el -> StrUtil.isNotBlank(el.getText()))
+            //                 .collect(Collectors.toSet());
+            //
+            //         strict = !collected.contains(false);
+            //     } else {
+            //         strict = true;
+            //     }
+            //     generateBtn.setEnabled(strict);
+            // });
+
+            addComBoxListener();
+            button1.addActionListener(e -> {
+                CustomMappingDialog dialog = new CustomMappingDialog();
+                dialog.show();
+                tableInfoMap = TableUtils.getAllTables(actionEvent)
+                        .stream()
+                        .collect(Collectors.toMap(TableInfo::getName, Function.identity()));
+                setSelectTalbe(actionEvent);
+            });
+
+            for (JComboBox jComboBox : list) {
+                Dimension dimension = jComboBox.getPreferredSize();
+                dimension.width = 250;
+                jComboBox.setPreferredSize(dimension);
+                textField = (JTextField) jComboBox.getEditor().getEditorComponent();
+                textField.getDocument().addDocumentListener(new ComBoxDocumentListener(jComboBox));
+            }
         });
 
-        for (JComboBox jComboBox : list) {
-            Dimension dimension = jComboBox.getPreferredSize();
-            dimension.width = 250;
-            jComboBox.setPreferredSize(dimension);
-            textField = (JTextField) jComboBox.getEditor().getEditorComponent();
-            textField.getDocument().addDocumentListener(new ComBoxDocumentListener(jComboBox));
-        }
     }
 
     private void addComBoxListener() {
@@ -597,4 +603,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
 
 
     }
+
+
 }
