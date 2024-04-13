@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.windows;
 
+import club.bigtian.mf.plugin.core.editor.ImmediateEditingCellEditor;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.NotificationUtils;
@@ -65,11 +66,7 @@ public class CustomMappingDialog extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         typeMapping = MybatisFlexPluginConfigData.getTypeMapping();
         TABLE_DATA = new Object[typeMapping.size() > 0 ? typeMapping.size() : 0][];
 
@@ -153,7 +150,7 @@ public class CustomMappingDialog extends JDialog {
         JComboBox<Object> box = new JComboBox<>();
         box.addItem("REGEX");
         box.addItem("ORDINARY");
-        type.setCellEditor(new DefaultCellEditor(box));
+        type.setCellEditor(new ImmediateEditingCellEditor(box));
 
     }
 

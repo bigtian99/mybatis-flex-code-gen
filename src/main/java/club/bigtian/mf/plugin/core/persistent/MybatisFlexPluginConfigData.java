@@ -1,6 +1,5 @@
 package club.bigtian.mf.plugin.core.persistent;
 
-import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.TableUtils;
@@ -294,7 +293,6 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         });
         MybatisFlexConfig config = flexConfigMap.get(ProjectUtils.getCurrentProjectName());
         config.setTabList(new ArrayList<>());
-        Template.clearConfig();
         state.mybatisFlexConfig = JSONObject.toJSONString(flexConfigMap);
         instance.loadState(state);
     }

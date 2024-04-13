@@ -166,7 +166,7 @@
                       <text value="model："/>
                     </properties>
                   </component>
-                  <component id="4fa9b" class="com.intellij.ui.components.fields.ExtendableTextField" binding="modelPackagePath">
+                  <component id="4b6a0" class="com.intellij.ui.components.fields.ExpandableTextField" binding="modelPackagePath">
                     <constraints>
                       <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
@@ -192,7 +192,7 @@
                       <text value="service inteface："/>
                     </properties>
                   </component>
-                  <component id="938d4" class="javax.swing.JTextField" binding="serviceIntefacePath">
+                  <component id="938d4" class="com.intellij.ui.components.fields.ExpandableTextField" binding="serviceIntefacePath">
                     <constraints>
                       <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
@@ -218,7 +218,7 @@
                       <text value="controller："/>
                     </properties>
                   </component>
-                  <component id="ae3aa" class="javax.swing.JTextField" binding="controllerPath">
+                  <component id="20590" class="com.intellij.ui.components.fields.ExpandableTextField" binding="controllerPath">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
@@ -242,7 +242,7 @@
                       <text value="mapper："/>
                     </properties>
                   </component>
-                  <component id="a2654" class="com.intellij.ui.components.fields.ExtendableTextField" binding="mapperPackagePath">
+                  <component id="a2654" class="com.intellij.ui.components.fields.ExpandableTextField" binding="mapperPackagePath">
                     <constraints>
                       <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
@@ -325,7 +325,7 @@
                       <text value="Button"/>
                     </properties>
                   </component>
-                  <component id="1955c" class="javax.swing.JTextField" binding="serviceImpPath">
+                  <component id="1955c" class="com.intellij.ui.components.fields.ExpandableTextField" binding="serviceImpPath">
                     <constraints>
                       <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
@@ -373,7 +373,7 @@
                       <text value="mapper xml"/>
                     </properties>
                   </component>
-                  <component id="e6b86" class="javax.swing.JTextField" binding="mapperXmlPath">
+                  <component id="e6b86" class="com.intellij.ui.components.fields.ExpandableTextField" binding="mapperXmlPath">
                     <constraints>
                       <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="150" height="-1"/>
