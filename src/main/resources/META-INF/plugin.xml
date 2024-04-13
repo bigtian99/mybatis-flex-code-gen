@@ -76,6 +76,11 @@
                                 id="club.bigtian.mf.plugin.core.contributor.MybatisFlexConfigCompletionContributor"
                                 implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexConfigCompletionContributor"/>
 
+        <completion.contributor language="any"
+                                id="club.bigtian.mf.plugin.core.contributor.MybatisFlexTemplateCompletionContributor"
+                                implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexTemplateCompletionContributor"/>
+
+
 
         <fileIconProvider implementation="club.bigtian.mf.plugin.core.type.MybatisFlexConfigFileType" id="club.bigtian.mf.plugin.core.type.MybatisFlexConfigFileType"/>
 

@@ -25,10 +25,15 @@ import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
+import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
 import com.intellij.ui.components.fields.ExpandableTextField;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,6 +46,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MybatisFlexSettingDialog extends JDialog {
+   public static Key<Boolean> flexTemplate = Key.create("flexTemplate");
+
     private JPanel contentPane;
     private List defaultTempList = Arrays.asList("Controller", "Entity", "Service", "ServiceImpl", "Mapper", "Xml");
     private JButton buttonOK;
@@ -348,10 +355,12 @@ public class MybatisFlexSettingDialog extends JDialog {
 
     public Editor createEditorWithText(String text, String fileSuffix) {
         Project project = ProjectUtils.getCurrentProject();
+        PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
+        PsiFile psiFile = psiFileFactory.createFileFromText(PlainTextLanguage.INSTANCE, text);
+        Document document = PsiDocumentManager.getInstance(project).getDocument(psiFile);
         // 获取EditorFactory实例
         EditorFactory editorFactory = EditorFactory.getInstance();
         // // 创建一个Document实例
-        Document document = editorFactory.createDocument(text);
         // 创建一个Editor实例
         Editor editor = editorFactory.createEditor(document, project);
         // 设置Editor的一些属性
@@ -362,6 +371,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         editorSettings.setFoldingOutlineShown(true);
         editorSettings.setGutterIconsShown(true);
         ((EditorEx) editor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, StrUtil.format("demo{}.vm", fileSuffix)));
+        editor.putUserData(flexTemplate,true);
         return editor;
     }
 
