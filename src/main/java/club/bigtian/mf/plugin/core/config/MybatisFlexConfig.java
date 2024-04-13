@@ -1,8 +1,10 @@
 package club.bigtian.mf.plugin.core.config;
 
 
+import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.entity.TabInfo;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSON;
 
@@ -291,7 +293,16 @@ public class MybatisFlexConfig {
     }
 
     public List<TabInfo> getTabList() {
-        return Optional.ofNullable( JSON.parseArray(tabList, TabInfo.class)).orElse(new ArrayList<>());
+        List<TabInfo> infoList = Optional.ofNullable(JSON.parseArray(tabList, TabInfo.class)).orElse(new ArrayList<>());
+        if (CollUtil.isEmpty(infoList) || infoList.size() < 6) {
+            infoList.add(0, new TabInfo("Controller", Template.getVmCode(MybatisFlexConstant.CONTROLLER_TEMPLATE), ".java", 0));
+            infoList.add(1, new TabInfo("Service", Template.getVmCode(MybatisFlexConstant.INTERFACE_TEMPLATE), ".java", 1));
+            infoList.add(2, new TabInfo("ServiceImpl", Template.getVmCode(MybatisFlexConstant.IMPL_TEMPLATE), ".java", 2));
+            infoList.add(3, new TabInfo("Entity", Template.getVmCode(MybatisFlexConstant.MODEL_TEMPLATE), ".java", 3));
+            infoList.add(4, new TabInfo("Mapper", Template.getVmCode(MybatisFlexConstant.MAPPER_TEMPLATE), ".java", 4));
+            infoList.add(5, new TabInfo("Xml", Template.getVmCode(MybatisFlexConstant.XML_TEMPLATE), ".xml", 5));
+        }
+        return infoList;
     }
 
 

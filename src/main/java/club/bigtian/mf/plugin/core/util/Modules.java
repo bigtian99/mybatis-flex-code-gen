@@ -59,9 +59,30 @@ public class Modules {
         if (CollUtil.isEmpty(moduleMap)) {
             NotificationUtils.notifyError("模块不存在!", "", ProjectUtils.getCurrentProject());
             return "";
-            // throw new RuntimeException(StrUtil.format("模块不存在:{}", moduleName));
         }
         return moduleMap.getOrDefault(packageName, "");
+    }
+    public static String getPackagePath( JComboBox comboBox, String packageName) {
+        String moduleName = comboBox.getSelectedItem().toString();
+        Map<String, String> moduleMap = modulePackageMap.get(moduleName);
+        if (CollUtil.isEmpty(moduleMap)) {
+            NotificationUtils.notifyError("模块不存在!", "", ProjectUtils.getCurrentProject());
+            return "";
+        }
+        String packagePath = moduleMap.get(packageName);
+        if(StrUtil.isEmpty(packagePath)){
+            for (Map.Entry<String, Map<String, String>> entry : modulePackageMap.entrySet()) {
+                Map<String, String> value = entry.getValue();
+                packagePath = value.get(packageName);
+                if(StrUtil.isNotEmpty(packagePath)){
+                    comboBox.setSelectedItem(entry.getKey());
+                    JTextField textField = (JTextField) comboBox.getEditor().getEditorComponent();
+                    textField.setText(entry.getKey());
+                    break;
+                }
+            }
+        }
+        return packagePath;
     }
 
     public static Module[] getModule(Project project) {

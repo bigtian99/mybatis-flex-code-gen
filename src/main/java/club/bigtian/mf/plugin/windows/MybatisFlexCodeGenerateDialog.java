@@ -249,20 +249,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
             });
             setSelectTalbe(actionEvent);
 
-            // strictComBox.addChangeListener(e -> {
-            //     boolean strict = strictComBox.isSelected();
-            //     if (strict) {
-            //         Set<Boolean> collected = packageList.stream()
-            //                 .map(el -> StrUtil.isNotBlank(el.getText()))
-            //                 .collect(Collectors.toSet());
-            //
-            //         strict = !collected.contains(false);
-            //     } else {
-            //         strict = true;
-            //     }
-            //     generateBtn.setEnabled(strict);
-            // });
-
             addComBoxListener();
             button1.addActionListener(e -> {
                 CustomMappingDialog dialog = new CustomMappingDialog();
@@ -378,12 +364,12 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         int idx = sinceComBox.getSelectedIndex();
         if (idx == 0) {
             MybatisFlexConfig configData = getConfigData();
-            controllerPath.setText(Modules.getPackagePath(cotrollerCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getContrPath(), "controller")));
-            modelPackagePath.setText(Modules.getPackagePath(modelCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getDomainPath(), "domain")));
-            serviceIntefacePath.setText(Modules.getPackagePath(serviceInteCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getServicePath(), "service")));
-            serviceImpPath.setText(Modules.getPackagePath(serviceImplComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getImplPath(), "impl")));
-            mapperPackagePath.setText(Modules.getPackagePath(mapperComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getMapperPath(), "mapper")));
-            mapperXmlPath.setText(Modules.getPackagePath(xmlComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getXmlPath(), "mappers")));
+            controllerPath.setText(Modules.getPackagePath(cotrollerCombox, ObjectUtil.defaultIfNull(configData.getContrPath(), "controller")));
+            modelPackagePath.setText(Modules.getPackagePath(modelCombox, ObjectUtil.defaultIfNull(configData.getDomainPath(), "domain")));
+            serviceIntefacePath.setText(Modules.getPackagePath(serviceInteCombox, ObjectUtil.defaultIfNull(configData.getServicePath(), "service")));
+            serviceImpPath.setText(Modules.getPackagePath(serviceImplComBox, ObjectUtil.defaultIfNull(configData.getImplPath(), "impl")));
+            mapperPackagePath.setText(Modules.getPackagePath(mapperComBox, ObjectUtil.defaultIfNull(configData.getMapperPath(), "mapper")));
+            mapperXmlPath.setText(Modules.getPackagePath(xmlComBox, ObjectUtil.defaultIfNull(configData.getXmlPath(), "mappers")));
         }
     }
 
