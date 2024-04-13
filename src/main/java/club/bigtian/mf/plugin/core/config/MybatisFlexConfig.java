@@ -45,30 +45,7 @@ public class MybatisFlexConfig {
 
     private boolean swagger3;
 
-    /**
-     * 控制器模板
-     */
-    private String controllerTemplate;
-    /**
-     * 实体模板
-     */
-    private String modelTemplate;
-    /**
-     * service接口模板
-     */
-    private String interfaceTempalate;
-    /**
-     * service实现模板
-     */
-    private String implTemplate;
-    /**
-     * mapper模板
-     */
-    private String mapperTemplate;
-    /**
-     * xml模板
-     */
-    private String xmlTemplate;
+
 
     //=============包名
 
@@ -237,8 +214,17 @@ public class MybatisFlexConfig {
     private String remoteHeader;
     private String remoteDataToken;
     private String resultField;
+    private boolean enableLog;
 
     private boolean remoteInterface;
+
+    public boolean getEnableLog() {
+        return enableLog;
+    }
+
+    public void setEnableLog(boolean enableLog) {
+        this.enableLog = enableLog;
+    }
 
     public boolean isRemoteInterface() {
         return remoteInterface;
@@ -551,54 +537,6 @@ public class MybatisFlexConfig {
 
     public void setSwagger(boolean swagger) {
         this.swagger = swagger;
-    }
-
-    public String getControllerTemplate() {
-        return controllerTemplate;
-    }
-
-    public void setControllerTemplate(String controllerTemplate) {
-        this.controllerTemplate = controllerTemplate;
-    }
-
-    public String getModelTemplate() {
-        return modelTemplate;
-    }
-
-    public void setModelTemplate(String modelTemplate) {
-        this.modelTemplate = modelTemplate;
-    }
-
-    public String getInterfaceTempalate() {
-        return interfaceTempalate;
-    }
-
-    public void setInterfaceTempalate(String interfaceTempalate) {
-        this.interfaceTempalate = interfaceTempalate;
-    }
-
-    public String getImplTemplate() {
-        return implTemplate;
-    }
-
-    public void setImplTemplate(String implTemplate) {
-        this.implTemplate = implTemplate;
-    }
-
-    public String getMapperTemplate() {
-        return mapperTemplate;
-    }
-
-    public void setMapperTemplate(String mapperTemplate) {
-        this.mapperTemplate = mapperTemplate;
-    }
-
-    public String getXmlTemplate() {
-        return xmlTemplate;
-    }
-
-    public void setXmlTemplate(String xmlTemplate) {
-        this.xmlTemplate = xmlTemplate;
     }
 
     public String getControllerPackage() {

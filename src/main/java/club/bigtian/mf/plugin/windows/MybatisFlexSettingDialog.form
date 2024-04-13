@@ -465,7 +465,7 @@
                           </grid>
                         </children>
                       </grid>
-                      <grid id="1c9ff" layout-manager="GridLayoutManager" row-count="2" column-count="7" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                      <grid id="1c9ff" layout-manager="GridLayoutManager" row-count="2" column-count="8" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                         <margin top="0" left="0" bottom="0" right="0"/>
                         <constraints>
                           <tabbedpane title=" 插件设置"/>
@@ -484,7 +484,7 @@
                           </component>
                           <hspacer id="5afaa">
                             <constraints>
-                              <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                              <grid row="0" column="7" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                             </constraints>
                           </hspacer>
                           <vspacer id="d21b9">
@@ -532,6 +532,14 @@
                             <properties>
                               <text value="开启debug"/>
                               <toolTipText value="项目启动时，自动给项目的包路径设置debug模式"/>
+                            </properties>
+                          </component>
+                          <component id="dd9bc" class="javax.swing.JCheckBox" binding="logCheck">
+                            <constraints>
+                              <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <text value="开启日志输出"/>
                             </properties>
                           </component>
                         </children>

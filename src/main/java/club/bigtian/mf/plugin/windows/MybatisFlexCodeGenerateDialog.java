@@ -285,39 +285,35 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     }
 
     private void addComBoxListener() {
+        MybatisFlexConfig configData = getConfigData();
         cotrollerCombox.addActionListener(e -> {
             if (sinceFlag) {
                 return;
             }
-            MybatisFlexConfig configData = getConfigData();
             controllerPath.setText(Modules.getPackagePath(cotrollerCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getContrPath(), "controller")));
         });
         modelCombox.addActionListener(e -> {
             if (sinceFlag) {
                 return;
             }
-            MybatisFlexConfig configData = getConfigData();
             modelPackagePath.setText(Modules.getPackagePath(modelCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getDomainPath(), "domain")));
         });
         serviceInteCombox.addActionListener(e -> {
             if (sinceFlag) {
                 return;
             }
-            MybatisFlexConfig configData = getConfigData();
             serviceIntefacePath.setText(Modules.getPackagePath(serviceInteCombox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getServicePath(), "service")));
         });
         serviceImplComBox.addActionListener(e -> {
             if (sinceFlag) {
                 return;
             }
-            MybatisFlexConfig configData = getConfigData();
             serviceImpPath.setText(Modules.getPackagePath(serviceImplComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getImplPath(), "impl")));
         });
         mapperComBox.addActionListener(e -> {
             if (sinceFlag) {
                 return;
             }
-            MybatisFlexConfig configData = getConfigData();
             mapperPackagePath.setText(Modules.getPackagePath(mapperComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getMapperPath(), "mapper")));
         });
         xmlComBox.addActionListener(e -> {
@@ -325,7 +321,6 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 sinceFlag = false;
                 return;
             }
-            MybatisFlexConfig configData = getConfigData();
             mapperXmlPath.setText(Modules.getPackagePath(xmlComBox.getSelectedItem().toString(), ObjectUtil.defaultIfNull(configData.getXmlPath(), "mappers")));
         });
     }
@@ -590,7 +585,8 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
     }
 
     private void setComboBoxAndTextField(JComboBox comboBox, String module) {
-        if (StrUtil.isNotEmpty(module)) {
+        Set<String> moduleNames = Modules.getModuleNames();
+        if (StrUtil.isNotEmpty(module)&&moduleNames.contains(module)) {
             comboBox.setSelectedItem(module);
             JTextField textField = (JTextField) comboBox.getEditor().getEditorComponent();
             textField.setText(module);

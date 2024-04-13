@@ -38,12 +38,11 @@ public class PerRun extends JavaProgramPatcher {
      */
     @Override
     public void patchJavaParameters(Executor executor, RunProfile runProfile, JavaParameters javaParameters) {
-        //
         MybatisFlexConfig config = Template.getMybatisFlexConfig();
         if (ObjectUtil.defaultIfNull(config.getEnableDebug(), true)) {
             setLogLevel(runProfile, javaParameters);
         }
-        if (runProfile instanceof SpringBootApplicationRunConfiguration springBootApplicationRunConfiguration) {
+        if (runProfile instanceof SpringBootApplicationRunConfiguration springBootApplicationRunConfiguration && config.getEnableLog()) {
             Project project = springBootApplicationRunConfiguration.getProject();
             ConsoleView consoleView = new ConsoleViewImpl(project, true);
             consoleView.addMessageFilter(new MybatisFlexAgentFilter(project));
@@ -62,7 +61,6 @@ public class PerRun extends JavaProgramPatcher {
                         out.write(buffer, 0, len);
                     }
                 }
-
                 // 使用临时文件的路径作为你的 agent JAR 文件的路径
                 String agentPath = tempFile.toString();
                 RunConfiguration runConfiguration = (RunConfiguration) runProfile;

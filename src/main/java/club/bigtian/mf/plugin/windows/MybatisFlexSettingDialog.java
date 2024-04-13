@@ -106,6 +106,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JList list1;
     private JPanel listHeader;
     private JPanel edtiorPanel;
+    private JCheckBox logCheck;
     private Project project;
 
     // 是否开启内部模式
@@ -292,6 +293,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         String dialectChinese = MybatisFlexUtil.getDialectChinese(Template.getConfigData(MybatisFlexConstant.SQL_DIALECT, "MYSQL"));
         sqlDialect.setSelectedItem(dialectChinese);
         enableDebug.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.ENABLE_DEBUG, true));
+        logCheck.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.ENABLE_LOG, true));
         initSinceComBox();
         pathMap = new HashMap<>();
         for (JTextField textField : list) {
@@ -410,6 +412,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setMapperXmlType(mapperXmlType.getSelectedItem().toString());
         config.setEnableDebug(enableDebug.isSelected());
         config.setKtFile(ktFile.isSelected());
+        config.setEnableLog(logCheck.isSelected());
         List<TabInfo> tabList = tabMap.values().stream().sorted(Comparator.comparingInt(TabInfo::getSort)).collect(Collectors.toList());
         config.setTabList(tabList);
         return config;
@@ -583,7 +586,6 @@ public class MybatisFlexSettingDialog extends JDialog {
                     MybatisFlexConfig configData = getConfigData();
                     configData.setTabList(getTabInfos());
                     MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(configData);
-
                     int selectedIndex = list1.getSelectedIndex();
                     templateList();
                     resetList(selectedIndex);

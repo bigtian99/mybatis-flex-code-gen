@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.core.persistent;
 
+import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.TableUtils;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -291,12 +293,8 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         Map<String, MybatisFlexConfig> flexConfigMap = JSONObject.parseObject(state.mybatisFlexConfig, new TypeReference<Map<String, MybatisFlexConfig>>() {
         });
         MybatisFlexConfig config = flexConfigMap.get(ProjectUtils.getCurrentProjectName());
-        config.setModelTemplate("");
-        config.setControllerTemplate("");
-        config.setImplTemplate("");
-        config.setMapperTemplate("");
-        config.setInterfaceTempalate("");
-        config.setXmlTemplate("");
+        config.setTabList(new ArrayList<>());
+        Template.clearConfig();
         state.mybatisFlexConfig = JSONObject.toJSONString(flexConfigMap);
         instance.loadState(state);
     }
