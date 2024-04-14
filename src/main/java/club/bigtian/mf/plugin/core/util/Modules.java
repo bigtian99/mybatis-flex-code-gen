@@ -149,7 +149,7 @@ public class Modules {
                         if (ObjectUtil.isNotNull(psiDirectory)) {
                             String packageName = JavaDirectoryService.getInstance().getPackage(psiDirectory).getQualifiedName();
                             moduleMap.put(psiDirectory.getName(), packageName);
-
+                            moduleMap.put(packageName, packageName);
                         }
                     }
                     return true;
