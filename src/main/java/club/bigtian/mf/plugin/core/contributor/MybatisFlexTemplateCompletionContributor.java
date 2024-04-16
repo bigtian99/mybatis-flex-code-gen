@@ -2,6 +2,7 @@ package club.bigtian.mf.plugin.core.contributor;
 
 import club.bigtian.mf.plugin.core.icons.Icons;
 import club.bigtian.mf.plugin.windows.MybatisFlexSettingDialog;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -80,8 +81,8 @@ public class MybatisFlexTemplateCompletionContributor extends CompletionContribu
     public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
         Editor editor = parameters.getEditor();
         String prefix = result.getPrefixMatcher().getPrefix();
-        if (!editor.getUserData(MybatisFlexSettingDialog.flexTemplate) || !prefix.startsWith("$")) {
-            return;
+        if (!ObjectUtil.defaultIfNull(editor.getUserData(MybatisFlexSettingDialog.flexTemplate),false) || !prefix.startsWith("$")) {
+            return ;
         }
         addCodeTip(result, parameters.getPosition().getProject());
     }
@@ -113,7 +114,6 @@ public class MybatisFlexTemplateCompletionContributor extends CompletionContribu
                     .withIcon(Icons.FLEX);
             completionResultSet.addElement(lookupElement);
         });
-
     }
 
 

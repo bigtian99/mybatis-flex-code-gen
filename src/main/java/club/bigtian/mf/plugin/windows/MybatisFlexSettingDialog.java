@@ -1,16 +1,15 @@
 package club.bigtian.mf.plugin.windows;
 
+import club.bigtian.mf.plugin.core.RenderMybatisFlexTemplate;
 import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.function.SimpleFunction;
 import club.bigtian.mf.plugin.core.icons.Icons;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
-import club.bigtian.mf.plugin.core.util.DialogUtil;
-import club.bigtian.mf.plugin.core.util.FileChooserUtil;
-import club.bigtian.mf.plugin.core.util.MybatisFlexUtil;
-import club.bigtian.mf.plugin.core.util.ProjectUtils;
+import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.entity.TabInfo;
+import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -24,7 +23,10 @@ import com.intellij.openapi.editor.EditorSettings;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.editor.ex.EditorEx;
+import com.intellij.openapi.editor.highlighter.EditorHighlighter;
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.PlainTextLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.FixedSizeButton;
@@ -46,7 +48,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MybatisFlexSettingDialog extends JDialog {
-   public static Key<Boolean> flexTemplate = Key.create("flexTemplate");
+    public static Key<Boolean> flexTemplate = Key.create("flexTemplate");
 
     private JPanel contentPane;
     private List defaultTempList = Arrays.asList("Controller", "Entity", "Service", "ServiceImpl", "Mapper", "Xml");
@@ -122,12 +124,16 @@ public class MybatisFlexSettingDialog extends JDialog {
     Map<String, String> pathMap;
     Map<String, TabInfo> tabMap;
 
+    List<TableInfo> selectedTableInfo;
 
-    public MybatisFlexSettingDialog(Project project, SimpleFunction simpleFunction) {
+    boolean isPreviewCode = false;
+
+    public MybatisFlexSettingDialog(Project project, List<TableInfo> selectedTableInfo, SimpleFunction simpleFunction) {
         this.project = project;
         this.simpleFunction = simpleFunction;
         setContentPane(contentPane);
         setModal(true);
+        this.selectedTableInfo = selectedTableInfo;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         screenSize.setSize(screenSize.getWidth() * 0.8, screenSize.getHeight() * 0.7);
         setSize(screenSize);
@@ -143,8 +149,6 @@ public class MybatisFlexSettingDialog extends JDialog {
         insideSchema.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // TemplatePreviewDialog dialog = new TemplatePreviewDialog();
-                // dialog.show();
                 int clickCount = e.getClickCount();
                 if (clickCount != 2) {
                     return;
@@ -320,10 +324,13 @@ public class MybatisFlexSettingDialog extends JDialog {
             if (e.getValueIsAdjusting() || ObjectUtil.isNull(list1.getSelectedValue())) {
                 return;
             }
+            document.setReadOnly(false);
             WriteCommandAction.runWriteCommandAction(project, () -> {
                 TabInfo info = tabMap.get(list1.getSelectedValue().toString());
-                ((EditorEx) templateEditor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, StrUtil.format(StrUtil.format("{}{}.vm", info.getTitle(), info.getSuffix()), info.getSuffix())));
+                String fileName = StrUtil.format("{}{}{}", info.getTitle(), info.getSuffix(), ".vm");
+                ((EditorEx) templateEditor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, fileName));
                 document.setText(info.getContent());
+                document.setReadOnly(isPreviewCode);
             });
         });
     }
@@ -371,7 +378,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         editorSettings.setFoldingOutlineShown(true);
         editorSettings.setGutterIconsShown(true);
         ((EditorEx) editor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, StrUtil.format("demo{}.vm", fileSuffix)));
-        editor.putUserData(flexTemplate,true);
+        editor.putUserData(flexTemplate, true);
         return editor;
     }
 
@@ -464,27 +471,79 @@ public class MybatisFlexSettingDialog extends JDialog {
 
     private ActionToolbar toolBar() {
         DefaultActionGroup actionGroup = new DefaultActionGroup();
-        // 复制操作
-        // actionGroup.add(createCopyAction());
+        // 预览
+        actionGroup.add(createPreviewAction());
         // 新增操作
         actionGroup.add(createAddAction());
-        // 删除动作
-        actionGroup.add(createRemoveAction());
-
-        // 编辑模板
-        actionGroup.add(createEditorAction());
         // 向上移动
         actionGroup.add(createMoveUpAction());
         // 向下移动
         actionGroup.add(createMoveDownAction());
+        // 编辑模板
+        actionGroup.add(createEditorAction());
         // 重置模板
         actionGroup.add(createResetAction());
+        // 删除动作
+        actionGroup.add(createRemoveAction());
         return ActionManager.getInstance().createActionToolbar("Item Toolbar", actionGroup, true);
 
     }
 
+    private AnAction createPreviewAction() {
+        return new AnAction("预览", "预览", AllIcons.Actions.ShowCode) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                MybatisFlexConfig configData = getConfigData();
+                Document document = templateEditor.getDocument();
+                document.setReadOnly(false);
+                if (!isPreviewCode) {
+                    if (configData.isRemoteInterface()) {
+                        try {
+                            tabMap = RenderMybatisFlexTemplate.remoteDataPreview(selectedTableInfo.get(0).getName());
+                        } catch (Exception ex) {
+                        }
+                    } else {
+                        tabMap = RenderMybatisFlexTemplate.remoteLocalPreview(selectedTableInfo.get(0));
+                    }
+                    String value = list1.getSelectedValue().toString();
+                    TabInfo tabInfo = tabMap.get(value);
+                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                        templateEditor.getDocument().setText(tabInfo.getContent());
+                        EditorHighlighter highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, getFileTypeByExtension(tabInfo.getSuffix().replace(".", "")));
+                        ((EditorEx) templateEditor).setHighlighter(highlighter);
+                    });
+                    list1.setSelectedIndex(list1.getSelectedIndex());
+                    isPreviewCode = true;
+                    document.setReadOnly(true);
+
+                } else {
+                    isPreviewCode = false;
+                    tabMap = getTabInfos().stream().collect(Collectors.toMap(TabInfo::getTitle, Function.identity()));
+                    String value = list1.getSelectedValue().toString();
+                    TabInfo tabInfo = tabMap.get(value);
+                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                        document.setText(tabInfo.getContent());
+                        ((EditorEx) templateEditor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, StrUtil.format("demo{}.vm", tabInfo.getSuffix())));
+
+                    });
+                    list1.setSelectedIndex(list1.getSelectedIndex());
+
+                }
+            }
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
+        };
+    }
+
+    public static FileType getFileTypeByExtension(String extension) {
+        return FileTypeManager.getInstance().getFileTypeByExtension(extension);
+    }
+
     private AnAction createEditorAction() {
-        return new AnAction(AllIcons.Actions.EditScheme) {
+        return new AnAction("编辑", "编辑", AllIcons.Actions.EditScheme) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 checkDefaultTab();
@@ -532,7 +591,7 @@ public class MybatisFlexSettingDialog extends JDialog {
 */
 
     private AnAction createAddAction() {
-        return new AnAction(AllIcons.General.Add) {
+        return new AnAction("新增", "新增", AllIcons.General.Add) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 CustomTabDialog dialog = new CustomTabDialog();
@@ -556,7 +615,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     }
 
     private AnAction createRemoveAction() {
-        return new AnAction(AllIcons.General.Remove) {
+        return new AnAction("删除", "删除", AllIcons.General.Remove) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 checkDefaultTab();
@@ -576,7 +635,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     }
 
     private AnAction createResetAction() {
-        return new AnAction(AllIcons.General.Reset) {
+        return new AnAction("重置", "重置", AllIcons.General.Reset) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 int flag = Messages.showYesNoDialog("确定要恢复自带模板吗？", "提示", Messages.getQuestionIcon());
@@ -587,9 +646,14 @@ public class MybatisFlexSettingDialog extends JDialog {
                     configData.setTabList(getTabInfos());
                     MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(configData);
                     int selectedIndex = list1.getSelectedIndex();
+                    String templateName = list1.getSelectedValue().toString();
                     templateList();
                     resetList(selectedIndex);
                     Messages.showInfoMessage("恢复成功", "提示");
+                    templateEditor.getDocument().setReadOnly(false);
+                    String suffix = tabMap.get(templateName).getSuffix();
+                    isPreviewCode=false;
+                    ((EditorEx) templateEditor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, StrUtil.format("demo{}.vm",suffix)));
 
                 }
             }
@@ -607,7 +671,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     }
 
     private AnAction createMoveUpAction() {
-        return new AnAction(Icons.MOVE_UP) {
+        return new AnAction("向上", "向上", Icons.MOVE_UP) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 // 动作执行的逻辑
@@ -632,7 +696,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     }
 
     private AnAction createMoveDownAction() {
-        AnAction action = new AnAction(Icons.MOVE_DOWN) {
+        AnAction action = new AnAction("向下", "向下", Icons.MOVE_DOWN) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 // 动作执行的逻辑

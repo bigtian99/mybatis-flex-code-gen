@@ -135,9 +135,11 @@ public class Modules {
     }
 
     public static void getModulePackages() {
+
         modulePackageMap = new HashMap<>();
         Project project = ProjectUtils.getCurrentProject();
         PsiManager psiManager = PsiManager.getInstance(project);
+        JavaDirectoryService instance = JavaDirectoryService.getInstance();
 
         for (Module module : moduleMap.values()) {
             Map<String, String> moduleMap = new HashMap<>();
@@ -147,9 +149,12 @@ public class Modules {
                     if (fileOrDir.isDirectory() && (fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.SOURCES) || fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.RESOURCES))) {
                         PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
                         if (ObjectUtil.isNotNull(psiDirectory)) {
-                            String packageName = JavaDirectoryService.getInstance().getPackage(psiDirectory).getQualifiedName();
-                            moduleMap.put(psiDirectory.getName(), packageName);
-                            moduleMap.put(packageName, packageName);
+                            String packageName = instance.getPackage(psiDirectory).getQualifiedName();
+                            String name = psiDirectory.getName();
+                            if(packageName.contains(".")){
+                                moduleMap.put(name, packageName);
+                                moduleMap.put(packageName, packageName);
+                            }
                         }
                     }
                     return true;

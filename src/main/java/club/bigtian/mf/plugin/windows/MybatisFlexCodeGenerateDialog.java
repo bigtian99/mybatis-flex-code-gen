@@ -145,7 +145,11 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
 
             settingLabel.addActionListener(e -> {
                 Set<String> sinces = MybatisFlexPluginConfigData.getSinceMap().keySet();
-                MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project, () -> {
+                List<TableInfo> selectedTableInfo = (List<TableInfo>) tableList.getSelectedValuesList().stream()
+                        .map(Object::toString)
+                        .map(tableInfoMap::get)
+                        .collect(Collectors.toList());
+                MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project,selectedTableInfo, () -> {
                     initConfigData(null);
                 });
                 dialog.show();

@@ -1,6 +1,8 @@
 package club.bigtian.mf.plugin.core.util;
 
+import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.config.CustomConfig;
+import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -9,6 +11,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
@@ -18,6 +21,7 @@ import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -117,10 +121,31 @@ public class VirtualFileUtils {
         PsiManager psiManager = PsiManager.getInstance(project);
         VirtualFile virtualFile = transToJavaFile(path);
         if (ObjectUtil.isNull(virtualFile)) {
+
             return null;
         }
         return psiManager.findDirectory(virtualFile);
     }
+
+    /**
+     * 获取psi目录如果没有则创建
+     *
+     * @param path
+     * @return
+     */
+
+    public static PsiDirectory getPsiDirectoryAndCreate(String path, String mkdirName) {
+        PsiDirectory psiDirectory = getPsiDirectory(ProjectUtils.getCurrentProject(), path);
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path + File.separator + mkdirName);
+        if (ObjectUtil.isNull(virtualFile)) {
+            PsiDirectory targetDirectory = WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), (Computable<PsiDirectory>) () -> {
+                return psiDirectory.createSubdirectory(mkdirName);
+            });
+            return targetDirectory;
+        }
+        return getPsiDirectory(ProjectUtils.getCurrentProject(), path + File.separator + mkdirName);
+    }
+
 
     /**
      * 得到psi目录
@@ -143,7 +168,12 @@ public class VirtualFileUtils {
      * @return {@code PsiDirectory}
      */
     public static PsiDirectory getPsiDirectory(Module module, String packageName, String key) {
-        Set javaResourceRootTypes = StrUtil.isEmpty(key) ? JavaModuleSourceRootTypes.RESOURCES : JavaModuleSourceRootTypes.SOURCES;
+        Set javaResourceRootTypes;
+        if (MybatisFlexConstant.XML.equals(key) && Template.getConfigData(MybatisFlexConstant.MAPPER_XML_TYPE, "resource").equals("resource")) {
+            javaResourceRootTypes = JavaModuleSourceRootTypes.RESOURCES;
+        } else {
+            javaResourceRootTypes = JavaModuleSourceRootTypes.SOURCES;
+        }
         PsiDirectory psiDirectory = PSI_DIRECTORY_MAP.get(packageName + key);
         if (ObjectUtil.isNull(psiDirectory)) {
             AtomicReference<PsiDirectory> subPsiDirectory = new AtomicReference<>();

@@ -83,5 +83,6 @@ public class MybatisFlexConstant {
     public static final String TAB_LIST = "tabList";
     public static final String ENABLE_DEBUG = "enableDebug";
     public static final String ENABLE_LOG = "enableLog";
+    public static final String XML = "Xml";
     public static String MAPPER_XML_TYPE= "mapperXmlType";
 }

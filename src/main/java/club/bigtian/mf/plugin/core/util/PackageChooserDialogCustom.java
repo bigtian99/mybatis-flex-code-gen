@@ -82,13 +82,14 @@ public class PackageChooserDialogCustom extends PackageChooser {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         this.myModel = new DefaultTreeModel(new DefaultMutableTreeNode());
+
         this.createTreeModel();
         this.myTree = new Tree(this.myModel);
         this.myTree.setCellRenderer(new DefaultTreeCellRenderer() {
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
                 super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
                 this.setIcon(PlatformIcons.PACKAGE_ICON);
-                if (value instanceof DefaultMutableTreeNode ) {
+                if (value instanceof DefaultMutableTreeNode) {
                     DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
                     Object object = node.getUserObject();
                     if (object instanceof PsiPackage) {
@@ -229,10 +230,11 @@ public class PackageChooserDialogCustom extends PackageChooser {
     private void createTreeModel() {
         PsiManager psiManager = PsiManager.getInstance(this.myProject);
         FileIndex fileIndex = this.myModule != null ? ModuleRootManager.getInstance(this.myModule).getFileIndex() : ProjectRootManager.getInstance(this.myProject).getFileIndex();
+        JavaDirectoryService instance = JavaDirectoryService.getInstance();
         fileIndex.iterateContent(fileOrDir -> {
             if (fileOrDir.isDirectory() && (fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.SOURCES) || fileIndex.isUnderSourceRootOfType(fileOrDir, JavaModuleSourceRootTypes.RESOURCES))) {
                 PsiDirectory psiDirectory = psiManager.findDirectory(fileOrDir);
-                PsiPackage aPackage = JavaDirectoryService.getInstance().getPackage(psiDirectory);
+                PsiPackage aPackage = instance.getPackage(psiDirectory);
                 if (aPackage != null) {
                     this.addPackage(aPackage);
                 }
@@ -378,5 +380,12 @@ public class PackageChooserDialogCustom extends PackageChooser {
         public void enableInModalConext() {
             this.setEnabledInModalContext(true);
         }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.BGT;
+        }
     }
+
+
 }
