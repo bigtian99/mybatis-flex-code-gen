@@ -12,6 +12,7 @@ public class TabInfo {
     private String genPath;
 
     private String suffix;
+    private String fileName;
 
     private int sort;
 
@@ -79,11 +80,12 @@ public class TabInfo {
         this.sort = sort;
     }
 
-    public TabInfo(String title, String content, String genPath, String suffix, int sort) {
+    public TabInfo(String title, String content, String genPath, String suffix, int sort, String fileName) {
         this.title = title;
         this.content = content;
         this.suffix = suffix;
         this.genPath = genPath;
+        this.fileName = fileName;
         this.sort = sort;
     }
 
@@ -101,5 +103,13 @@ public class TabInfo {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }

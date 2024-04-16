@@ -465,6 +465,11 @@ public class MybatisFlexSettingDialog extends JDialog {
                 String title = list1.getSelectedValue().toString();
                 TabInfo tabInfo = tabMap.get(title);
                 tabInfo.setContent(event.getDocument().getText());
+                WriteCommandAction.runWriteCommandAction(project, () -> {
+                    if (!isPreviewCode) {
+                        MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(getConfigData());
+                    }
+                });
             }
         });
     }
@@ -507,13 +512,14 @@ public class MybatisFlexSettingDialog extends JDialog {
                     }
                     String value = list1.getSelectedValue().toString();
                     TabInfo tabInfo = tabMap.get(value);
+                    isPreviewCode = true;
+
                     WriteCommandAction.runWriteCommandAction(project, () -> {
                         templateEditor.getDocument().setText(tabInfo.getContent());
                         EditorHighlighter highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, getFileTypeByExtension(tabInfo.getSuffix().replace(".", "")));
                         ((EditorEx) templateEditor).setHighlighter(highlighter);
                     });
                     list1.setSelectedIndex(list1.getSelectedIndex());
-                    isPreviewCode = true;
                     document.setReadOnly(true);
 
                 } else {
@@ -551,17 +557,19 @@ public class MybatisFlexSettingDialog extends JDialog {
                 String title = list1.getSelectedValue().toString();
                 TabInfo el = tabMap.get(title);
 
-                CustomTabDialog dialog = new CustomTabDialog(el.getGenPath(), el.getTitle(), el.getSuffix());
+                CustomTabDialog dialog = new CustomTabDialog(el);
                 dialog.show();
                 String genPath = dialog.getGenPath();
-                if (StrUtil.isEmpty(genPath)) {
+                if (StrUtil.isEmpty(genPath)|| StrUtil.isEmpty(dialog.getTitle())|| StrUtil.isEmpty(dialog.getFileSuffix())) {
                     return;
                 }
                 el.setSuffix(dialog.getFileSuffix());
                 el.setTitle(dialog.getTitle());
                 el.setGenPath(dialog.getGenPath());
+                el.setFileName(dialog.getFileName());
                 tabMap.put(el.getTitle(), el);
                 resetList(selectedIndex);
+                MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(getConfigData());
             }
         };
     }
@@ -597,12 +605,13 @@ public class MybatisFlexSettingDialog extends JDialog {
                 CustomTabDialog dialog = new CustomTabDialog();
                 dialog.setVisible(true);
                 String genPath = dialog.getGenPath();
+                String fileName = dialog.getFileName();
                 String title = dialog.getTitle();
                 String fileSuffix = dialog.getFileSuffix();
                 if (StrUtil.isEmpty(title) || StrUtil.isEmpty(genPath) || StrUtil.isEmpty(fileSuffix)) {
                     return;
                 }
-                TabInfo tabInfo = new TabInfo(title, "", genPath, fileSuffix, tabMap.size());
+                TabInfo tabInfo = new TabInfo(title, "", genPath, fileSuffix, tabMap.size(), fileName);
                 tabMap.put(title, tabInfo);
                 resetList(tabMap.size() - 1);
             }
@@ -652,8 +661,8 @@ public class MybatisFlexSettingDialog extends JDialog {
                     Messages.showInfoMessage("恢复成功", "提示");
                     templateEditor.getDocument().setReadOnly(false);
                     String suffix = tabMap.get(templateName).getSuffix();
-                    isPreviewCode=false;
-                    ((EditorEx) templateEditor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, StrUtil.format("demo{}.vm",suffix)));
+                    isPreviewCode = false;
+                    ((EditorEx) templateEditor).setHighlighter(EditorHighlighterFactory.getInstance().createEditorHighlighter(project, StrUtil.format("demo{}.vm", suffix)));
 
                 }
             }

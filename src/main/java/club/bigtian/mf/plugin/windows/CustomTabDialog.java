@@ -1,6 +1,7 @@
 package club.bigtian.mf.plugin.windows;
 
 import club.bigtian.mf.plugin.core.util.DialogUtil;
+import club.bigtian.mf.plugin.entity.TabInfo;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -18,6 +19,7 @@ public class CustomTabDialog extends JDialog {
     private com.intellij.openapi.ui.TextFieldWithBrowseButton genPath;
     private JTextField title;
     private JTextField fileSuffix;
+    private JTextField fileName;
 
     public CustomTabDialog() {
         setContentPane(contentPane);
@@ -97,13 +99,17 @@ public class CustomTabDialog extends JDialog {
         title.setText("");
         genPath.setText("");
         fileSuffix.setText("");
-
+        fileSuffix.setText("");
         // add your code here if necessary
         dispose();
     }
 
     public String getGenPath() {
         return genPath.getText();
+    }
+
+    public String getFileName(){
+        return fileName.getText();
     }
 
     @Override
@@ -115,7 +121,7 @@ public class CustomTabDialog extends JDialog {
         return fileSuffix.getText();
     }
 
-    public CustomTabDialog(String genPaths, String titles, String fileSuffixs) {
+    public CustomTabDialog(TabInfo info) {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -171,8 +177,9 @@ public class CustomTabDialog extends JDialog {
             }
         });
 
-        this.genPath.setText(genPaths);
-        this.title.setText(titles);
-        this.fileSuffix.setText(fileSuffixs);
+        this.genPath.setText(info.getGenPath());
+        this.title.setText(info.getTitle());
+        this.fileSuffix.setText(info.getSuffix());
+        this.fileName.setText(info.getFileName());
     }
 }

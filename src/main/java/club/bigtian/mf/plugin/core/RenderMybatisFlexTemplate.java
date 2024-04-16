@@ -220,7 +220,7 @@ public class RenderMybatisFlexTemplate {
                 StringWriter sw = new StringWriter();
                 velocityEngine.evaluate(context, sw, "mybatis-flex", info.getContent());
                 PsiDirectory psiDirectory = VirtualFileUtils.getPsiDirectoryAndCreate(genPath, StrUtil.lowerFirst(className));
-                String fileName = "index" + info.getSuffix();
+                String fileName = ObjectUtil.defaultIfNull(info.getFileName(),className) + info.getSuffix();
                 PsiFile file = factory.createFileFromText(fileName, getFileTypeByExtension(info.getSuffix().replace(".", "")), sw.toString());
                 templateMap.computeIfAbsent(psiDirectory, k -> new ArrayList<>()).add(CodeReformat.reformat(file));
             }
@@ -339,11 +339,7 @@ public class RenderMybatisFlexTemplate {
      */
     public static boolean remoteDataGen(List<String> selectedTabeList) {
         MybatisFlexConfig config = Template.getMybatisFlexConfig();
-        PsiFileFactory factory = PsiFileFactory.getInstance(ProjectUtils.getCurrentProject());
         HashMap<PsiDirectory, List<PsiElement>> templateMap = new HashMap<>();
-        Map<String, String> packages = config.getPackages();
-        Map<String, String> suffixMap = config.getSuffix();
-
         List<JSONObject> list = null;
         try {
             list = getRemoteData(selectedTabeList);
@@ -353,20 +349,9 @@ public class RenderMybatisFlexTemplate {
 
         VelocityEngine velocityEngine = new VelocityEngine();
         VelocityContext context;
-        Map<String, String> templates = new ConcurrentHashMap<>(config.getTemplates());
         for (JSONObject tableInfo : list) {
             context = new VelocityContext(tableInfo);
             customRender(config, velocityEngine, context, context.get("ClassName").toString(), templateMap);
-            // for (Map.Entry<String, String> entry : templates.entrySet()) {
-            //     StringWriter sw = new StringWriter();
-            //     velocityEngine.evaluate(context, sw, "mybatis-flex", entry.getValue());
-            //     PsiDirectory psiDirectory = getPsiDirectory(packages, config.getModules(), entry.getKey());
-            //     String classPrefix = ObjectUtil.equal(MybatisFlexConstant.SERVICE, entry.getKey())
-            //             ? ObjectUtil.defaultIfNull(Template.getMybatisFlexConfig().getInterfacePre(), "I") : "";
-            //     String fileName = classPrefix + tableInfo.getString("ClassName") + suffixMap.get(entry.getKey()) + (StrUtil.isEmpty(entry.getKey()) ? ".xml" : ".java");
-            //     PsiFile file = factory.createFileFromText(fileName, StrUtil.isEmpty(entry.getKey()) ? XmlFileType.INSTANCE : JavaFileType.INSTANCE, sw.toString());
-            //     templateMap.computeIfAbsent(psiDirectory, k -> new ArrayList<>()).add(CodeReformat.reformat(file));
-            // }
         }
         List<PsiJavaFile> psiJavaFiles = new ArrayList<>();
         DumbService.getInstance(ProjectUtils.getCurrentProject()).runWhenSmart(() -> {
