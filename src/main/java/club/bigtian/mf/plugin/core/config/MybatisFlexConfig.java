@@ -217,8 +217,17 @@ public class MybatisFlexConfig {
     private String remoteDataToken;
     private String resultField;
     private boolean enableLog;
+    private boolean databaseConfig;
 
     private boolean remoteInterface;
+
+    public boolean isDatabaseConfig() {
+        return databaseConfig;
+    }
+
+    public void setDatabaseConfig(boolean databaseConfig) {
+        this.databaseConfig = databaseConfig;
+    }
 
     public boolean getEnableLog() {
         return enableLog;

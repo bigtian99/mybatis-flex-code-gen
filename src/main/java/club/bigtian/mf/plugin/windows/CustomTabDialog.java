@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.components.JBTextField;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -19,7 +20,8 @@ public class CustomTabDialog extends JDialog {
     private com.intellij.openapi.ui.TextFieldWithBrowseButton genPath;
     private JTextField title;
     private JTextField fileSuffix;
-    private JTextField fileName;
+    private JBTextField fileName;
+    private JCheckBox businesCheckBox;
 
     public CustomTabDialog() {
         setContentPane(contentPane);
@@ -77,6 +79,7 @@ public class CustomTabDialog extends JDialog {
                 isEnableButtonOk();
             }
         });
+        fileName.getEmptyText().setText("不填默认为类名");
     }
 
     private void isEnableButtonOk() {
@@ -119,6 +122,10 @@ public class CustomTabDialog extends JDialog {
 
     public String getFileSuffix() {
         return fileSuffix.getText();
+    }
+
+    public boolean isBusinesFolder() {
+        return businesCheckBox.isSelected();
     }
 
     public CustomTabDialog(TabInfo info) {
@@ -181,5 +188,6 @@ public class CustomTabDialog extends JDialog {
         this.title.setText(info.getTitle());
         this.fileSuffix.setText(info.getSuffix());
         this.fileName.setText(info.getFileName());
+        this.businesCheckBox.setSelected(info.isBusinesFolder());
     }
 }

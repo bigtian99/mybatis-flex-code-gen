@@ -16,6 +16,8 @@ public class TabInfo {
 
     private int sort;
 
+    private  boolean businesFolder;
+
     @JSONField(serialize = false)
     private Editor textField;
 
@@ -80,13 +82,14 @@ public class TabInfo {
         this.sort = sort;
     }
 
-    public TabInfo(String title, String content, String genPath, String suffix, int sort, String fileName) {
+    public TabInfo(String title, String content, String genPath, String suffix, int sort, String fileName,boolean businesFolder) {
         this.title = title;
         this.content = content;
         this.suffix = suffix;
         this.genPath = genPath;
         this.fileName = fileName;
         this.sort = sort;
+        this.businesFolder = businesFolder;
     }
 
     public String getContent() {
@@ -111,5 +114,13 @@ public class TabInfo {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public boolean isBusinesFolder() {
+        return businesFolder;
+    }
+
+    public void setBusinesFolder(boolean businesFolder) {
+        this.businesFolder = businesFolder;
     }
 }

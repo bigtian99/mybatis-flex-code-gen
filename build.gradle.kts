@@ -29,6 +29,7 @@ intellij {
 }
 
 dependencies {
+    implementation("org.yaml:snakeyaml:2.2")
     implementation("com.alibaba.fastjson2:fastjson2:2.0.48")
     implementation("cn.hutool:hutool-core:5.8.27")
     implementation("cn.hutool:hutool-http:5.8.27")

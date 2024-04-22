@@ -77,7 +77,6 @@ public class TableUtils {
     public static DatabaseDialectEx getDialect(DasTable dasTable) {
         DbTableImpl table = (DbTableImpl) dasTable;
         DbDataSourceImpl dataSource = table.getDataSource();
-
         return dataSource.getDatabaseDialect();
     }
 
@@ -117,7 +116,7 @@ public class TableUtils {
                 columnList.add(columnInfo);
             }
             tableInfo.setColumnList(columnList);
-            if(CollUtil.isEmpty(tableInfo.getImportClassList())){
+            if (CollUtil.isEmpty(tableInfo.getImportClassList())) {
                 tableInfo.setImportClassList(new HashSet<>());
             }
             tableInfoList.add(tableInfo);

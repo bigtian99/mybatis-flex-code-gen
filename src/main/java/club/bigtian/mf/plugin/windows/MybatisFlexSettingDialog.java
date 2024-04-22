@@ -7,7 +7,10 @@ import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.function.SimpleFunction;
 import club.bigtian.mf.plugin.core.icons.Icons;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
-import club.bigtian.mf.plugin.core.util.*;
+import club.bigtian.mf.plugin.core.util.DialogUtil;
+import club.bigtian.mf.plugin.core.util.FileChooserUtil;
+import club.bigtian.mf.plugin.core.util.MybatisFlexUtil;
+import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.entity.TabInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
 import cn.hutool.core.lang.Assert;
@@ -115,6 +118,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JPanel listHeader;
     private JPanel edtiorPanel;
     private JCheckBox logCheck;
+    private com.intellij.ui.components.OnOffButton databaseConfig;
     private Project project;
 
     // 是否开启内部模式
@@ -304,6 +308,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         sqlDialect.setSelectedItem(dialectChinese);
         enableDebug.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.ENABLE_DEBUG, true));
         logCheck.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.ENABLE_LOG, true));
+        databaseConfig.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.DATABASE_CONFIG, false));
         initSinceComBox();
         pathMap = new HashMap<>();
         for (JTextField textField : list) {
@@ -420,6 +425,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setEnableDebug(enableDebug.isSelected());
         config.setKtFile(ktFile.isSelected());
         config.setEnableLog(logCheck.isSelected());
+        config.setDatabaseConfig(databaseConfig.isSelected());
         List<TabInfo> tabList = tabMap.values().stream().sorted(Comparator.comparingInt(TabInfo::getSort)).collect(Collectors.toList());
         config.setTabList(tabList);
         return config;
@@ -560,13 +566,14 @@ public class MybatisFlexSettingDialog extends JDialog {
                 CustomTabDialog dialog = new CustomTabDialog(el);
                 dialog.show();
                 String genPath = dialog.getGenPath();
-                if (StrUtil.isEmpty(genPath)|| StrUtil.isEmpty(dialog.getTitle())|| StrUtil.isEmpty(dialog.getFileSuffix())) {
+                if (StrUtil.isEmpty(genPath) || StrUtil.isEmpty(dialog.getTitle()) || StrUtil.isEmpty(dialog.getFileSuffix())) {
                     return;
                 }
                 el.setSuffix(dialog.getFileSuffix());
                 el.setTitle(dialog.getTitle());
                 el.setGenPath(dialog.getGenPath());
                 el.setFileName(dialog.getFileName());
+                el.setBusinesFolder(dialog.isBusinesFolder());
                 tabMap.put(el.getTitle(), el);
                 resetList(selectedIndex);
                 MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(getConfigData());
@@ -611,7 +618,7 @@ public class MybatisFlexSettingDialog extends JDialog {
                 if (StrUtil.isEmpty(title) || StrUtil.isEmpty(genPath) || StrUtil.isEmpty(fileSuffix)) {
                     return;
                 }
-                TabInfo tabInfo = new TabInfo(title, "", genPath, fileSuffix, tabMap.size(), fileName);
+                TabInfo tabInfo = new TabInfo(title, "", genPath, fileSuffix, tabMap.size(), fileName, dialog.isBusinesFolder());
                 tabMap.put(title, tabInfo);
                 resetList(tabMap.size() - 1);
             }

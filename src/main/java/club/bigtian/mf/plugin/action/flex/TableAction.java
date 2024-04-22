@@ -2,14 +2,22 @@ package club.bigtian.mf.plugin.action.flex;
 
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateDialog;
+import cn.hutool.core.util.StrUtil;
 import com.intellij.database.model.DasTable;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
+import org.yaml.snakeyaml.Yaml;
 
 import javax.swing.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 表动作
@@ -19,16 +27,16 @@ import javax.swing.*;
  */
 public class TableAction extends AnAction {
 
-    // 静态代码将在系统启动时执行
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+
         SwingUtilities.invokeLater(() -> {
             MybatisFlexCodeGenerateDialog generateWin = new MybatisFlexCodeGenerateDialog(e);
             generateWin.setVisible(true);
         });
-    }
 
+    }
 
     /**
      * 判断选中的是否是表，是表则显示，否则不显示
@@ -48,3 +56,4 @@ public class TableAction extends AnAction {
         return ActionUpdateThread.BGT;
     }
 }
+
