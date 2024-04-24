@@ -85,5 +85,8 @@ public class MybatisFlexConstant {
     public static final String ENABLE_LOG = "enableLog";
     public static final String XML = "Xml";
     public static final String DATABASE_CONFIG = "databaseConfig";
+    public static final String PREPARING = "preparing";
+    public static final String PARAMETERS = "parameters";
+
     public static String MAPPER_XML_TYPE= "mapperXmlType";
 }

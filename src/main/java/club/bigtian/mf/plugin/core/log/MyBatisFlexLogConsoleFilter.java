@@ -107,7 +107,7 @@ public class MyBatisFlexLogConsoleFilter implements Filter {
         return null;
     }
 
-    static StringBuilder parseSql(String sql, Queue<Map.Entry<String, String>> params) {
+  public  static StringBuilder parseSql(String sql, Queue<Map.Entry<String, String>> params) {
 
         final StringBuilder sb = new StringBuilder(sql);
 
@@ -136,7 +136,7 @@ public class MyBatisFlexLogConsoleFilter implements Filter {
         return sb;
     }
 
-    static Queue<Map.Entry<String, String>> parseParams(String line) {
+    public  static Queue<Map.Entry<String, String>> parseParams(String line) {
         line = StringUtils.removeEnd(line, "\n");
 
         final String[] strings = StringUtils.splitByWholeSeparator(line, ", ");

@@ -39,7 +39,7 @@ public class SqlPreviewIconRenderer extends GutterIconRenderer {
                     // 检查按钮是否启用
                     isEnabled = false; // 点击后禁用按钮
                     String selectedText = iconMap.get(lineNumber);
-                    new SQLPreviewAction().preview(selectedText, psiFile, () -> {
+                    new SQLPreviewAction().preview(selectedText, psiFile,e, () -> {
                         // 在SQLPreviewAction完成所有逻辑后，再启用按钮
                         isEnabled = true;
                     });

@@ -6,8 +6,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.JavaParameters;
-import com.intellij.execution.configurations.ParametersList;
-import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.runners.JavaProgramPatcher;
@@ -16,11 +14,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -42,35 +35,10 @@ public class PerRun extends JavaProgramPatcher {
         if (ObjectUtil.defaultIfNull(config.getEnableDebug(), true)) {
             setLogLevel(runProfile, javaParameters);
         }
-        if (runProfile instanceof SpringBootApplicationRunConfiguration springBootApplicationRunConfiguration && config.getEnableLog()) {
+        if (runProfile instanceof SpringBootApplicationRunConfiguration springBootApplicationRunConfiguration) {
             Project project = springBootApplicationRunConfiguration.getProject();
             ConsoleView consoleView = new ConsoleViewImpl(project, true);
-            consoleView.addMessageFilter(new MybatisFlexAgentFilter(project));
-            InputStream in = getClass().getResourceAsStream("/libs/runtime-agent-1.0-SNAPSHOT-jar-with-dependencies.jar");
-            // 创建一个临时文件来存储内部 JAR 文件
-            Path tempFile = null;
-            try {
-                tempFile = Files.createTempFile("runtime-agent-", ".jar");
-                tempFile.toFile().deleteOnExit();
-
-                // 将内部 JAR 文件的内容复制到临时文件
-                try (OutputStream out = Files.newOutputStream(tempFile)) {
-                    byte[] buffer = new byte[1024];
-                    int len;
-                    while ((len = in.read(buffer)) != -1) {
-                        out.write(buffer, 0, len);
-                    }
-                }
-                // 使用临时文件的路径作为你的 agent JAR 文件的路径
-                String agentPath = tempFile.toString();
-                RunConfiguration runConfiguration = (RunConfiguration) runProfile;
-                ParametersList vmParametersList = javaParameters.getVMParametersList();
-                vmParametersList.addParametersString("-javaagent:" + agentPath);
-                vmParametersList.addNotEmptyProperty("guide-idea-plugin-probe.projectId", runConfiguration.getProject().getLocationHash());
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            consoleView.addMessageFilter(new MybatisFlexAgentFilter());
         }
 
     }

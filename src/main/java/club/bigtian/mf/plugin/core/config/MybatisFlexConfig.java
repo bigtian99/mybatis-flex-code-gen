@@ -216,10 +216,37 @@ public class MybatisFlexConfig {
     private String remoteHeader;
     private String remoteDataToken;
     private String resultField;
-    private boolean enableLog;
     private boolean databaseConfig;
+    private boolean isExecuteSql;
 
     private boolean remoteInterface;
+
+    private String preparing;
+    private String parameters;
+
+    public String getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
+    }
+
+    public String getPreparing() {
+        return preparing;
+    }
+
+    public void setPreparing(String preparing) {
+        this.preparing = preparing;
+    }
+
+    public boolean isExecuteSql() {
+        return isExecuteSql;
+    }
+
+    public void setExecuteSql(boolean executeSql) {
+        isExecuteSql = executeSql;
+    }
 
     public boolean isDatabaseConfig() {
         return databaseConfig;
@@ -229,13 +256,6 @@ public class MybatisFlexConfig {
         this.databaseConfig = databaseConfig;
     }
 
-    public boolean getEnableLog() {
-        return enableLog;
-    }
-
-    public void setEnableLog(boolean enableLog) {
-        this.enableLog = enableLog;
-    }
 
     public boolean isRemoteInterface() {
         return remoteInterface;

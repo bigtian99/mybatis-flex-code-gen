@@ -78,9 +78,11 @@ public class SQLPreviewAction extends AnAction {
      * 排除 import 导入包
      */
     private final List<String> excludeImportList = Arrays.asList("org.mapstruct.factory.Mappers");
+    AnActionEvent event;
 
-    public void preview(String selectedText, PsiJavaFile psiFile, SimpleFunction function) {
+    public void preview(String selectedText, PsiJavaFile psiFile,AnActionEvent actionEvent, SimpleFunction function) {
         try {
+            this.event = actionEvent;
             if (selectedText.startsWith("QueryWrapper")) {
                 selectedText = StrUtil.format(SYSTEM_OUT_PRINTLN_TO_SQL, selectedText);
             } else {
@@ -395,7 +397,7 @@ public class SQLPreviewAction extends AnAction {
                     public void onTextAvailable(ProcessEvent event1, Key outputType) {
                         if (ProcessOutputTypes.STDOUT.equals(outputType)) {
                             if (StrUtil.startWithAnyIgnoreCase(event1.getText(), "SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP", "ALTER", "TRUNCATE","WITH")) {
-                                new SQLPreviewDialog(event1.getText()).setVisible(true);
+                                new SQLPreviewDialog(event1.getText(),event).setVisible(true);
                             }
                         } else if (ProcessOutputTypes.STDERR.equals(outputType)) {
                             String text = event1.getText();
@@ -422,7 +424,7 @@ public class SQLPreviewAction extends AnAction {
         String selectedText = e.getData(CommonDataKeys.EDITOR).getSelectionModel().getSelectedText();
         if (StrUtil.isNotBlank(selectedText)) {
             PsiJavaFile psiFile = (PsiJavaFile) e.getData(CommonDataKeys.PSI_FILE);
-            preview(selectedText, psiFile, () -> {
+            preview(selectedText, psiFile,e, () -> {
             });
             return;
         }

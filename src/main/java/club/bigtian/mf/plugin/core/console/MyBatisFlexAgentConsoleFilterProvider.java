@@ -16,7 +16,7 @@ public class MyBatisFlexAgentConsoleFilterProvider implements ConsoleFilterProvi
     public Filter @NotNull [] getDefaultFilters(@NotNull Project project) {
         MybatisFlexAgentFilter filter = project.getUserData(key);
         if (Objects.isNull(filter)) {
-            filter = new MybatisFlexAgentFilter(project);
+            filter = new MybatisFlexAgentFilter();
             project.putUserData(key, filter);
         }
         return new Filter[] { filter };

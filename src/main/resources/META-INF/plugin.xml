@@ -44,6 +44,7 @@
     <li>【新增】自定义模板编辑提供代码补全</li>
     <li>【新增】快速连接数据库</li>
     <li>【新增】增加远程接口渲染功能（远程接口返回模板需要的数据即可）</li>
+    <li>【新增】模板代码预览</li>
     <li>【优化】生成面板模块搜索</li>
     <li>【优化】映射面板需要双击才能出现下拉框</li>
     <li>【优化】生成面板自动根据包名匹配选择模块</li>
@@ -150,7 +151,7 @@
             <add-to-group group-id="GenerateGroup" anchor="first" />
         </action>
 
-        <action id="NewDataBaseConnectAction" class="club.bigtian.mf.plugin.action.flex.NewDataBaseConnectAction" text="根据配置文件新建数据库连接" description="根据配置文件新建数据库连接"  icon="/icons/flex.svg">
+        <action id="NewDataBaseConnectAction" class="club.bigtian.mf.plugin.action.flex.NewDataBaseConnectAction" text="新建数据库连接" description="根据配置文件新建数据库连接"  icon="/icons/database.svg">
             <add-to-group group-id="GenerateGroup" anchor="first" />
             <keyboard-shortcut keymap="$default" first-keystroke="shift alt D"/>
         </action>

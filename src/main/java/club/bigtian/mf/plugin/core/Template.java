@@ -17,6 +17,7 @@ import java.util.Set;
 
 public class Template {
     private static Set<String> set = new HashSet<>();
+    static MybatisFlexConfig config;
 
     /**
      * 得到控制器vm代码
@@ -33,8 +34,10 @@ public class Template {
 
 
     public static @NotNull MybatisFlexConfig getMybatisFlexConfig() {
-        MybatisFlexConfig   config = MybatisFlexPluginConfigData.getCurrentProjectMybatisFlexConfig();
-
+        if (ObjectUtil.isNotNull(config)) {
+            return config;
+        }
+        config = MybatisFlexPluginConfigData.getCurrentProjectMybatisFlexConfig();
         if (ObjectUtil.isNull(config.getControllerSuffix())) {
             config.setControllerSuffix(MybatisFlexConstant.CONTROLLER);
         }
