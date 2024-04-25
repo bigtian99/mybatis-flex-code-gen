@@ -220,9 +220,18 @@ public class MybatisFlexConfig {
     private boolean isExecuteSql;
 
     private boolean remoteInterface;
+    private boolean navigationMapper;
 
     private String preparing;
     private String parameters;
+
+    public boolean isNavigationMapper() {
+        return navigationMapper;
+    }
+
+    public void setNavigationMapper(boolean navigationMapper) {
+        this.navigationMapper = navigationMapper;
+    }
 
     public String getParameters() {
         return parameters;

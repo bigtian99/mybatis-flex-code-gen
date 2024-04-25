@@ -6,6 +6,7 @@ import club.bigtian.mf.plugin.core.util.TableUtils;
 import club.bigtian.mf.plugin.entity.MatchTypeMapping;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
@@ -35,6 +36,7 @@ import java.util.Map;
 public final class MybatisFlexPluginConfigData implements PersistentStateComponent<MybatisFlexPluginConfigData.State> {
 
     private State myState = new State();
+    static MybatisFlexConfig config;
 
     public static MybatisFlexPluginConfigData getInstance() {
         ComponentManager componentManager = ApplicationManager.getApplication();
@@ -251,11 +253,19 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
      * @return {@code MybatisFlexConfig}
      */
     public static MybatisFlexConfig getCurrentProjectMybatisFlexConfig() {
+        if (ObjectUtil.isNotNull(config)) {
+            return config;
+        }
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
-        Map<String, MybatisFlexConfig> flexConfigMap = JSONObject.parseObject(state.mybatisFlexConfig, new TypeReference<Map<String, MybatisFlexConfig>>() {
+        String flexConfig = state.mybatisFlexConfig;
+        if (!JSON.isValid(flexConfig)) {
+            flexConfig = "{}";
+        }
+        Map<String, MybatisFlexConfig> flexConfigMap = JSONObject.parseObject(flexConfig, new TypeReference<Map<String, MybatisFlexConfig>>() {
         });
-        return flexConfigMap.getOrDefault(ProjectUtils.getCurrentProjectName(), new MybatisFlexConfig());
+        config = flexConfigMap.getOrDefault(ProjectUtils.getCurrentProjectName(), new MybatisFlexConfig());
+        return config;
     }
 
     /**
@@ -306,6 +316,7 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         Map<String, MybatisFlexConfig> configMap = getProjectMybatisFlexConfig();
         configMap.put(ProjectUtils.getCurrentProjectName(), config);
         MybatisFlexPluginConfigData instance = getInstance();
+        MybatisFlexPluginConfigData.config = config;
         State state = instance.getState();
         state.mybatisFlexConfig = JSONObject.toJSONString(configMap);
         instance.loadState(state);

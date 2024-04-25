@@ -87,6 +87,7 @@ public class MybatisFlexConstant {
     public static final String DATABASE_CONFIG = "databaseConfig";
     public static final String PREPARING = "preparing";
     public static final String PARAMETERS = "parameters";
+    public static final String NAVIGATION_MAPPER = "navigationMapper";
 
     public static String MAPPER_XML_TYPE= "mapperXmlType";
 }

@@ -14,15 +14,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiDocumentManager;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
+import com.intellij.psi.*;
+import com.intellij.psi.xml.XmlFile;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -229,5 +228,16 @@ public class VirtualFileUtils {
      */
     public static void clearPsiDirectoryMap() {
         PSI_DIRECTORY_MAP.clear();
+    }
+
+    public static  void getAllXmlFiles(PsiDirectory psiDirectory, List<XmlFile> xmlFiles) {
+        // 获取所有的xml文件，具体实现逻辑
+        for (PsiElement psiFile : psiDirectory.getChildren()) {
+            if (psiFile instanceof XmlFile) {
+                xmlFiles.add((XmlFile) psiFile);
+            } else if (psiFile instanceof PsiDirectory) {
+                getAllXmlFiles((PsiDirectory) psiFile, xmlFiles);
+            }
+        }
     }
 }

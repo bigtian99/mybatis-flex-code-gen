@@ -8,10 +8,7 @@ import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.credentialStore.OneTimeString;
 import com.intellij.database.access.DatabaseCredentials;
-import com.intellij.database.dataSource.DatabaseDriver;
-import com.intellij.database.dataSource.DatabaseDriverManager;
-import com.intellij.database.dataSource.LocalDataSource;
-import com.intellij.database.dataSource.LocalDataSourceManager;
+import com.intellij.database.dataSource.*;
 import com.intellij.database.psi.DbPsiFacade;
 import com.intellij.database.view.ui.DataSourceManagerDialog;
 import com.intellij.openapi.actionSystem.*;
@@ -131,7 +128,7 @@ public class NewDataBaseConnectAction extends AnAction {
         DatabaseDriver driver = driveMap.get(databasetype);
         LocalDataSource localDataSource = LocalDataSource.create(databaseName + "@" + remoteUrl, driver.getDriverClass(), url, MapUtil.getStr(databaseConfig, "username"));
         localDataSource.setAutoSynchronize(true);
-        databaseCredentials.setPassword(localDataSource, new OneTimeString(MapUtil.getStr(databaseConfig, "password")));
+        databaseCredentials.storePassword(localDataSource, new OneTimeString(MapUtil.getStr(databaseConfig, "password")));
         localDataSource.setDatabaseDriver(driver);
         return localDataSource;
     }

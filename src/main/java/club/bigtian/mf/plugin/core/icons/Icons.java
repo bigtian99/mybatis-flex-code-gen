@@ -20,4 +20,6 @@ public class Icons {
     public static final Icon MOVE_UP = IconLoader.getIcon("/icons/moveUp.svg", Icons.class);
     public static final Icon MOVE_DOWN = IconLoader.getIcon("/icons/moveDown.svg", Icons.class);
     public static final Icon EYE = IconLoader.getIcon("/icons/eye.svg", Icons.class);
+    public static final Icon FLEX_XML = IconLoader.getIcon("/icons/flex_xml.svg", Icons.class);
+    public static final Icon FLEX_MAPPER = IconLoader.getIcon("/icons/flex_mapper.svg", Icons.class);
 }

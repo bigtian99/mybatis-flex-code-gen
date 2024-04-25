@@ -13,6 +13,7 @@ import club.bigtian.mf.plugin.core.util.MybatisFlexUtil;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.entity.TabInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -120,6 +121,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private com.intellij.ui.components.OnOffButton databaseConfig;
     private JTextField preparing;
     private JTextField parameters;
+    private JCheckBox navigationMapper;
     private Project project;
 
     // 是否开启内部模式
@@ -172,11 +174,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         init();
 
         resetBtn.addActionListener(e -> {
@@ -311,6 +309,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         databaseConfig.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.DATABASE_CONFIG, false));
         preparing.setText(Template.getConfigData(MybatisFlexConstant.PREPARING, "Preparing:"));
         parameters.setText(Template.getConfigData(MybatisFlexConstant.PARAMETERS, "Parameters:"));
+        navigationMapper.setSelected(Template.getCheckBoxConfig(MybatisFlexConstant.NAVIGATION_MAPPER, false));
         initSinceComBox();
         pathMap = new HashMap<>();
         for (JTextField textField : list) {
@@ -429,6 +428,7 @@ public class MybatisFlexSettingDialog extends JDialog {
         config.setDatabaseConfig(databaseConfig.isSelected());
         config.setPreparing(preparing.getText());
         config.setParameters(parameters.getText());
+        config.setNavigationMapper(navigationMapper.isSelected());
         List<TabInfo> tabList = tabMap.values().stream().sorted(Comparator.comparingInt(TabInfo::getSort)).collect(Collectors.toList());
         config.setTabList(tabList);
         return config;
@@ -507,6 +507,10 @@ public class MybatisFlexSettingDialog extends JDialog {
         return new AnAction("预览", "预览", AllIcons.Actions.ShowCode) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
+                if (CollUtil.isEmpty(selectedTableInfo)) {
+                    Messages.showWarningDialog("快捷键进入的不允许预览", "提示");
+                    return;
+                }
                 MybatisFlexConfig configData = getConfigData();
                 Document document = templateEditor.getDocument();
                 document.setReadOnly(false);
@@ -645,11 +649,13 @@ public class MybatisFlexSettingDialog extends JDialog {
                     resetList(0);
                 }
             }
+
             @Override
             public void update(@NotNull AnActionEvent e) {
                 String title = list1.getSelectedValue().toString();
                 e.getPresentation().setEnabled(!defaultTempList.contains(title));
             }
+
             @Override
             public @NotNull ActionUpdateThread getActionUpdateThread() {
                 return ActionUpdateThread.BGT;
