@@ -6,7 +6,6 @@ import club.bigtian.mf.plugin.core.util.TableUtils;
 import club.bigtian.mf.plugin.entity.MatchTypeMapping;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
@@ -253,16 +252,16 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
      * @return {@code MybatisFlexConfig}
      */
     public static MybatisFlexConfig getCurrentProjectMybatisFlexConfig() {
-        if (ObjectUtil.isNotNull(config)) {
-            return config;
-        }
+        // if (ObjectUtil.isNotNull(config)) {
+        //     return config;
+        // }
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
         String flexConfig = state.mybatisFlexConfig;
         if (!JSON.isValid(flexConfig)) {
             flexConfig = "{}";
         }
-        Map<String, MybatisFlexConfig> flexConfigMap = JSONObject.parseObject(flexConfig, new TypeReference<Map<String, MybatisFlexConfig>>() {
+        Map<String, MybatisFlexConfig> flexConfigMap = JSONObject.parseObject(flexConfig, new TypeReference<>() {
         });
         config = flexConfigMap.getOrDefault(ProjectUtils.getCurrentProjectName(), new MybatisFlexConfig());
         return config;

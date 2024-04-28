@@ -7,6 +7,7 @@ import club.bigtian.mf.plugin.entity.TabInfo;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.annotation.JSONField;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -330,6 +331,7 @@ public class MybatisFlexConfig {
         this.enableDebug = enableDebug;
     }
 
+
     public List<TabInfo> getTabList() {
         List<TabInfo> infoList = Optional.ofNullable(JSON.parseArray(tabList, TabInfo.class)).orElse(new ArrayList<>());
         if (CollUtil.isEmpty(infoList) || infoList.size() < 6) {
@@ -412,6 +414,7 @@ public class MybatisFlexConfig {
         this.dataSource = dataSource;
     }
 
+    @JSONField(serialize = false)
     public Map<String, String> getSuffix() {
         Map<String, String> data = new HashMap<>();
 
@@ -424,14 +427,19 @@ public class MybatisFlexConfig {
         return data;
     }
 
+    @JSONField(serialize = false)
     public Map<String, String> getTemplates() {
-        Map<String, String> data = new HashMap<>();
         Map<String, String> templateMap = getTabList()
                 .stream()
                 .collect(Collectors.toMap(TabInfo::getTitle, TabInfo::getContent));
         return templateMap;
     }
 
+    public void setTemplates(Object obj) {
+
+    }
+
+    @JSONField(serialize = false)
     public Map<String, String> getPackages() {
         Map<String, String> data = new HashMap<>();
         data.put(MybatisFlexConstant.CONTROLLER, controllerPackage);
@@ -443,6 +451,7 @@ public class MybatisFlexConfig {
         return data;
     }
 
+    @JSONField(serialize = false)
     public Map<String, String> getModules() {
         Map<String, String> data = new HashMap<>();
         data.put(MybatisFlexConstant.CONTROLLER, controllerModule);

@@ -10,6 +10,7 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -20,11 +21,9 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class VirtualFileUtils {
     private static Map<String, PsiDirectory> PSI_DIRECTORY_MAP = new HashMap<>();
@@ -239,5 +238,25 @@ public class VirtualFileUtils {
                 getAllXmlFiles((PsiDirectory) psiFile, xmlFiles);
             }
         }
+    }
+
+    public static Map<String, XmlFile> getAllResourceFiles() {
+        Project project = ProjectUtils.getCurrentProject();
+        List<XmlFile> resourceFiles = new ArrayList<>();
+        Module[] modules = ModuleManager.getInstance(project).getModules();
+        for (Module module : modules) {
+            PsiDirectory psiDirectory = Modules.getModuleDirectory(module, JavaModuleSourceRootTypes.RESOURCES);
+            if(ObjectUtil.isNull(psiDirectory)){
+                continue;
+            }
+            //     获取所有的xml文件
+            ArrayList<XmlFile> objects = new ArrayList<>();
+            getAllXmlFiles(psiDirectory, objects);
+            resourceFiles.addAll(objects);
+        }
+        Map<String, XmlFile> namespace = resourceFiles.stream()
+                .collect(Collectors.toMap(el -> el.getRootTag().getAttributeValue("namespace"), el -> el, (k1, k2) -> k1));
+
+        return namespace;
     }
 }

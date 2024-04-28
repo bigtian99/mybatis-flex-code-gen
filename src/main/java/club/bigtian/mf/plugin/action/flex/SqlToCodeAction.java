@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.action.flex;
 
+import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import club.bigtian.mf.plugin.windows.SqlToCodeDialog;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -19,5 +20,10 @@ public class SqlToCodeAction extends AnAction {
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
         return ActionUpdateThread.BGT;
+    }
+
+    @Override
+    public void update(AnActionEvent e) {
+        e.getPresentation().setEnabled(PsiJavaFileUtil.isFlexProject());
     }
 }

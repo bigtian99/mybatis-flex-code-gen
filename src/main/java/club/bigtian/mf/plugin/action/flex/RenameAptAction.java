@@ -101,4 +101,8 @@ public class RenameAptAction extends AnAction {
     public @NotNull ActionUpdateThread getActionUpdateThread() {
         return ActionUpdateThread.BGT;
     }
+    @Override
+    public void update(AnActionEvent e) {
+        e.getPresentation().setEnabled(PsiJavaFileUtil.isFlexProject());
+    }
 }

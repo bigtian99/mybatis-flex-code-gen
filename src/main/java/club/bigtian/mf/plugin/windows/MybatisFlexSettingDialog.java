@@ -40,6 +40,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.fields.ExpandableTextField;
 import org.jetbrains.annotations.NotNull;
 
@@ -122,6 +123,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JTextField preparing;
     private JTextField parameters;
     private JCheckBox navigationMapper;
+    private JPanel testPanel;
     private Project project;
 
     // 是否开启内部模式
@@ -264,6 +266,8 @@ public class MybatisFlexSettingDialog extends JDialog {
             RemoteDataConfigDialog dialog = new RemoteDataConfigDialog();
             dialog.setVisible(true);
         });
+
+
     }
 
 
@@ -481,7 +485,15 @@ public class MybatisFlexSettingDialog extends JDialog {
                 });
             }
         });
+
+        JPanel jPanel = new JPanel();
+        jPanel.add(new JLabel("模板列表"));
+        JBScrollPane jBScrollPane = new JBScrollPane(jPanel);
+        testPanel = new JPanel();
+        testPanel.add(jBScrollPane);
     }
+
+
 
     private ActionToolbar toolBar() {
         DefaultActionGroup actionGroup = new DefaultActionGroup();

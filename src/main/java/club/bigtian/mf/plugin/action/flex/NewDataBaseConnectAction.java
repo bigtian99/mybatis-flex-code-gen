@@ -2,6 +2,7 @@ package club.bigtian.mf.plugin.action.flex;
 
 import club.bigtian.mf.plugin.core.Template;
 import club.bigtian.mf.plugin.core.util.Modules;
+import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.ReUtil;
@@ -199,5 +200,9 @@ public class NewDataBaseConnectAction extends AnAction {
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
         return ActionUpdateThread.BGT;
+    }
+    @Override
+    public void update(AnActionEvent e) {
+        e.getPresentation().setEnabled(PsiJavaFileUtil.isFlexProject());
     }
 }

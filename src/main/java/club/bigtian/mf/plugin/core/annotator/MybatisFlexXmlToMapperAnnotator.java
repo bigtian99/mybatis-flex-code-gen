@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MybatisFlexXmlToMapperAnnotator implements Annotator {
-    Map<String, PsiElement> elementMap = new HashMap<>();
+Map<String, PsiElement> elementMap = new HashMap<>();
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
@@ -79,16 +79,5 @@ public class MybatisFlexXmlToMapperAnnotator implements Annotator {
 
     }
 
-    public int getLineNumber(XmlTag xmlTag) {
-        Project project = xmlTag.getProject();
-        PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
-        Document document = psiDocumentManager.getDocument(xmlTag.getContainingFile());
 
-        if (document != null) {
-            int textOffset = xmlTag.getTextOffset();
-            return document.getLineNumber(textOffset) + 1; // Line numbers are 0-based, so we add 1
-        }
-
-        return -1; // Return -1 or throw an exception if the document is null
-    }
 }

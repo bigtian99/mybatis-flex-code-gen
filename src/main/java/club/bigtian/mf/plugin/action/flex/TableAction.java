@@ -1,6 +1,7 @@
 package club.bigtian.mf.plugin.action.flex;
 
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
+import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateDialog;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.database.model.DasTable;
@@ -48,12 +49,14 @@ public class TableAction extends AnAction {
         ProjectUtils.setCurrentProject(e.getProject());
         Object selectedElement = e.getData(CommonDataKeys.PSI_ELEMENT);
         boolean isSelectedTable = selectedElement instanceof DasTable;
-        e.getPresentation().setVisible(isSelectedTable);
+        e.getPresentation().setVisible(isSelectedTable&&PsiJavaFileUtil.isFlexProject());
     }
 
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
         return ActionUpdateThread.BGT;
     }
+
+
 }
 
