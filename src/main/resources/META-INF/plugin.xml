@@ -39,20 +39,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
-    <h3>1.6.5-RELEASE</h3>
+    <h3>1.6.5.1-RELEASE</h3>
     <ul>
-    <li>【新增】自定义模板编辑提供代码补全</li>
-    <li>【新增】快速连接数据库</li>
-    <li>【新增】增加远程接口渲染功能（远程接口返回模板需要的数据即可）</li>
-    <li>【新增】模板代码预览</li>
-    <li>【优化】生成面板模块搜索</li>
-    <li>【优化】映射面板需要双击才能出现下拉框</li>
-    <li>【优化】生成面板自动根据包名匹配选择模块</li>
-    <li>【优化】重构代码模版模块</li>
-    <li>【优化】2024.1支持生成kt文件</li>
-    <li>【优化】生成代码实体属性带全路径</li>
-    <li>【修复】修复多模块项目存在问题</li>
-    <li>【修复】许多已知bug</li>
+    <li>【修复】反序列化导致IDEA卡死</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
@@ -123,9 +112,23 @@
                          groupName="Mybatis felx" enabledByDefault="true" level="INFO"
                          implementationClass="club.bigtian.mf.plugin.core.inspection.NoFromInspection"/>
         <intentionAction>
-            <className>club.bigtian.mf.plugin.action.flex.MybatisFlexInternal</className>
+            <className>club.bigtian.mf.plugin.core.internal.ParamInternal</className>
         </intentionAction>
-
+        <intentionAction>
+            <className>club.bigtian.mf.plugin.core.internal.AllParamInternal</className>
+        </intentionAction>
+        <intentionAction>
+            <className>club.bigtian.mf.plugin.core.internal.SelectInternal</className>
+        </intentionAction>
+        <intentionAction>
+            <className>club.bigtian.mf.plugin.core.internal.InsertInternal</className>
+        </intentionAction>
+        <intentionAction>
+            <className>club.bigtian.mf.plugin.core.internal.DeleteInternal</className>
+        </intentionAction>
+        <intentionAction>
+            <className>club.bigtian.mf.plugin.core.internal.UpdateInternal</className>
+        </intentionAction>
         <toolWindow id="GPT" icon="/icons/GPT.png" anchor="right"
                     factoryClass="club.bigtian.mf.plugin.core.factory.GptToolWindowFactory"/>
     </extensions>

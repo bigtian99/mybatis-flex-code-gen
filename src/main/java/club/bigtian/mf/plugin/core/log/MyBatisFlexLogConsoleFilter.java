@@ -137,7 +137,7 @@ public class MyBatisFlexLogConsoleFilter implements Filter {
     }
 
     public  static Queue<Map.Entry<String, String>> parseParams(String line) {
-        line = StringUtils.removeEnd(line, "\n");
+        line = StringUtils.removeEnd(line.trim(), "\n");
 
         final String[] strings = StringUtils.splitByWholeSeparator(line, ", ");
         final Queue<Map.Entry<String, String>> queue = new ArrayDeque<>(strings.length);

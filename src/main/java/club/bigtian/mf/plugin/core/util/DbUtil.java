@@ -44,7 +44,7 @@ public class DbUtil {
             for (DasTable table : tables) {
                 // 打印表的名称
                 if (sql.contains(table.getName())) {
-                    DatabaseEditorHelper.openConsoleFile(dataSource, true);
+                    DatabaseEditorHelper.openConsoleFile(dataSource, false);
                     // // 获取当前打开的文件
                     VirtualFile file = FileEditorManager.getInstance(project).getSelectedFiles()[0];
                     // 获取文件的 Document
@@ -56,7 +56,9 @@ public class DbUtil {
                     if (document != null) {
                         // 在文件的末尾插入 SQL
                         WriteCommandAction.runWriteCommandAction(project, () -> {
-                            document.insertString(document.getTextLength(), FORMATTER.format(sql));
+                            document.insertString(document.getTextLength(), FORMATTER.format(sql + ";"));
+                            //     滚动到最后一行
+                            FileEditorManager.getInstance(project).getSelectedTextEditor().getCaretModel().moveToOffset(document.getTextLength());
 
                         });
 

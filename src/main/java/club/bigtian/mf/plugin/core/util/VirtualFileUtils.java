@@ -256,7 +256,6 @@ public class VirtualFileUtils {
         }
         Map<String, XmlFile> namespace = resourceFiles.stream()
                 .collect(Collectors.toMap(el -> el.getRootTag().getAttributeValue("namespace"), el -> el, (k1, k2) -> k1));
-
         return namespace;
     }
 }

@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.mybatisflex.plugin"
-version = "1.6.5-RELEASE"
+version = "1.6.5.1-RELEASE"
 
 repositories {
     maven {
@@ -66,7 +66,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("233.*")
+        sinceBuild.set("232.*")
         untilBuild.set("241.*")
     }
 

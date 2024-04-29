@@ -183,4 +183,17 @@ public class PsiJavaFileUtil {
         PsiClass psiClass = PsiJavaFileUtil.getPsiClass("com.mybatisflex.core.query.QueryWrapper");
         return ObjectUtil.isNotNull(psiClass);
     }
+
+    /**
+     * 方法有注释
+     *
+     * @param psiMethod 磅/平方英寸法
+     * @return boolean
+     */
+    public static boolean methodHasAnnotation(PsiMethod psiMethod, String annotationName) {
+        boolean flag = Arrays.stream(psiMethod.getParameterList().getParameters())
+                .allMatch(psiParameter -> ObjectUtil.isNotNull(psiParameter.getAnnotation(annotationName)));
+
+        return flag;
+    }
 }
