@@ -129,6 +129,7 @@
         <intentionAction>
             <className>club.bigtian.mf.plugin.core.internal.UpdateInternal</className>
         </intentionAction>
+
         <toolWindow id="GPT" icon="/icons/GPT.png" anchor="right"
                     factoryClass="club.bigtian.mf.plugin.core.factory.GptToolWindowFactory"/>
     </extensions>
@@ -136,7 +137,7 @@
     <actions>
         <action id="club.bigtian.mf.plugin.action.flex.TableAction" class="club.bigtian.mf.plugin.action.flex.TableAction"
                 icon="/icons/flex.svg"
-                text="mybatis flex code generate" description="用于选择database中的table从而进行代码生成">
+                text="Mybatis flex code generate" description="用于选择database中的table从而进行代码生成">
             <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
         </action>
 

@@ -88,6 +88,14 @@ public class MybatisFlexConstant {
     public static final String PREPARING = "preparing";
     public static final String PARAMETERS = "parameters";
     public static final String NAVIGATION_MAPPER = "navigationMapper";
+    /**
+     * mybatisCodeHelperProMarketPlace
+     */
+    public static final String MYBATIS_PLUGIN_ID = "com.ccnode.codegenerator.MyBatisCodeHelperProMarketPlace";
+    /**
+     * MyBatisCodeHelperPro
+     */
+    public static final String MY_BATIS_CODE_HELPER_PRO_ID = "com.ccnode.codegenerator.MyBatisCodeHelperPro";
 
     public static String MAPPER_XML_TYPE= "mapperXmlType";
 }

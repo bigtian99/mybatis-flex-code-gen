@@ -1,6 +1,8 @@
 package club.bigtian.mf.plugin.core.internal;
 
+import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.icons.Icons;
+import club.bigtian.mf.plugin.core.util.PluginUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.codeInsight.intention.IntentionAction;
@@ -42,7 +44,7 @@ public class InsertInternal implements IntentionAction, Iconable {
 
     @Override
     public @IntentionName @NotNull String getText() {
-        return "Add Insert";
+        return "Add insert statement";
     }
 
     @Override
@@ -52,7 +54,7 @@ public class InsertInternal implements IntentionAction, Iconable {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, PsiFile file) {
-        if (!(file instanceof PsiJavaFile)) {
+        if (!(file instanceof PsiJavaFile)|| PluginUtil.isConflictPluginInstalled(MybatisFlexConstant.MYBATIS_PLUGIN_ID)) {
             return false;
         }
         SelectionModel selectionModel = editor.getSelectionModel();

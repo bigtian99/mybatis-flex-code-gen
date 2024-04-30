@@ -20,7 +20,6 @@ import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -208,6 +207,9 @@ public class RenderMybatisFlexTemplate {
                     context.put("className", className);
                     velocityEngine.evaluate(context, sw, "mybatis-flex", info.getContent());
                     PsiDirectory packageDirectory = getPsiDirectory(packages, modules, info.getTitle());
+                    if (ObjectUtil.isNull(packageDirectory)) {
+                        continue;
+                    }
                     DumbService.getInstance(project).runWhenSmart(() -> {
                         String classPrefix = ObjectUtil.equal(MybatisFlexConstant.SERVICE, info.getTitle())
                                 ? ObjectUtil.defaultIfNull(config.getInterfacePre(), "I") : "";
@@ -319,10 +321,7 @@ public class RenderMybatisFlexTemplate {
 
 
     private static PsiDirectory getPsiDirectory(Map<String, String> packages, Map<String, String> modules, String key) {
-        Module module = Modules.getModule(modules.get(key));
-
-        PsiDirectory packageDirectory = VirtualFileUtils.getPsiDirectory(module, packages.get(ObjectUtil.defaultIfBlank(key, MybatisFlexConstant.XML)), key);
-        return packageDirectory;
+        return VirtualFileUtils.getPsiDirectory(Modules.getModule(modules.get(key)), packages.get(ObjectUtil.defaultIfBlank(key, MybatisFlexConstant.XML)), key);
     }
 
 

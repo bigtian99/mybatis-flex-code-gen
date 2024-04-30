@@ -1,6 +1,8 @@
 package club.bigtian.mf.plugin.core.internal;
 
+import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
 import club.bigtian.mf.plugin.core.icons.Icons;
+import club.bigtian.mf.plugin.core.util.PluginUtil;
 import club.bigtian.mf.plugin.core.util.XmlFileUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -43,7 +45,7 @@ public class SelectInternal implements IntentionAction, Iconable {
 
     @Override
     public @IntentionName @NotNull String getText() {
-        return "Add Select";
+        return "Add select statement";
     }
 
     @Override
@@ -53,7 +55,7 @@ public class SelectInternal implements IntentionAction, Iconable {
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, PsiFile file) {
-        if (!(file instanceof PsiJavaFile)) {
+        if (!(file instanceof PsiJavaFile)|| PluginUtil.isConflictPluginInstalled(MybatisFlexConstant.MYBATIS_PLUGIN_ID)) {
             return false;
         }
         SelectionModel selectionModel = editor.getSelectionModel();
@@ -98,6 +100,9 @@ public class SelectInternal implements IntentionAction, Iconable {
         if (ObjectUtil.isNotNull(resultMap)) {
             select.setAttribute("resultMap", resultMap.getAttributeValue("id"));
         } else if (StrUtil.isNotEmpty(returnType) && !returnType.equals("void")) {
+            if (returnType.contains("<")) {
+                returnType =StrUtil.subBetween(returnType, "<", ">");
+            }
             select.setAttribute("resultType", returnType);
         }
         WriteCommandAction.runWriteCommandAction(project, () -> {
@@ -142,12 +147,13 @@ public class SelectInternal implements IntentionAction, Iconable {
         }
         if (ObjectUtil.isNotNull(resultMap)) {
             returnType = "resultMap=\"" + resultMap.getAttributeValue("id") + "\"";
-
         } else if (StrUtil.isNotEmpty(returnType) && !returnType.equals("void")) {
+            if (returnType.contains("<")) {
+                returnType =StrUtil.subBetween(returnType, "<", ">");
+            }
             returnType = "resultType=\"" + returnType + "\"";
         } else {
             returnType = "";
-
         }
         IntentionPreviewInfo diff = new IntentionPreviewInfo.CustomDiff(XmlFileType.INSTANCE,
                 description,

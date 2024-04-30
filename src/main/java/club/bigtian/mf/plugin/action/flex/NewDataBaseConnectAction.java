@@ -9,7 +9,10 @@ import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.credentialStore.OneTimeString;
 import com.intellij.database.access.DatabaseCredentials;
-import com.intellij.database.dataSource.*;
+import com.intellij.database.dataSource.DatabaseDriver;
+import com.intellij.database.dataSource.DatabaseDriverManager;
+import com.intellij.database.dataSource.LocalDataSource;
+import com.intellij.database.dataSource.LocalDataSourceManager;
 import com.intellij.database.psi.DbPsiFacade;
 import com.intellij.database.view.ui.DataSourceManagerDialog;
 import com.intellij.openapi.actionSystem.*;
@@ -29,6 +32,7 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,14 +55,20 @@ public class NewDataBaseConnectAction extends AnAction {
                     .map(el -> el.getName())
                     .collect(Collectors.toList());
             if (Template.getCheckBoxConfig("databaseConfig")) {
+                List<LocalDataSource> list = new ArrayList<>();
                 for (Module module : Modules.getModule(e.getProject())) {
                     LocalDataSource localDataSource = getLocalDataSource(module);
                     if (ObjectUtil.isNull(localDataSource) || existingDatabaseConnection.contains(localDataSource.getName())) {
                         continue;
                     }
                     existingDatabaseConnection.add(localDataSource.getName());
-
-
+                    list.add(localDataSource);
+                }
+                if (list.size() == 1) {
+                    DataSourceManagerDialog.showDialog(e.getProject(), list.get(0), null);
+                    return;
+                }
+                for (LocalDataSource localDataSource : list) {
                     instance.addDataSource(localDataSource);
                 }
             } else {
@@ -69,7 +79,11 @@ public class NewDataBaseConnectAction extends AnAction {
                     return;
                 }
                 LocalDataSource localDataSource = getLocalDataSource(module);
-                if (ObjectUtil.isNull(localDataSource) || existingDatabaseConnection.contains(localDataSource.getName())) {
+                if (ObjectUtil.isNull(localDataSource)) {
+                    Messages.showErrorDialog("当前模块没有相关数据库配置", "错误");
+                    return;
+                }
+                if (existingDatabaseConnection.contains(localDataSource.getName())) {
                     Messages.showErrorDialog("已存在该数据源", "错误");
                     return;
                 }
@@ -88,7 +102,9 @@ public class NewDataBaseConnectAction extends AnAction {
     private @Nullable LocalDataSource getLocalDataSource(Module module) {
         Map<String, Object> databaseConfig = Map.of();
         PsiDirectory psiDirectory = Modules.getModuleDirectory(module, JavaModuleSourceRootTypes.RESOURCES);
-
+        if (ObjectUtil.isNull(psiDirectory)) {
+            return null;
+        }
         PsiFile file = psiDirectory.findFile("application.yml");
 
         if (ObjectUtil.isNull(file)) {
@@ -115,7 +131,7 @@ public class NewDataBaseConnectAction extends AnAction {
             return null;
         }
         String url = databaseConfig.get("url").toString();
-        String remoteUrl = ReUtil.get("//(.*?):", url, 1);
+        String remoteUrl = ObjectUtil.defaultIfNull(ReUtil.get("//(.*?):", url, 1), "localhost");
         String databaseName = StrUtil.subAfter(url, "/", true);
         if (databaseName.contains("?")) {
             databaseName = StrUtil.subBefore(databaseName, "?", false);
@@ -142,7 +158,9 @@ public class NewDataBaseConnectAction extends AnAction {
                     String key = el.getKey();
                     String value = el.getValue().toString();
                     key = StrUtil.subAfter(key, ".", true);
-                    databaseMap.put(key, value);
+                    if (StrUtil.isNotEmpty(value) && StrUtil.isNotEmpty(key)) {
+                        databaseMap.put(key, value);
+                    }
                 });
         return databaseMap;
     }
@@ -153,7 +171,7 @@ public class NewDataBaseConnectAction extends AnAction {
             Files.lines(Paths.get(file.getVirtualFile().getPath())).filter(line -> !line.startsWith("#"))
                     .forEach(el -> {
                         String key;
-                        String value = StrUtil.subAfter(el, "=", false);
+                        String value = StrUtil.subAfter(ObjectUtil.defaultIfNull(el, ""), "=", false);
                         key = StrUtil.subBefore(el, "=", false);
                         databaseMap.put(key, value);
                     });
@@ -168,9 +186,11 @@ public class NewDataBaseConnectAction extends AnAction {
 
         ymlConfig.entrySet().stream().filter(el -> StrUtil.containsAny(el.getKey(), "username", "password", "url") && !el.getKey().startsWith("#") && el.getKey().contains("datasource"))
                 .forEach(el -> {
-                    String value = el.getValue().toString();
+                    String value = ObjectUtil.defaultIfNull(el.getValue(), "").toString();
                     String key = StrUtil.subAfter(el.getKey(), ".", true);
-                    databaseMap.put(key, value);
+                    if (StrUtil.isNotEmpty(value) && StrUtil.isNotEmpty(key)) {
+                        databaseMap.put(key, value);
+                    }
                 });
         return databaseMap;
     }
@@ -201,8 +221,6 @@ public class NewDataBaseConnectAction extends AnAction {
     public @NotNull ActionUpdateThread getActionUpdateThread() {
         return ActionUpdateThread.BGT;
     }
-    @Override
-    public void update(AnActionEvent e) {
-        e.getPresentation().setEnabled(PsiJavaFileUtil.isFlexProject());
-    }
+
+
 }

@@ -103,7 +103,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
         setModal(true);
         setTitle("Mybatis Flex Code Generate");
         getRootPane().setDefaultButton(generateBtn);
-        setSize(1050, 450);
+        setSize(1100, 450);
         DialogUtil.centerShow(this);
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             // 在这里执行耗时的操作
@@ -152,7 +152,9 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project,selectedTableInfo, () -> {
                     initConfigData(null);
                 });
+                // onCancel();
                 dialog.show();
+                // new MybatisFlexCodeGenerateDialog(actionEvent).setVisible(true);
                 sinceFlag = true;
                 // 避免用户配置后，直接点击设置界面，再回来导致配置丢失
                 MybatisFlexConfig configData = getConfigData();
@@ -164,7 +166,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 }
                 // 再次设置是因为initSinceComBox最终会把sinceFlag设置为false
                 sinceFlag = true;
-                initConfigData(configData);
+                initPackagePath();
             });
 
             sinceComBox.addActionListener(e -> {

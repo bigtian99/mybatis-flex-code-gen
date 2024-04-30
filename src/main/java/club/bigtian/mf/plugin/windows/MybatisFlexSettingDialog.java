@@ -447,7 +447,7 @@ public class MybatisFlexSettingDialog extends JDialog {
             if (value.equals(textField.getText())) {
                 continue;
             }
-            simpleFunction.apply();
+            // simpleFunction.apply();
             break;
         }
         dispose();

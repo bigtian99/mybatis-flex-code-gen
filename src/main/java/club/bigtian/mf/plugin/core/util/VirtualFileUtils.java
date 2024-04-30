@@ -166,6 +166,9 @@ public class VirtualFileUtils {
      * @return {@code PsiDirectory}
      */
     public static PsiDirectory getPsiDirectory(Module module, String packageName, String key) {
+        if (StrUtil.isEmpty(packageName)) {
+            return null;
+        }
         Set javaResourceRootTypes;
         if (MybatisFlexConstant.XML.equals(key) && Template.getConfigData(MybatisFlexConstant.MAPPER_XML_TYPE, "resource").equals("resource")) {
             javaResourceRootTypes = JavaModuleSourceRootTypes.RESOURCES;
