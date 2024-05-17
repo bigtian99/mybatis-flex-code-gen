@@ -15,6 +15,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlFile;
 import org.jetbrains.annotations.Nullable;
@@ -90,7 +91,7 @@ public class VirtualFileUtils {
      * @return {@code VirtualFile}
      */
     public static VirtualFile transToJavaFile(String path) {
-        return LocalFileSystem.getInstance().findFileByPath(path);
+      return   VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://" +path );
     }
 
     /**
@@ -117,10 +118,11 @@ public class VirtualFileUtils {
      */
     public static PsiDirectory getPsiDirectory(Project project, String path) {
         PsiManager psiManager = PsiManager.getInstance(project);
-        VirtualFile virtualFile = transToJavaFile(path);
+        VirtualFile virtualFile =transToJavaFile(path);
+        // 如何根据path判断有没有这个文件夹
         if (ObjectUtil.isNull(virtualFile)) {
 
-            return null;
+            return getPsiDirectoryAndCreates(StrUtil.subBefore(path, "/", true), StrUtil.subAfter(path, "/", true));
         }
         return psiManager.findDirectory(virtualFile);
     }
@@ -134,7 +136,18 @@ public class VirtualFileUtils {
 
     public static PsiDirectory getPsiDirectoryAndCreate(String path, String mkdirName) {
         PsiDirectory psiDirectory = getPsiDirectory(ProjectUtils.getCurrentProject(), path);
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path + File.separator + mkdirName);
+        VirtualFile virtualFile = transToJavaFile(path + File.separator + mkdirName);
+        if (ObjectUtil.isNull(virtualFile)) {
+            PsiDirectory targetDirectory = WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), (Computable<PsiDirectory>) () -> {
+                return psiDirectory.createSubdirectory(mkdirName);
+            });
+            return targetDirectory;
+        }
+        return getPsiDirectory(ProjectUtils.getCurrentProject(), path + File.separator + mkdirName);
+    }
+    public static PsiDirectory getPsiDirectoryAndCreates(String path, String mkdirName) {
+        PsiDirectory psiDirectory = getPsiDirectory(ProjectUtils.getCurrentProject(), path);
+        VirtualFile virtualFile = transToJavaFile(path + File.separator + mkdirName);
         if (ObjectUtil.isNull(virtualFile)) {
             PsiDirectory targetDirectory = WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), (Computable<PsiDirectory>) () -> {
                 return psiDirectory.createSubdirectory(mkdirName);

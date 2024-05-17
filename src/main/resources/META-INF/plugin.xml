@@ -39,9 +39,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
-    <h3>1.6.5.1-RELEASE</h3>
+    <h3>1.6.5.2-RELEASE</h3>
     <ul>
-    <li>【修复】反序列化导致IDEA卡死</li>
+    <li>【删除】删掉GPT</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
@@ -129,9 +129,12 @@
         <intentionAction>
             <className>club.bigtian.mf.plugin.core.internal.UpdateInternal</className>
         </intentionAction>
+        <intentionAction>
+            <className>club.bigtian.mf.plugin.core.internal.ResultMapInternal</className>
+        </intentionAction>
 
-        <toolWindow id="GPT" icon="/icons/GPT.png" anchor="right"
-                    factoryClass="club.bigtian.mf.plugin.core.factory.GptToolWindowFactory"/>
+<!--        <toolWindow id="GPT" icon="/icons/GPT.png" anchor="right"-->
+<!--                    factoryClass="club.bigtian.mf.plugin.core.factory.GptToolWindowFactory"/>-->
     </extensions>
 
     <actions>
