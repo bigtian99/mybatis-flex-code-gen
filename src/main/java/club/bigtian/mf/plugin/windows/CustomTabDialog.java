@@ -21,6 +21,7 @@ public class CustomTabDialog extends JDialog {
     private JTextField title;
     private JTextField fileSuffix;
     private JBTextField fileName;
+    private JBTextField componentPath;
     private JCheckBox businesCheckBox;
 
     public CustomTabDialog() {
@@ -28,20 +29,12 @@ public class CustomTabDialog extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
         setTitle("自定义Tab栏");
-        setSize(500, 250);
+        setSize(500, 270);
 
         DialogUtil.centerShow(this);
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -52,11 +45,7 @@ public class CustomTabDialog extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         FileChooserDescriptor chooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
         genPath.addBrowseFolderListener("选择生成路径", "选择生成路径", null, chooserDescriptor);
 
@@ -103,6 +92,7 @@ public class CustomTabDialog extends JDialog {
         genPath.setText("");
         fileSuffix.setText("");
         fileSuffix.setText("");
+        componentPath.setText("");
         // add your code here if necessary
         dispose();
     }
@@ -122,6 +112,8 @@ public class CustomTabDialog extends JDialog {
 
     public String getFileSuffix() {
         return fileSuffix.getText();
+    }   public String getComponentPath() {
+        return componentPath.getText();
     }
 
     public boolean isBusinesFolder() {
@@ -133,20 +125,12 @@ public class CustomTabDialog extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
         setTitle("自定义Tab栏");
-        setSize(500, 250);
+        setSize(500, 270);
 
         DialogUtil.centerShow(this);
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -157,11 +141,7 @@ public class CustomTabDialog extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         FileChooserDescriptor chooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
         genPath.addBrowseFolderListener("选择生成路径", "选择生成路径", null, chooserDescriptor);
 
@@ -189,5 +169,6 @@ public class CustomTabDialog extends JDialog {
         this.fileSuffix.setText(info.getSuffix());
         this.fileName.setText(info.getFileName());
         this.businesCheckBox.setSelected(info.isBusinesFolder());
+        this.componentPath.setText(info.getComponentPath());
     }
 }

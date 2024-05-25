@@ -10,6 +10,7 @@ public class TabInfo {
     private String content;
 
     private String genPath;
+    private String componentPath;
 
     private String suffix;
     private String fileName;
@@ -82,7 +83,7 @@ public class TabInfo {
         this.sort = sort;
     }
 
-    public TabInfo(String title, String content, String genPath, String suffix, int sort, String fileName,boolean businesFolder) {
+    public TabInfo(String title, String content, String genPath, String suffix, int sort, String fileName, String componentPath, boolean businesFolder) {
         this.title = title;
         this.content = content;
         this.suffix = suffix;
@@ -90,6 +91,7 @@ public class TabInfo {
         this.fileName = fileName;
         this.sort = sort;
         this.businesFolder = businesFolder;
+        this.componentPath = componentPath;
     }
 
     public String getContent() {
@@ -122,5 +124,13 @@ public class TabInfo {
 
     public void setBusinesFolder(boolean businesFolder) {
         this.businesFolder = businesFolder;
+    }
+
+    public String getComponentPath() {
+        return componentPath;
+    }
+
+    public void setComponentPath(String componentPath) {
+        this.componentPath = componentPath;
     }
 }

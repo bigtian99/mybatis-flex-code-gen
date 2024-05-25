@@ -221,7 +221,7 @@ public class RenderMybatisFlexTemplate {
                 }
                 StringWriter sw = new StringWriter();
                 velocityEngine.evaluate(context, sw, "mybatis-flex", info.getContent());
-                PsiDirectory psiDirectory = info.isBusinesFolder() ? VirtualFileUtils.getPsiDirectoryAndCreate(genPath, StrUtil.lowerFirst(className)):VirtualFileUtils.getPsiDirectory(project, genPath);
+                PsiDirectory psiDirectory = info.isBusinesFolder() ? VirtualFileUtils.getPsiDirectoryAndCreate(genPath, StrUtil.lowerFirst(className),info.getComponentPath()):VirtualFileUtils.getPsiDirectory(project, genPath);
                 String fileName = ObjectUtil.defaultIfBlank(info.getFileName(), className) + info.getSuffix();
                 PsiFile file = factory.createFileFromText(fileName, getFileTypeByExtension(info.getSuffix().replace(".", "")), sw.toString());
                 templateMap.computeIfAbsent(psiDirectory, k -> new ArrayList<>()).add(CodeReformat.reformat(file));

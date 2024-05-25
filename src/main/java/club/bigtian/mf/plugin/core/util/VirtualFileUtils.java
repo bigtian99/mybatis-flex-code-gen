@@ -145,6 +145,25 @@ public class VirtualFileUtils {
         }
         return getPsiDirectory(ProjectUtils.getCurrentProject(), path + File.separator + mkdirName);
     }
+
+    public static PsiDirectory getPsiDirectoryAndCreate(String path, String... mkdirNames) {
+        PsiDirectory psiDirectory = getPsiDirectory(ProjectUtils.getCurrentProject(), path);
+        for (String mkdirName : mkdirNames) {
+            if (StrUtil.isEmpty(mkdirName)) {
+                break;
+            }
+            VirtualFile virtualFile = transToJavaFile(path + File.separator + mkdirName);
+            if (ObjectUtil.isNull(virtualFile)) {
+                PsiDirectory finalPsiDirectory = psiDirectory;
+                psiDirectory = WriteCommandAction.runWriteCommandAction(ProjectUtils.getCurrentProject(), (Computable<PsiDirectory>) () -> {
+                    return finalPsiDirectory.createSubdirectory(mkdirName);
+                });
+
+            }
+            path += File.separator + mkdirName;
+        }
+        return getPsiDirectory(ProjectUtils.getCurrentProject(), path);
+    }
     public static PsiDirectory getPsiDirectoryAndCreates(String path, String mkdirName) {
         PsiDirectory psiDirectory = getPsiDirectory(ProjectUtils.getCurrentProject(), path);
         VirtualFile virtualFile = transToJavaFile(path + File.separator + mkdirName);

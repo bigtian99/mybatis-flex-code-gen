@@ -593,6 +593,7 @@ public class MybatisFlexSettingDialog extends JDialog {
                 el.setGenPath(dialog.getGenPath());
                 el.setFileName(dialog.getFileName());
                 el.setBusinesFolder(dialog.isBusinesFolder());
+                el.setComponentPath(dialog.getComponentPath());
                 tabMap.put(el.getTitle(), el);
                 resetList(selectedIndex);
                 MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig(getConfigData());
@@ -634,14 +635,14 @@ public class MybatisFlexSettingDialog extends JDialog {
                 String fileName = dialog.getFileName();
                 String title = dialog.getTitle();
                 String fileSuffix = dialog.getFileSuffix();
+                String componentPath = dialog.getComponentPath();
                 if (StrUtil.isEmpty(title) || StrUtil.isEmpty(genPath) || StrUtil.isEmpty(fileSuffix)) {
                     return;
                 }
-                TabInfo tabInfo = new TabInfo(title, "", genPath, fileSuffix, tabMap.size(), fileName, dialog.isBusinesFolder());
+                TabInfo tabInfo = new TabInfo(title, "", genPath, fileSuffix, tabMap.size(), fileName, componentPath, dialog.isBusinesFolder());
                 tabMap.put(title, tabInfo);
                 resetList(tabMap.size() - 1);
             }
-
             @Override
             public @NotNull ActionUpdateThread getActionUpdateThread() {
                 return ActionUpdateThread.BGT;
