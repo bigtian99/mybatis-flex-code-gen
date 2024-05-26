@@ -83,6 +83,10 @@
                                 id="club.bigtian.mf.plugin.core.contributor.MybatisFlexTemplateCompletionContributor"
                                 implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexTemplateCompletionContributor"/>
 
+<!--        <completion.contributor language="JAVA"-->
+<!--                                id="club.bigtian.mf.plugin.core.contributor.MybatisFlexTableDefCompletionContributor"-->
+<!--                                implementationClass="club.bigtian.mf.plugin.core.contributor.MybatisFlexTableDefCompletionContributor"/>-->
+
 
 
         <fileIconProvider implementation="club.bigtian.mf.plugin.core.type.MybatisFlexConfigFileType" id="club.bigtian.mf.plugin.core.type.MybatisFlexConfigFileType"/>
