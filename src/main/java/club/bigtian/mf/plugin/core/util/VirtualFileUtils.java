@@ -18,6 +18,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlFile;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
@@ -147,7 +148,12 @@ public class VirtualFileUtils {
     }
 
     public static PsiDirectory getPsiDirectoryAndCreate(String path, String... mkdirNames) {
-        PsiDirectory psiDirectory = getPsiDirectory(ProjectUtils.getCurrentProject(), path);
+        String fullPath = path + File.separator + StringUtils.join(mkdirNames, File.separator);
+        PsiDirectory psiDirectory = getPsiDirectory(ProjectUtils.getCurrentProject(), fullPath);
+        if(ObjectUtil.isNotNull(psiDirectory)){
+            return psiDirectory;
+        }
+         psiDirectory = getPsiDirectory(ProjectUtils.getCurrentProject(), path);
         for (String mkdirName : mkdirNames) {
             if (StrUtil.isEmpty(mkdirName)) {
                 break;

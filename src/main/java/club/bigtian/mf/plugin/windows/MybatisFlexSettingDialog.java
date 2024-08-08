@@ -261,8 +261,15 @@ public class MybatisFlexSettingDialog extends JDialog {
         buttonFixedSizeButton.addActionListener(e -> new CommonSettingDialog().show());
 
 
-        saveBtn.addActionListener(e -> onOK());
+        saveBtn.addActionListener(e -> {
+            if (isPreviewCode) {
+                Messages.showWarningDialog("预览模式下不允许操作", "提示");
+                return;
+            }
+            onOK();
+        });
         remoteBtn.addActionListener(e -> {
+
             RemoteDataConfigDialog dialog = new RemoteDataConfigDialog();
             dialog.setVisible(true);
         });
@@ -534,6 +541,9 @@ public class MybatisFlexSettingDialog extends JDialog {
                         }
                     } else {
                         tabMap = RenderMybatisFlexTemplate.remoteLocalPreview(selectedTableInfo.get(0));
+                    }
+                    if (ObjectUtil.isNull(tabMap)) {
+                        return;
                     }
                     String value = list1.getSelectedValue().toString();
                     TabInfo tabInfo = tabMap.get(value);

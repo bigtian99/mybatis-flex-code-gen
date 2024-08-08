@@ -310,7 +310,7 @@ public class RenderMybatisFlexTemplate {
 
     private static void removeEmptyPackage(MybatisFlexConfig config) {
         Map<String, String> templates = new ConcurrentHashMap<>(config.getTemplates());
-        Map<String, String> packages = new ConcurrentHashMap<>(config.getPackages());
+        Map<String, String> packages = new ConcurrentHashMap<>( config.getPackages());
         for (Map.Entry<String, String> entry : packages.entrySet()) {
             if (StrUtil.isEmpty(entry.getValue())) {
                 packages.remove(entry.getKey());

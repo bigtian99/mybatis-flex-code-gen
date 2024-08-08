@@ -1,24 +1,15 @@
 package club.bigtian.mf.plugin.action.flex;
 
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
-import club.bigtian.mf.plugin.core.util.PsiJavaFileUtil;
 import club.bigtian.mf.plugin.windows.MybatisFlexCodeGenerateDialog;
-import cn.hutool.core.util.StrUtil;
 import com.intellij.database.model.DasTable;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.Yaml;
 
 import javax.swing.*;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 表动作
@@ -49,7 +40,8 @@ public class TableAction extends AnAction {
         ProjectUtils.setCurrentProject(e.getProject());
         Object selectedElement = e.getData(CommonDataKeys.PSI_ELEMENT);
         boolean isSelectedTable = selectedElement instanceof DasTable;
-        e.getPresentation().setVisible(isSelectedTable&&PsiJavaFileUtil.isFlexProject());
+        // e.getPresentation().setVisible(true);
+        e.getPresentation().setVisible(isSelectedTable);
     }
 
     @Override

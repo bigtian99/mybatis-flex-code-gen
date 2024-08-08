@@ -240,7 +240,7 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                 continue;
             }
             for (String s : betweenAll) {
-                if (!text.contains(s)) {
+                if (!text.contains(s)||StrUtil.isUpperCase(s)) {
                     continue;
                 }
                 String compute = compute(text, s, "(", ")", "");
@@ -339,7 +339,6 @@ public class MybatisFlexConfigAnnotator implements Annotator {
                         }
                     }
                 });
-
     }
 
     static String inHandler(String[] betweenAll, String sql, String key) {

@@ -149,6 +149,11 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                         .map(Object::toString)
                         .map(tableInfoMap::get)
                         .collect(Collectors.toList());
+
+                if (sinceComBox.getSelectedIndex() == 0) {
+                    MybatisFlexConfig configData = getConfigData();
+                    MybatisFlexPluginConfigData.setCurrentMybatisFlexConfig( configData);
+                }
                 MybatisFlexSettingDialog dialog = new MybatisFlexSettingDialog(project,selectedTableInfo, () -> {
                     initConfigData(null);
                 });
@@ -157,7 +162,7 @@ public class MybatisFlexCodeGenerateDialog extends JDialog {
                 // new MybatisFlexCodeGenerateDialog(actionEvent).setVisible(true);
                 sinceFlag = true;
                 // 避免用户配置后，直接点击设置界面，再回来导致配置丢失
-                MybatisFlexConfig configData = getConfigData();
+
                 Set<String> sinceSet = MybatisFlexPluginConfigData.getSinceMap().keySet();
                 if (sinces.size() > sinceSet.size()) {
                     initSinceComBox(0);

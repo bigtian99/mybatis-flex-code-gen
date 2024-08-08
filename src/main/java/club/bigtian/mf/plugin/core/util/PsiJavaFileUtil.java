@@ -167,6 +167,7 @@ public class PsiJavaFileUtil {
         // 获取字段的修饰符列表
         PsiModifierList modifierList = psiField.getModifierList();
         if (ObjectUtil.isNull(modifierList)) {
+
             return true;
         }
         // 使用PsiModifier类来检查字段的修饰符

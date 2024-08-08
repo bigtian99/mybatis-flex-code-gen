@@ -2,10 +2,17 @@ package club.bigtian.mf.plugin.core.contributor;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionInitializationContext;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.lookup.LookupManager;
 import com.intellij.ide.ui.AntialiasingType;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.colors.EditorFontType;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.openapi.editor.event.EditorMouseEvent;
+import com.intellij.openapi.editor.event.EditorMouseListener;
 import com.intellij.openapi.editor.impl.FontInfo;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.project.Project;
@@ -22,7 +29,6 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
-import static club.bigtian.mf.plugin.core.contributor.KeyEventDispatcherImpl.registerKeyEventDispatcher;
 import static club.bigtian.mf.plugin.core.contributor.MybatisFlexTableDefCompletionContributor.GrayCodeRenderer.addInlayExample;
 
 
@@ -32,13 +38,21 @@ public class MybatisFlexTableDefCompletionContributor extends CompletionContribu
     private KeyAdapter keyAdapter;
     private static int column;
 
+    @Override
+    public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
+        if (isCompletionActive(parameters.getPosition().getProject())) {
+            result.stopHere();
+        }
 
+    }
+
+    public boolean isCompletionActive(Project project) {
+        return LookupManager.getInstance(project).getActiveLookup() != null;
+    }
     @Override
     public void beforeCompletion(@NotNull CompletionInitializationContext context) {
         super.beforeCompletion(context);
-        Editor editor = context.getEditor();
-        addInlayExample(editor);
-        registerKeyEventDispatcher(editor, "庄周de蝴蝶");
+
     }
 
 
@@ -92,11 +106,11 @@ public class MybatisFlexTableDefCompletionContributor extends CompletionContribu
 
             if (renderText instanceof String) {
                 g2.drawString((String) renderText, offsetX, (float) offsetY);
-            } else if (renderText instanceof List) {
+            } else if (renderText instanceof java.util.List) {
                 ArrayList renderList = (ArrayList) renderText;
                 int tabSize = editor.getSettings().getTabSize(editor.getProject());
-                float startOffset = calcTextWidth("Z") * (wordCount + tabSize);
                 for (Object line : renderList) {
+                    float startOffset = calcTextWidth(line.toString()) * (wordCount + tabSize);
                     g2.drawString(line.toString(), startOffset, (float) offsetY);
                     g2.translate(0, lineHeight);
                 }
@@ -127,14 +141,8 @@ public class MybatisFlexTableDefCompletionContributor extends CompletionContribu
             // 分别增加单行和多行嵌入信息
             int offset = editor.getCaretModel().getOffset();
             column = editor.getCaretModel().getVisualPosition().column;
-            // inlayModel.addInlineElement(offset, new GrayCodeRenderer<>(editor, "庄周de蝴蝶"));
-            ArrayList<String> list = new ArrayList<>();
-            list.add("1");
-            list.add("1");
-            list.add("1");
-            list.add("1");
-            inlayModel.addBlockElement(offset, new InlayProperties(),
-                    new GrayCodeRenderer<>(editor, list, column));
+            inlayModel.addInlineElement(offset, new GrayCodeRenderer<>(editor, "庄周de蝴蝶"));
+
 
             // 移动光标位置到初始位置
             editor.getCaretModel().moveToVisualPosition(new VisualPosition(editor.getCaretModel().getVisualPosition().line, column));
@@ -147,6 +155,8 @@ class KeyEventDispatcherImpl implements KeyEventDispatcher {
 
     private final Editor editor;
     private final String suggestedCode;
+
+    private static int offset;
 
     public KeyEventDispatcherImpl(Editor editor, String suggestedCode) {
         this.editor = editor;
@@ -163,7 +173,7 @@ class KeyEventDispatcherImpl implements KeyEventDispatcher {
                 removeInlay(editor);
                 e.consume();
                 return true;
-            } else if (isPrintableChar(e.getKeyChar()) || e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
+            } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE || isPrintableChar(e.getKeyChar()) || e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
                 // 取消提示
                 removeInlay(editor);
                 return true;
@@ -180,18 +190,17 @@ class KeyEventDispatcherImpl implements KeyEventDispatcher {
     private void insertSuggestedCode(Editor editor, String suggestedCode) {
         Project project = editor.getProject();
         if (project != null) {
-            // 如何取消tab键原本的内容？
-
             WriteCommandAction.runWriteCommandAction(project, () -> {
-                editor.getDocument().insertString(editor.getCaretModel().getPrimaryCaret().getOffset(), suggestedCode);
+                int tmpOffset = offset;
+                editor.getDocument().insertString(offset, suggestedCode);
                 //     移动光标到当前行最后
-                editor.getCaretModel().moveToOffset(editor.getCaretModel().getPrimaryCaret().getOffset() + suggestedCode.length());
+                editor.getCaretModel().moveToOffset(tmpOffset + suggestedCode.length());
             });
 
         }
     }
 
-    private void removeInlay(Editor editor) {
+    private static void removeInlay(Editor editor) {
         InlayModel inlayModel = editor.getInlayModel();
         java.util.@NotNull List<Inlay<?>> inlays = inlayModel.getInlineElementsInRange(0, editor.getDocument().getTextLength());
         for (Inlay inlay : inlays) {
@@ -201,6 +210,24 @@ class KeyEventDispatcherImpl implements KeyEventDispatcher {
 
     public static void registerKeyEventDispatcher(Editor editor, String suggestedCode) {
         KeyEventDispatcher dispatcher = new KeyEventDispatcherImpl(editor, suggestedCode);
+        editor.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void beforeDocumentChange(@NotNull DocumentEvent event) {
+                offset = editor.getCaretModel().getOffset();
+                removeInlay(editor);
+            }
+            @Override
+            public void documentChanged(@NotNull DocumentEvent event) {
+                addInlayExample(editor);
+                registerKeyEventDispatcher(editor, "庄周de蝴蝶");
+            }
+        });
+        editor.addEditorMouseListener(new EditorMouseListener() {
+            @Override
+            public void mouseClicked(@NotNull EditorMouseEvent e) {
+                removeInlay(editor);
+            }
+        });
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(dispatcher);
     }
 }
