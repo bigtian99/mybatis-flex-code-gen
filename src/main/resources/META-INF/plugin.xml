@@ -39,9 +39,11 @@
     ]]></description>
 
     <change-notes><![CDATA[
-    <h3>1.6.5.2-RELEASE</h3>
+    <h3>1.6.5.3-RELEASE</h3>
     <ul>
-    <li>【删除】删掉GPT</li>
+    <li>【修复】预览的时候保存会把预览的代码当做模板保存</li>
+    <li>【修复】联表预览的时候会把on函数里面的条件替换成？</li>
+    <li>【优化】放开代码生成选项</li>
     </ul>
     ]]></change-notes>
     <!-- Product and plugin compatibility requirements.
