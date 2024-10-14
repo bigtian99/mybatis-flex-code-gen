@@ -94,6 +94,7 @@ public class TableUtils {
             TableInfo tableInfo = new TableInfo();
             tableInfo.setName(table.getName());
             tableInfo.setComment(table.getComment());
+            tableInfo.setSchema(table.getDasParent().getName());
             List<ColumnInfo> columnList = new CopyOnWriteArrayList<>();
             JBIterable<? extends DasObject> columns = table.getDasChildren(ObjectKind.COLUMN);
             for (DasObject column : columns) {

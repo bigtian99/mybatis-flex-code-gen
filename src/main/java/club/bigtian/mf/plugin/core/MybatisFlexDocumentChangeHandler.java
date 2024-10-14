@@ -229,19 +229,17 @@ public class MybatisFlexDocumentChangeHandler implements DocumentListener, Edito
                 return;
             }
             FileEditorManager.getInstance(project).addFileEditorManagerListener(this);
-            if(PsiJavaFileUtil.isFlexProject()){
+            if (PsiJavaFileUtil.isFlexProject()) {
                 new Thread(() -> {
                     scheduler.scheduleAtFixedRate(() -> {
                         try {
                             DumbService.getInstance(project).runWhenSmart(() -> {
-                                ApplicationManager.getApplication().invokeLater(() -> {
-                                    PsiJavaFileUtil.createAptFile();
-                                });
+                                ApplicationManager.getApplication().invokeLater(PsiJavaFileUtil::createAptFile);
                             });
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
-                    }, 10, 1, TimeUnit.MINUTES);
+                    }, 10, 10, TimeUnit.SECONDS);
                 }).start();
             }
         } catch (Exception e) {

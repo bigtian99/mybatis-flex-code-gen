@@ -40,6 +40,16 @@ public class TableInfo {
 
     private String onSet;
 
+    private String schema;
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
     public String getOnInsert() {
         return onInsert;
     }

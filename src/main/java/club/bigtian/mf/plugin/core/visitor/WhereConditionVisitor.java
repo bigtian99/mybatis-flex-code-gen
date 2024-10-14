@@ -356,6 +356,7 @@ public class WhereConditionVisitor extends ExpressionDeParser implements GroupBy
 
     @Override
     public void visit(GroupByElement groupBy) {
+
         ExpressionList groupByExpressionList = groupBy.getGroupByExpressionList();
         if (CollUtil.isNotEmpty(groupByExpressionList)) {
             builder.append("\n.groupBy(");

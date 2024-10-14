@@ -124,6 +124,7 @@ public class MybatisFlexSettingDialog extends JDialog {
     private JTextField parameters;
     private JCheckBox navigationMapper;
     private JPanel testPanel;
+    private FixedSizeButton variableBtn;
     private Project project;
 
     // 是否开启内部模式
@@ -275,6 +276,9 @@ public class MybatisFlexSettingDialog extends JDialog {
         });
 
 
+        variableBtn.addActionListener(e -> {
+            new VariableDialog().setVisible(true);
+        });
     }
 
 

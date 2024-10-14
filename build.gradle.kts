@@ -1,7 +1,3 @@
-import org.gradle.internal.impldep.bsh.commands.dir
-import org.gradle.internal.impldep.org.bouncycastle.cms.RecipientId.password
-import org.gradle.internal.impldep.org.eclipse.jgit.lib.ObjectChecker.type
-
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.24"
@@ -9,7 +5,7 @@ plugins {
 }
 
 group = "com.mybatisflex.plugin"
-version = "1.6.5.3-RELEASE"
+version = "1.6.6-RELEASE"
 
 repositories {
     maven {
@@ -33,9 +29,12 @@ dependencies {
     implementation("com.alibaba.fastjson2:fastjson2:2.0.52")
     implementation("cn.hutool:hutool-core:5.8.29")
     implementation("cn.hutool:hutool-http:5.8.29")
-    implementation("com.github.jsqlparser:jsqlparser:5.0")
+    implementation("com.github.jsqlparser:jsqlparser:4.9")
     implementation(fileTree(mapOf("dir" to "libs", "includes" to listOf("*.jar"))))
-    compileOnly("org.projectlombok:lombok:1.18.32")
+    compileOnly("org.projectlombok:lombok:1.18.34")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")  // 注解处理器依赖
+    // 测试相关的Lombok支持
+    testCompileOnly("org.projectlombok:lombok:1.18.34")
 
 }
 java {

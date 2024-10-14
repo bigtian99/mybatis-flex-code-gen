@@ -368,6 +368,16 @@
                                   <verticalAlignment value="0"/>
                                 </properties>
                               </component>
+                              <component id="3cba5" class="com.intellij.openapi.ui.FixedSizeButton" binding="variableBtn">
+                                <constraints/>
+                                <properties>
+                                  <horizontalTextPosition value="0"/>
+                                  <icon value="icons/variable.png"/>
+                                  <text value=""/>
+                                  <toolTipText value="自定义模板变量"/>
+                                  <verticalAlignment value="0"/>
+                                </properties>
+                              </component>
                               <component id="44e33" class="javax.swing.JButton" binding="remoteBtn">
                                 <constraints/>
                                 <properties>

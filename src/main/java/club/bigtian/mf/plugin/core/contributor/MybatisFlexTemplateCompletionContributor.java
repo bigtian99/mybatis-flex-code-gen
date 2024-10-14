@@ -1,6 +1,8 @@
 package club.bigtian.mf.plugin.core.contributor;
 
 import club.bigtian.mf.plugin.core.icons.Icons;
+import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
+import club.bigtian.mf.plugin.entity.Variable;
 import club.bigtian.mf.plugin.windows.MybatisFlexSettingDialog;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -75,10 +77,16 @@ public class MybatisFlexTemplateCompletionContributor extends CompletionContribu
         TEMPLATE_MAP.put("$column.updateValue", "数据修改时，字段默认值");
         TEMPLATE_MAP.put("$column.fieldType", "java字段类型");
         TEMPLATE_MAP.put("$column.type", "jdbc类型");
+        TEMPLATE_MAP.put("$table.schema", "数据库名");
+        TEMPLATE_MAP.put("$createTime", "代码生成时间");
+
     }
 
     @Override
     public void fillCompletionVariants(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet result) {
+        for (Variable variable : MybatisFlexPluginConfigData.getVariable()) {
+            TEMPLATE_MAP.put("$"+variable.getName(), variable.getDescription());
+        }
         Editor editor = parameters.getEditor();
         String prefix = result.getPrefixMatcher().getPrefix();
         if (!ObjectUtil.defaultIfNull(editor.getUserData(MybatisFlexSettingDialog.flexTemplate),false) || !prefix.startsWith("$")) {

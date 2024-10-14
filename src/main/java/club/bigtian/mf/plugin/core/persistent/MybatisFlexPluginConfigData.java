@@ -4,8 +4,10 @@ import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.util.ProjectUtils;
 import club.bigtian.mf.plugin.core.util.TableUtils;
 import club.bigtian.mf.plugin.entity.MatchTypeMapping;
+import club.bigtian.mf.plugin.entity.Variable;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
@@ -17,10 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 持久化配置
@@ -136,6 +135,13 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
 
         public String typeMappings = "{}";
 
+        public  String variable;
+
+    }   public static  List< Variable> getVariable() {
+        List< Variable> variableMap = JSON.parseObject(getInstance().getState().variable, new TypeReference<List< Variable>>() {
+        });
+
+        return ObjectUtil.defaultIfNull(variableMap,new ArrayList<>());
     }
 
     /**
@@ -163,6 +169,12 @@ public final class MybatisFlexPluginConfigData implements PersistentStateCompone
         MybatisFlexPluginConfigData instance = getInstance();
         State state = instance.getState();
         state.typeMappings = JSONObject.toJSONString(typeMapping);
+        instance.loadState(state);
+    }
+   public static void setVarible(List<Variable> varibleMap) {
+        MybatisFlexPluginConfigData instance = getInstance();
+        State state = instance.getState();
+        state.variable = JSONObject.toJSONString(varibleMap);
         instance.loadState(state);
     }
 

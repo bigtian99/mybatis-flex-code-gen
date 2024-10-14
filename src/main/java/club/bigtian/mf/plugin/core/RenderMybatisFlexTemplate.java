@@ -2,10 +2,12 @@ package club.bigtian.mf.plugin.core;
 
 import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import club.bigtian.mf.plugin.core.constant.MybatisFlexConstant;
+import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.*;
 import club.bigtian.mf.plugin.entity.ColumnInfo;
 import club.bigtian.mf.plugin.entity.TabInfo;
 import club.bigtian.mf.plugin.entity.TableInfo;
+import club.bigtian.mf.plugin.entity.Variable;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.IORuntimeException;
@@ -25,6 +27,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
 import com.intellij.util.IncorrectOperationException;
+import groovy.lang.GroovyShell;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.jetbrains.annotations.Nullable;
@@ -71,6 +74,14 @@ public class RenderMybatisFlexTemplate {
         context.put("importClassList", tableInfo.getImportClassList());
         context.put("table", tableInfo);
         context.put("createTime", DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+        GroovyShell shell = new GroovyShell();
+
+        List<Variable> list = MybatisFlexPluginConfigData.getVariable();
+        for (Variable variable : list) {
+            Object result = shell.evaluate(variable.getScript());
+            context.put(variable.getName(), result);
+        }
+
         String qualifiedName = config.getQualifiedName();
         if (StrUtil.isNotBlank(qualifiedName)) {
             String methodName = config.getMethodName();
@@ -85,6 +96,7 @@ public class RenderMybatisFlexTemplate {
             tabInfo.setContent(sw.toString());
             templateMap.put(info.getTitle(), tabInfo);
         }
+
         return templateMap;
     }
 
