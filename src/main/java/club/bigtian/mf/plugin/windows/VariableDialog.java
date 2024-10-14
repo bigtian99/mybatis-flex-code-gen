@@ -1,5 +1,6 @@
 package club.bigtian.mf.plugin.windows;
 
+import club.bigtian.mf.plugin.core.contributor.MybatisFlexTemplateCompletionContributor;
 import club.bigtian.mf.plugin.core.persistent.MybatisFlexPluginConfigData;
 import club.bigtian.mf.plugin.core.util.DialogUtil;
 import club.bigtian.mf.plugin.core.util.NotificationUtils;
@@ -20,7 +21,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class VariableDialog extends JDialog {
@@ -61,13 +61,14 @@ public class VariableDialog extends JDialog {
 
 
         addBtn.addActionListener(e -> {
-            variableList = getTableData();
-            variableList.add(new Variable());
+            variableList=getTableData();
+            variableList.add(new Variable("", "", ""));
             initTableData();
             table.setModel(getDataModel());
-            // setColumnInput();
+            setColumnInput();
         });
         removeBtn.addActionListener(e -> {
+            variableList=getTableData();
             int selectedRow = table.getSelectedRow();
             TableModel model = table.getModel();
             if (selectedRow == -1 || ObjectUtil.isNull(model)) {
@@ -76,9 +77,11 @@ public class VariableDialog extends JDialog {
             if (table.isEditing()) {
                 table.getCellEditor().stopCellEditing();
             }
-            String key = model.getValueAt(selectedRow, 0).toString();
-            variableList = getTableData();
-            variableList.removeIf(variable -> variable.getName().equals(key));
+            String key = ObjectUtil.defaultIfNull(model.getValueAt(selectedRow, 0), "").toString();
+            variableList.remove(table.getSelectedRow());
+            if (StrUtil.isNotEmpty(key)) {
+                MybatisFlexTemplateCompletionContributor.removeTemplateMap(key);
+            }
             initTableData();
         });
         initTableData();
@@ -86,7 +89,7 @@ public class VariableDialog extends JDialog {
         reset.addActionListener(e -> {
             int flag = Messages.showYesNoDialog("确定重置吗？", "提示", AllIcons.General.QuestionDialog);
             if (flag == 0) {
-                MybatisFlexPluginConfigData.setTypeMapping(new HashMap<>());
+                MybatisFlexPluginConfigData.setVarible(new ArrayList<>());
                 NotificationUtils.notifySuccess("重置成功");
                 variableList = MybatisFlexPluginConfigData.getVariable();
                 initTableData();
@@ -95,11 +98,7 @@ public class VariableDialog extends JDialog {
     }
 
     private void initTableData() {
-        if (variableList.size() == 0) {
-            return;
-
-        }
-        TABLE_DATA = new Object[variableList.size() > 0 ? variableList.size() : 1][];
+        TABLE_DATA = new Object[variableList.size()][];
         int idx = 0;
         for (Variable variable : variableList) {
 
@@ -130,10 +129,10 @@ public class VariableDialog extends JDialog {
 
                             String script = dialog.getScript();
                             TableModel model = table.getModel();
-                            model.setValueAt(script, model.getRowCount() - 1, 1);
+                            model.setValueAt(script, table.getSelectedRow()  , 1);
                             textField.setText(script);
-                            variableList = getTableData();
-                            initTableData();
+                            // variableList = getTableData();
+                            // initTableData();
                         });
         textField.addExtension(browseExtension);
         comboBoxColumn.setCellEditor(new DefaultCellEditor(textField));
@@ -154,7 +153,14 @@ public class VariableDialog extends JDialog {
     }
 
     private void onOK() {
-        MybatisFlexPluginConfigData.setVarible(getTableData());
+        List<Variable> tableData = getTableData();
+        for (Variable el : tableData) {
+            if (StrUtil.isBlank(el.getName()) || StrUtil.isBlank(el.getScript())) {
+                Messages.showErrorDialog("变量名和变量值，都不能为空", "错误");
+                return;
+            }
+        }
+        MybatisFlexPluginConfigData.setVarible(tableData);
         // add your code here
         Messages.showInfoMessage("保存成功", "提示");
         dispose();
@@ -169,11 +175,7 @@ public class VariableDialog extends JDialog {
         List<Variable> variables = new ArrayList<>();
         try {
             for (int row = 0; row < rowCount; row++) {
-                String key = model.getValueAt(row, 0).toString();
-                String val = model.getValueAt(row, 1).toString();
-                String desc = model.getValueAt(row, 2).toString();
-                variables.add(new Variable(key, val, desc));
-
+                variables.add(getTableData(row));
             }
         } catch (Exception e) {
 

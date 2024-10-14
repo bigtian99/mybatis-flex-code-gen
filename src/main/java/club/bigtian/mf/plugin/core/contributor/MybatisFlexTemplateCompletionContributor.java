@@ -29,6 +29,10 @@ public class MybatisFlexTemplateCompletionContributor extends CompletionContribu
 
     public static Map<String, String> TEMPLATE_MAP = new ConcurrentHashMap<>();
 
+    public static void   removeTemplateMap(String key){
+        TEMPLATE_MAP.remove(key);
+    }
+
     static {
         TEMPLATE_MAP.put("$config.controllerPackage", "controller 生成包名");
         TEMPLATE_MAP.put("$config.interfacePackage", "service 接口生成包名");
