@@ -58,7 +58,11 @@ public class AllParamInternal implements IntentionAction, Iconable {
         XmlFile xmlFile = allResourceFiles.get(qualifiedName);
         boolean flag = Arrays.stream(javaFile.getClasses()[0].getMethods())
                 .allMatch(el -> methodHasAnnotation(el, QualifiedNameConstant.MYBATIS_PARAM));
-        TextRange range = psiClass.getIdentifyingElement().getTextRange();
+        PsiElement identifyingElement = psiClass.getIdentifyingElement();
+        if (ObjectUtil.isNull(identifyingElement)) {
+            return false;
+        }
+        TextRange range = identifyingElement.getTextRange();
         if (ObjectUtil.isNull(xmlFile) || !(elementAt instanceof PsiIdentifier) || flag || !range.contains(offset)) {
             return false;
         }

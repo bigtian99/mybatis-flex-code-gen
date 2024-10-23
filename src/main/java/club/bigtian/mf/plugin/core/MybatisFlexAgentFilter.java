@@ -4,6 +4,7 @@ import club.bigtian.mf.plugin.core.config.MybatisFlexConfig;
 import cn.hutool.core.util.ObjectUtil;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
+import com.intellij.ui.LicensingFacade;
 import groovyjarjarantlr4.v4.runtime.misc.NotNull;
 import org.apache.commons.lang3.StringUtils;
 
